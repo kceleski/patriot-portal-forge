@@ -8,20 +8,172 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ASSISTANT_CONFIGS = {
-  end_user: {
-    instructions: "You are AVA, an AI assistant specializing in helping veterans and their families find appropriate senior care facilities. Be friendly, supportive, and patient. Ask clarifying questions to understand their specific needs, budget, location preferences, and care requirements. Provide personalized recommendations based on their responses.",
-    tools: ["search_facilities", "update_map_view"]
-  },
-  professional: {
-    instructions: "You are AVA, an AI assistant for healthcare professionals working in senior care placement. Be efficient, professional, and data-focused. Help with client management, referral tracking, and facility searches. Provide metrics and analytics to support their decision-making process.",
-    tools: ["search_facilities", "get_client_list", "get_referral_metrics"]
-  },
-  facility: {
-    instructions: "You are AVA, an AI assistant for senior care facility administrators. Be business-focused, analytical, and solution-oriented. Help with facility management, performance metrics, professional networking, and listing optimization. Focus on revenue optimization and operational efficiency.",
-    tools: ["get_facility_metrics", "get_professional_list", "update_facility_listing"]
+// Helper function to search facilities from database
+async function searchFacilitiesFromDB(args: any, supabaseClient: any) {
+  try {
+    const { data: facilities, error } = await supabaseClient
+      .from("facility")
+      .select("*")
+      .limit(10);
+
+    if (error) throw error;
+    
+    return {
+      success: true,
+      facilities: facilities || [],
+      count: facilities?.length || 0
+    };
+  } catch (error) {
+    console.error("Error searching facilities:", error);
+    return {
+      success: false,
+      error: error.message,
+      facilities: [],
+      count: 0
+    };
   }
-};
+}
+
+// Helper function to get client list for professionals
+async function getClientListFromDB(args: any, supabaseClient: any) {
+  try {
+    const { data: clients, error } = await supabaseClient
+      .from("clients")
+      .select("*")
+      .limit(20);
+
+    if (error) throw error;
+    
+    return {
+      success: true,
+      clients: clients || [],
+      count: clients?.length || 0
+    };
+  } catch (error) {
+    console.error("Error getting client list:", error);
+    return {
+      success: false,
+      error: error.message,
+      clients: [],
+      count: 0
+    };
+  }
+}
+
+// Helper function to get referral metrics
+async function getReferralMetricsFromDB(args: any, supabaseClient: any) {
+  try {
+    const { data: referrals, error } = await supabaseClient
+      .from("referrals")
+      .select("*");
+
+    if (error) throw error;
+    
+    const metrics = {
+      total_referrals: referrals?.length || 0,
+      pending: referrals?.filter(r => r.status === 'pending')?.length || 0,
+      completed: referrals?.filter(r => r.status === 'completed')?.length || 0,
+      in_progress: referrals?.filter(r => r.status === 'in_progress')?.length || 0
+    };
+    
+    return {
+      success: true,
+      metrics
+    };
+  } catch (error) {
+    console.error("Error getting referral metrics:", error);
+    return {
+      success: false,
+      error: error.message,
+      metrics: {}
+    };
+  }
+}
+
+// Helper function to get facility metrics
+async function getFacilityMetricsFromDB(args: any, supabaseClient: any) {
+  try {
+    const { data: placements, error } = await supabaseClient
+      .from("placements")
+      .select("*");
+
+    if (error) throw error;
+    
+    const metrics = {
+      total_placements: placements?.length || 0,
+      pending: placements?.filter(p => p.status === 'pending')?.length || 0,
+      confirmed: placements?.filter(p => p.status === 'confirmed')?.length || 0,
+      completed: placements?.filter(p => p.status === 'completed')?.length || 0
+    };
+    
+    return {
+      success: true,
+      metrics
+    };
+  } catch (error) {
+    console.error("Error getting facility metrics:", error);
+    return {
+      success: false,
+      error: error.message,
+      metrics: {}
+    };
+  }
+}
+
+// Helper function to get professional list for facilities
+async function getProfessionalListFromDB(args: any, supabaseClient: any) {
+  try {
+    const { data: professionals, error } = await supabaseClient
+      .from("user_profile_professional")
+      .select("*")
+      .limit(20);
+
+    if (error) throw error;
+    
+    return {
+      success: true,
+      professionals: professionals || [],
+      count: professionals?.length || 0
+    };
+  } catch (error) {
+    console.error("Error getting professional list:", error);
+    return {
+      success: false,
+      error: error.message,
+      professionals: [],
+      count: 0
+    };
+  }
+}
+
+// Helper function to update facility listing
+async function updateFacilityListingFromDB(args: any, supabaseClient: any, userId: string) {
+  try {
+    const { facility_id, updates } = args;
+    
+    const { data: facility, error } = await supabaseClient
+      .from("facility")
+      .update(updates)
+      .eq("id", facility_id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    return {
+      success: true,
+      facility,
+      message: "Facility listing updated successfully"
+    };
+  } catch (error) {
+    console.error("Error updating facility listing:", error);
+    return {
+      success: false,
+      error: error.message,
+      message: "Failed to update facility listing"
+    };
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -48,8 +200,10 @@ serve(async (req) => {
     const { action, assistant_type, message, conversation_id } = await req.json();
 
     if (action === "chat") {
-      // Get or create conversation
       let conversationData;
+      let threadId;
+
+      // 1. Get or Create Conversation and Thread ID
       if (conversation_id) {
         const { data } = await supabaseClient
           .from("ava_conversations")
@@ -57,19 +211,42 @@ serve(async (req) => {
           .eq("id", conversation_id)
           .single();
         conversationData = data;
+        threadId = conversationData?.openai_thread_id;
+
+        // If conversation exists but no thread ID, create a new thread
+        if (!threadId) {
+          const thread = await openai.beta.threads.create();
+          threadId = thread.id;
+          
+          await supabaseClient
+            .from("ava_conversations")
+            .update({ openai_thread_id: threadId })
+            .eq("id", conversation_id);
+        }
       } else {
+        // Create new conversation and thread
+        const thread = await openai.beta.threads.create();
+        threadId = thread.id;
+
         const { data } = await supabaseClient
           .from("ava_conversations")
           .insert({
             user_id: user.id,
-            assistant_type
+            assistant_type,
+            openai_thread_id: threadId
           })
           .select()
           .single();
         conversationData = data;
       }
 
-      // Store user message
+      // 2. Add user's message to the thread
+      await openai.beta.threads.messages.create(threadId, {
+        role: "user",
+        content: message
+      });
+
+      // Store user message in database
       await supabaseClient
         .from("ava_messages")
         .insert({
@@ -78,49 +255,72 @@ serve(async (req) => {
           content: message
         });
 
-      // Get conversation history
-      const { data: messages } = await supabaseClient
-        .from("ava_messages")
-        .select("*")
-        .eq("conversation_id", conversationData.id)
-        .order("created_at", { ascending: true });
-
-      // Create assistant if not exists
-      const assistantConfig = ASSISTANT_CONFIGS[assistant_type];
-      const assistant = await openai.beta.assistants.create({
-        name: `AVA ${assistant_type} Assistant`,
-        instructions: assistantConfig.instructions,
-        model: "gpt-4o-mini",
-        tools: [
-          { type: "function", function: { name: "search_facilities", description: "Search for senior care facilities" } },
-          { type: "function", function: { name: "get_client_list", description: "Get client list for professionals" } },
-          { type: "function", function: { name: "get_referral_metrics", description: "Get referral metrics" } },
-          { type: "function", function: { name: "get_facility_metrics", description: "Get facility performance metrics" } },
-          { type: "function", function: { name: "update_facility_listing", description: "Update facility listing" } }
-        ]
-      });
-
-      // Create thread and run
-      const thread = await openai.beta.threads.create({
-        messages: messages.map(msg => ({
-          role: msg.role as "user" | "assistant",
-          content: msg.content
-        }))
-      });
-
-      const run = await openai.beta.threads.runs.create(thread.id, {
-        assistant_id: assistant.id
-      });
-
-      // Wait for completion
-      let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-      while (runStatus.status === "running" || runStatus.status === "queued") {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      // 3. Select the correct persistent Assistant ID from Env Vars
+      const assistantId = Deno.env.get(`OPENAI_ASSISTANT_ID_${assistant_type.toUpperCase()}`);
+      if (!assistantId) {
+        throw new Error(`Assistant ID not found for type: ${assistant_type}`);
       }
 
-      // Get the assistant's response
-      const threadMessages = await openai.beta.threads.messages.list(thread.id);
+      // 4. Create the Run
+      const run = await openai.beta.threads.runs.create(threadId, {
+        assistant_id: assistantId
+      });
+
+      // 5. REFACTORED LOOP: Wait for completion or action
+      let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+
+      while (runStatus.status === 'in_progress' || runStatus.status === 'queued' || runStatus.status === 'requires_action') {
+        if (runStatus.status === 'requires_action') {
+          const toolOutputs = [];
+          const toolCalls = runStatus.required_action.submit_tool_outputs.tool_calls;
+
+          for (const toolCall of toolCalls) {
+            const functionName = toolCall.function.name;
+            const args = JSON.parse(toolCall.function.arguments || '{}');
+            let output;
+
+            // Tool Dispatcher Logic
+            switch (functionName) {
+              case 'search_facilities':
+                output = await searchFacilitiesFromDB(args, supabaseClient);
+                break;
+              case 'get_client_list':
+                output = await getClientListFromDB(args, supabaseClient);
+                break;
+              case 'get_referral_metrics':
+                output = await getReferralMetricsFromDB(args, supabaseClient);
+                break;
+              case 'get_facility_metrics':
+                output = await getFacilityMetricsFromDB(args, supabaseClient);
+                break;
+              case 'get_professional_list':
+                output = await getProfessionalListFromDB(args, supabaseClient);
+                break;
+              case 'update_facility_listing':
+                output = await updateFacilityListingFromDB(args, supabaseClient, user.id);
+                break;
+              default:
+                output = { error: `Function ${functionName} not implemented`, success: false };
+            }
+
+            toolOutputs.push({
+              tool_call_id: toolCall.id,
+              output: JSON.stringify(output)
+            });
+          }
+
+          // Submit outputs back to the run
+          await openai.beta.threads.runs.submitToolOutputs(threadId, run.id, {
+            tool_outputs: toolOutputs
+          });
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+      }
+
+      // 6. Get final response and return to user
+      const threadMessages = await openai.beta.threads.messages.list(threadId);
       const assistantMessage = threadMessages.data[0];
       const responseContent = assistantMessage.content[0].type === "text" 
         ? assistantMessage.content[0].text.value 

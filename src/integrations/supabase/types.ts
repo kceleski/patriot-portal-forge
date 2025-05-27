@@ -161,6 +161,7 @@ export type Database = {
           assistant_type: string | null
           created_at: string | null
           id: string
+          openai_thread_id: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -168,6 +169,7 @@ export type Database = {
           assistant_type?: string | null
           created_at?: string | null
           id?: string
+          openai_thread_id?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -175,6 +177,7 @@ export type Database = {
           assistant_type?: string | null
           created_at?: string | null
           id?: string
+          openai_thread_id?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
