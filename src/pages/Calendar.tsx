@@ -5,7 +5,7 @@ import moment from 'moment';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { NewAppointmentModal } from '@/components/calendar/NewAppointmentModal';
 import { AppointmentDetailsModal } from '@/components/calendar/AppointmentDetailsModal';
 import 'react-big-calendar/lib/css/react-big-calendar.css';

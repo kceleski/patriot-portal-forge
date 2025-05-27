@@ -16,8 +16,9 @@ import { toast } from 'react-hot-toast';
 interface NewAppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedDate?: Date;
-  onAppointmentCreated: () => void;
+  startTime?: Date;
+  endTime?: Date;
+  onSuccess: () => void;
 }
 
 interface Participant {
@@ -28,8 +29,9 @@ interface Participant {
 export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
   isOpen,
   onClose,
-  selectedDate,
-  onAppointmentCreated,
+  startTime,
+  endTime,
+  onSuccess,
 }) => {
   const { user, profile } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -38,8 +40,8 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    start_time: selectedDate ? selectedDate.toISOString().slice(0, 16) : '',
-    end_time: '',
+    start_time: startTime ? startTime.toISOString().slice(0, 16) : '',
+    end_time: endTime ? endTime.toISOString().slice(0, 16) : '',
     appointment_type: '',
     location_type: '',
     location: '',
@@ -110,7 +112,7 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
       }
 
       toast.success('Appointment created successfully');
-      onAppointmentCreated();
+      onSuccess();
       onClose();
       
       // Reset form
@@ -134,8 +136,9 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
   };
 
   const isVideoOptionAvailable = () => {
+    const userTier = profile?.subscription_tier?.toLowerCase();
     return profile?.user_type === 'healthcare' && 
-           (profile?.subscription_tier === 'Elevate' || profile?.subscription_tier === 'Pinnacle');
+           (userTier === 'elevate' || userTier === 'pinnacle');
   };
 
   return (
@@ -231,7 +234,7 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
                   <SelectItem value="phone">Phone Call</SelectItem>
                   <FeatureGate
                     requiredUserType="healthcare"
-                    requiredTier={['Elevate', 'Pinnacle']}
+                    requiredTier={['elevate', 'pinnacle']}
                     fallback={null}
                   >
                     <SelectItem value="video">Video Conference</SelectItem>

@@ -7,22 +7,48 @@ import { Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface FeatureGateProps {
-  feature: string;
+  feature?: string;
+  requiredUserType?: string;
+  requiredTier?: string[];
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }
 
-const FeatureGate: React.FC<FeatureGateProps> = ({ feature, children, fallback }) => {
+const FeatureGate: React.FC<FeatureGateProps> = ({ 
+  feature, 
+  requiredUserType, 
+  requiredTier, 
+  children, 
+  fallback 
+}) => {
   const { hasFeatureAccess, profile } = useAuth();
 
-  if (hasFeatureAccess(feature)) {
-    return <>{children}</>;
+  // Check feature access if feature is provided
+  if (feature && !hasFeatureAccess(feature)) {
+    return fallback ? <>{fallback}</> : <DefaultFallback />;
   }
 
-  if (fallback) {
-    return <>{fallback}</>;
+  // Check user type if requiredUserType is provided
+  if (requiredUserType && profile?.user_type !== requiredUserType) {
+    return fallback ? <>{fallback}</> : <DefaultFallback />;
   }
 
+  // Check subscription tier if requiredTier is provided
+  if (requiredTier && profile?.subscription_tier) {
+    const userTier = profile.subscription_tier.toLowerCase();
+    const allowedTiers = requiredTier.map(tier => tier.toLowerCase());
+    
+    if (!allowedTiers.includes(userTier)) {
+      return fallback ? <>{fallback}</> : <DefaultFallback />;
+    }
+  }
+
+  return <>{children}</>;
+};
+
+const DefaultFallback = () => {
+  const { profile } = useAuth();
+  
   return (
     <Card className="border-dashed border-2 border-gray-300">
       <CardHeader className="text-center">
