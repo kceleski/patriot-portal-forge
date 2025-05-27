@@ -121,6 +121,73 @@ export type Database = {
           },
         ]
       }
+      ava_conversations: {
+        Row: {
+          assistant_type: string | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assistant_type?: string | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assistant_type?: string | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ava_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ava_messages: {
+        Row: {
+          content: string
+          conversation_id: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          role: string | null
+        }
+        Insert: {
+          content: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role?: string | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ava_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ava_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       care_types: {
         Row: {
           care_type_id: string | null
@@ -940,6 +1007,120 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          metadata: Json | null
+          payment_type: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_intent_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      placements: {
+        Row: {
+          agent_commission_percentage: number | null
+          agent_id: string | null
+          commission_amount: number | null
+          created_at: string | null
+          facility_id: string | null
+          hpa_revenue_percentage: number | null
+          id: string
+          monthly_rent: number | null
+          placement_date: string | null
+          senior_id: string | null
+          status: Database["public"]["Enums"]["placement_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_commission_percentage?: number | null
+          agent_id?: string | null
+          commission_amount?: number | null
+          created_at?: string | null
+          facility_id?: string | null
+          hpa_revenue_percentage?: number | null
+          id?: string
+          monthly_rent?: number | null
+          placement_date?: string | null
+          senior_id?: string | null
+          status?: Database["public"]["Enums"]["placement_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_commission_percentage?: number | null
+          agent_id?: string | null
+          commission_amount?: number | null
+          created_at?: string | null
+          facility_id?: string | null
+          hpa_revenue_percentage?: number | null
+          id?: string
+          monthly_rent?: number | null
+          placement_date?: string | null
+          senior_id?: string | null
+          status?: Database["public"]["Enums"]["placement_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "placements_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "placements_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facility"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "placements_senior_id_fkey"
+            columns: ["senior_id"]
+            isOneToOne: false
+            referencedRelation: "seniors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           client_id: string | null
@@ -1242,6 +1423,79 @@ export type Database = {
           zip?: number | null
         }
         Relationships: []
+      }
+      stripe_customers: {
+        Row: {
+          created_at: string | null
+          id: string
+          stripe_customer_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          stripe_customer_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          stripe_customer_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_customers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          status: string
+          stripe_subscription_id: string
+          trial_end: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status: string
+          stripe_subscription_id: string
+          trial_end?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: string
+          stripe_subscription_id?: string
+          trial_end?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscription_features: {
         Row: {
@@ -1720,7 +1974,16 @@ export type Database = {
         | "OVERDUE"
         | "CANCELLED"
       invoice_type_enum: "HPA" | "FACILITY"
+      payment_status: "pending" | "completed" | "failed" | "refunded"
+      placement_status: "pending" | "confirmed" | "completed" | "canceled"
       role: "end_user" | "professional" | "facility_admin"
+      subscription_status: "active" | "past_due" | "canceled" | "trialing"
+      subscription_tier: "essentials" | "elevate" | "pinnacle" | "enterprise"
+      user_role:
+        | "end_user"
+        | "professional"
+        | "facility_admin"
+        | "placement_agent"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1869,7 +2132,17 @@ export const Constants = {
         "CANCELLED",
       ],
       invoice_type_enum: ["HPA", "FACILITY"],
+      payment_status: ["pending", "completed", "failed", "refunded"],
+      placement_status: ["pending", "confirmed", "completed", "canceled"],
       role: ["end_user", "professional", "facility_admin"],
+      subscription_status: ["active", "past_due", "canceled", "trialing"],
+      subscription_tier: ["essentials", "elevate", "pinnacle", "enterprise"],
+      user_role: [
+        "end_user",
+        "professional",
+        "facility_admin",
+        "placement_agent",
+      ],
     },
   },
 } as const

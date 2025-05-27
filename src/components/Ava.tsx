@@ -1,12 +1,14 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, X, Send, Mic, MicOff, Phone, Video } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Ava = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -16,28 +18,53 @@ const Ava = () => {
     }
   ]);
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      const newMessage = {
-        id: messages.length + 1,
-        text: message,
-        sender: 'user',
+  const handleSendMessage = async () => {
+    if (!message.trim() || isLoading) return;
+
+    const userMessage = {
+      id: messages.length + 1,
+      text: message,
+      sender: 'user',
+      timestamp: new Date().toLocaleTimeString()
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    setMessage('');
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('ava-assistant', {
+        body: {
+          action: 'chat',
+          assistant_type: 'end_user', // Default to end_user, could be dynamic based on user role
+          message: userMessage.text,
+          conversation_id: conversationId
+        }
+      });
+
+      if (error) throw error;
+
+      const avaResponse = {
+        id: messages.length + 2,
+        text: data.response,
+        sender: 'ava',
         timestamp: new Date().toLocaleTimeString()
       };
-      
-      setMessages(prev => [...prev, newMessage]);
-      setMessage('');
 
-      // Simulate AVA response
-      setTimeout(() => {
-        const avaResponse = {
-          id: messages.length + 2,
-          text: "Thank you for your message. I'm here to help with any questions about care services, facility information, or placement assistance. What specific information would you like to know?",
-          sender: 'ava',
-          timestamp: new Date().toLocaleTimeString()
-        };
-        setMessages(prev => [...prev, avaResponse]);
-      }, 1000);
+      setMessages(prev => [...prev, avaResponse]);
+      setConversationId(data.conversation_id);
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorResponse = {
+        id: messages.length + 2,
+        text: "I apologize, but I'm having trouble responding right now. Please try again.",
+        sender: 'ava',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -48,8 +75,40 @@ const Ava = () => {
     }
   };
 
-  const toggleVoice = () => {
-    setIsListening(!isListening);
+  const toggleVoice = async () => {
+    if (!isListening) {
+      // Start voice recognition
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+          setIsListening(true);
+        };
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          setMessage(transcript);
+          setIsListening(false);
+        };
+
+        recognition.onerror = () => {
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognition.start();
+      }
+    } else {
+      setIsListening(false);
+    }
   };
 
   return (
@@ -136,6 +195,17 @@ const Ava = () => {
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-secondary-off-white text-text-dark-gray max-w-xs px-4 py-2 rounded-2xl">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -179,6 +249,7 @@ const Ava = () => {
                   placeholder="Type your message..."
                   className="w-full p-3 pr-12 border border-gray-300 rounded-full resize-none focus:outline-none focus:ring-2 focus:ring-primary-sky"
                   rows={1}
+                  disabled={isLoading}
                 />
                 <Button
                   variant="ghost"
@@ -187,13 +258,14 @@ const Ava = () => {
                   className={`absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 ${
                     isListening ? 'text-primary-red' : 'text-gray-400'
                   }`}
+                  disabled={isLoading}
                 >
                   {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </Button>
               </div>
               <Button
                 onClick={handleSendMessage}
-                disabled={!message.trim()}
+                disabled={!message.trim() || isLoading}
                 className="bg-primary-sky hover:bg-blue-600 rounded-full h-10 w-10 p-0"
               >
                 <Send className="h-4 w-4" />
