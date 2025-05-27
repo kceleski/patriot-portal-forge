@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, X, Send, Mic, MicOff, Phone, Video } from 'lucide-react';
+import { MessageSquare, X, Send, Mic, MicOff, Phone, Video, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 // Declare Speech Recognition types for TypeScript
@@ -17,6 +17,8 @@ const Ava = () => {
   const [message, setMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([
     {
@@ -26,6 +28,35 @@ const Ava = () => {
       timestamp: new Date().toLocaleTimeString()
     }
   ]);
+
+  const playAudioResponse = async (text: string) => {
+    if (!voiceEnabled || !text) return;
+    
+    try {
+      setIsSpeaking(true);
+      const { data, error } = await supabase.functions.invoke('voice-synthesis', {
+        body: { text }
+      });
+
+      if (error) throw error;
+
+      if (data.audioContent) {
+        const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], { type: 'audio/mpeg' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        
+        audio.onended = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        
+        await audio.play();
+      }
+    } catch (error) {
+      console.error('Voice synthesis error:', error);
+      setIsSpeaking(false);
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
@@ -45,7 +76,7 @@ const Ava = () => {
       const { data, error } = await supabase.functions.invoke('ava-assistant', {
         body: {
           action: 'chat',
-          assistant_type: 'end_user', // Default to end_user, could be dynamic based on user role
+          assistant_type: 'end_user',
           message: userMessage.text,
           conversation_id: conversationId
         }
@@ -62,6 +93,9 @@ const Ava = () => {
 
       setMessages(prev => [...prev, avaResponse]);
       setConversationId(data.conversation_id);
+
+      // Play voice response
+      await playAudioResponse(data.response);
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -153,10 +187,20 @@ const Ava = () => {
               </div>
               <div>
                 <h3 className="font-semibold">AVA Assistant</h3>
-                <p className="text-xs opacity-75">AI Care Specialist</p>
+                <p className="text-xs opacity-75">
+                  {isSpeaking ? 'Speaking...' : 'AI Care Specialist'}
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setVoiceEnabled(!voiceEnabled)}
+                className="text-white hover:bg-white/20 h-8 w-8 p-0"
+              >
+                {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
