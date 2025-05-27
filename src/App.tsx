@@ -1,13 +1,15 @@
+
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { QueryClient } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Import components
 import PublicLayout from '@/layouts/PublicLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import NotFound from '@/pages/NotFound';
+import ElevenLabsWidget from '@/components/ElevenLabsWidget';
 
 // Public Pages
 import HomePage from '@/pages/HomePage';
@@ -17,30 +19,30 @@ import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 
 // Dashboard Pages
-import FamilyDashboard from '@/pages/dashboards/FamilyDashboard';
-import AgentDashboard from '@/pages/dashboards/AgentDashboard';
-import HealthcareDashboard from '@/pages/dashboards/HealthcareDashboard';
-import FacilityDashboard from '@/pages/dashboards/FacilityDashboard';
+import FamilyDashboard from '@/pages/family/FamilyDashboard';
+import AgentDashboard from '@/pages/agent/AgentDashboard';
+import HealthcareDashboard from '@/pages/healthcare/HealthcareDashboard';
+import FacilityDashboard from '@/pages/facility/FacilityDashboard';
 
 // Family Routes
-import FamilyMessaging from '@/pages/dashboards/family/FamilyMessaging';
-import SavedFavorites from '@/pages/dashboards/family/SavedFavorites';
+import FamilyMessaging from '@/pages/family/FamilyMessaging';
+import SavedFavorites from '@/pages/family/SavedFavorites';
 
 // Agent Routes
-import CRM from '@/pages/dashboards/agent/CRM';
-import PerformanceDashboard from '@/pages/dashboards/agent/PerformanceDashboard';
+import CRM from '@/pages/agent/CRM';
+import PerformanceDashboard from '@/pages/agent/PerformanceDashboard';
 
 // Healthcare Professional Routes
-import FacilitiesDirectory from '@/pages/dashboards/healthcare/FacilitiesDirectory';
-import ReferralManagement from '@/pages/dashboards/healthcare/ReferralManagement';
-import InvoicingTools from '@/pages/dashboards/healthcare/InvoicingTools';
-import ClientTracking from '@/pages/dashboards/healthcare/ClientTracking';
+import FacilitiesDirectory from '@/pages/healthcare/FacilitiesDirectory';
+import ReferralManagement from '@/pages/healthcare/ReferralManagement';
+import InvoicingTools from '@/pages/healthcare/InvoicingTools';
+import ClientTracking from '@/pages/healthcare/ClientTracking';
 
 // Facility Routes
-import ListingManagement from '@/pages/dashboards/facility/ListingManagement';
-import FacilityAnalytics from '@/pages/dashboards/facility/FacilityAnalytics';
-import PlacementSpecialists from '@/pages/dashboards/facility/PlacementSpecialists';
-import WebinarManagement from '@/pages/dashboards/facility/WebinarManagement';
+import ListingManagement from '@/pages/facility/ListingManagement';
+import FacilityAnalytics from '@/pages/facility/FacilityAnalytics';
+import PlacementSpecialists from '@/pages/facility/PlacementSpecialists';
+import WebinarManagement from '@/pages/facility/WebinarManagement';
 
 // Shared Routes
 import FacilitiesGallery from '@/pages/FacilitiesGallery';
@@ -50,9 +52,22 @@ import FacilitiesMap from '@/pages/FacilitiesMap';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { CalendarPage } from '@/pages/Calendar';
 
+const queryClient = new QueryClient();
+
+const FloatingWidgetWrapper = () => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+  
+  if (isHomePage) {
+    return null;
+  }
+  
+  return <ElevenLabsWidget variant="floating" />;
+};
+
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
           <div className="min-h-screen bg-primary-cream">
@@ -68,7 +83,7 @@ function App() {
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<DashboardLayout userType="shared" />}>
                   {/* Family Dashboard */}
                   <Route path="family" element={<FamilyDashboard />} />
                   <Route path="family/messaging" element={<FamilyMessaging />} />
@@ -103,11 +118,15 @@ function App() {
               {/* Catch all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            
+            {/* Floating widget for all pages except homepage */}
+            <FloatingWidgetWrapper />
+            
             <Toaster />
           </div>
         </Router>
       </AuthProvider>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 

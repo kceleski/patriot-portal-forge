@@ -1,23 +1,23 @@
 
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CalendarDays, Clock, MapPin, Users } from 'lucide-react';
 import { ParticipantsList } from './ParticipantsList';
-import { FeatureGate } from '@/components/FeatureGate';
+import FeatureGate from '@/components/FeatureGate';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'react-hot-toast';
 
 interface NewAppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  startTime: Date;
-  endTime: Date;
-  onSuccess: () => void;
+  selectedDate?: Date;
+  onAppointmentCreated: () => void;
 }
 
 interface Participant {
@@ -28,45 +28,67 @@ interface Participant {
 export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
   isOpen,
   onClose,
-  startTime,
-  endTime,
-  onSuccess,
+  selectedDate,
+  onAppointmentCreated,
 }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [appointmentType, setAppointmentType] = useState<string>('');
-  const [locationType, setLocationType] = useState<string>('');
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const { user, profile } = useAuth();
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-  const { user } = useAuth();
+  const [participants, setParticipants] = useState<Participant[]>([]);
+
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    start_time: selectedDate ? selectedDate.toISOString().slice(0, 16) : '',
+    end_time: '',
+    appointment_type: '',
+    location_type: '',
+    location: '',
+    video_link: '',
+  });
+
+  const generateVideoLink = () => {
+    if (formData.location_type === 'video') {
+      const meetingId = Math.random().toString(36).substring(2, 15);
+      const videoLink = `${window.location.origin}/meeting/${meetingId}`;
+      setFormData({ ...formData, video_link: videoLink });
+    }
+  };
+
+  const handleLocationTypeChange = (value: string) => {
+    setFormData({ ...formData, location_type: value });
+    if (value === 'video') {
+      generateVideoLink();
+    } else {
+      setFormData({ ...formData, video_link: '' });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     
+    if (!formData.title || !formData.start_time || !formData.end_time || !formData.appointment_type) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Generate video link if video appointment
-      let videoLink = null;
-      if (locationType === 'video') {
-        videoLink = `https://meet.${window.location.hostname}/room/${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      }
+      // Create the appointment
+      const appointmentData = {
+        title: formData.title,
+        description: formData.description,
+        start_time: formData.start_time,
+        end_time: formData.end_time,
+        appointment_type: formData.appointment_type,
+        location_type: formData.location_type,
+        location: formData.location,
+        video_link: formData.video_link,
+        created_by: user?.id,
+      };
 
-      // Create appointment
       const { data: appointment, error: appointmentError } = await supabase
         .from('appointments')
-        .insert({
-          title,
-          description,
-          start_time: startTime.toISOString(),
-          end_time: endTime.toISOString(),
-          appointment_type: appointmentType,
-          location_type: locationType,
-          video_link: videoLink,
-          created_by: user.id,
-          status: 'scheduled'
-        })
+        .insert(appointmentData)
         .select()
         .single();
 
@@ -87,147 +109,177 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
         if (participantError) throw participantError;
       }
 
-      toast({
-        title: "Success",
-        description: "Appointment created successfully",
+      toast.success('Appointment created successfully');
+      onAppointmentCreated();
+      onClose();
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        start_time: '',
+        end_time: '',
+        appointment_type: '',
+        location_type: '',
+        location: '',
+        video_link: '',
       });
-
-      onSuccess();
+      setParticipants([]);
     } catch (error) {
       console.error('Error creating appointment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create appointment",
-        variant: "destructive",
-      });
+      toast.error('Failed to create appointment');
     } finally {
       setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setAppointmentType('');
-    setLocationType('');
-    setParticipants([]);
+  const isVideoOptionAvailable = () => {
+    return profile?.user_type === 'healthcare' && 
+           (profile?.subscription_tier === 'Elevate' || profile?.subscription_tier === 'Pinnacle');
   };
-
-  useEffect(() => {
-    if (!isOpen) {
-      resetForm();
-    }
-  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Appointment</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarDays className="h-5 w-5" />
+            Create New Appointment
+          </DialogTitle>
+          <DialogDescription>
+            Schedule a new appointment with clients or team members
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-            />
-          </div>
 
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-            />
-          </div>
-
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="start-time">Start Time</Label>
+            <div className="col-span-2">
+              <Label htmlFor="title">Title *</Label>
               <Input
-                id="start-time"
-                type="datetime-local"
-                value={startTime.toISOString().slice(0, 16)}
-                onChange={(e) => {
-                  const newStart = new Date(e.target.value);
-                  if (newStart < endTime) {
-                    // Update startTime - this would need to be passed up to parent
-                  }
-                }}
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="e.g., Initial Consultation"
+                required
               />
             </div>
-            <div>
-              <Label htmlFor="end-time">End Time</Label>
-              <Input
-                id="end-time"
-                type="datetime-local"
-                value={endTime.toISOString().slice(0, 16)}
-                onChange={(e) => {
-                  const newEnd = new Date(e.target.value);
-                  if (newEnd > startTime) {
-                    // Update endTime - this would need to be passed up to parent
-                  }
-                }}
+
+            <div className="col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Additional details about the appointment..."
+                className="min-h-[80px]"
               />
             </div>
+
+            <div>
+              <Label htmlFor="start_time" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Start Time *
+              </Label>
+              <Input
+                id="start_time"
+                type="datetime-local"
+                value={formData.start_time}
+                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="end_time" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                End Time *
+              </Label>
+              <Input
+                id="end_time"
+                type="datetime-local"
+                value={formData.end_time}
+                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="appointment_type">Appointment Type *</Label>
+              <Select value={formData.appointment_type} onValueChange={(value) => setFormData({ ...formData, appointment_type: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="consultation">Consultation</SelectItem>
+                  <SelectItem value="tour">Facility Tour</SelectItem>
+                  <SelectItem value="follow_up">Follow-up</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="location_type" className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Location Type
+              </Label>
+              <Select value={formData.location_type} onValueChange={handleLocationTypeChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select location type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="in_person">In Person</SelectItem>
+                  <SelectItem value="phone">Phone Call</SelectItem>
+                  <FeatureGate
+                    requiredUserType="healthcare"
+                    requiredTier={['Elevate', 'Pinnacle']}
+                    fallback={null}
+                  >
+                    <SelectItem value="video">Video Conference</SelectItem>
+                  </FeatureGate>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.location_type === 'in_person' && (
+              <div className="col-span-2">
+                <Label htmlFor="location">Location Address</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder="Enter the meeting location..."
+                />
+              </div>
+            )}
+
+            {formData.location_type === 'video' && formData.video_link && (
+              <div className="col-span-2">
+                <Label>Video Meeting Link</Label>
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    Video link generated: <span className="font-mono">{formData.video_link}</span>
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
-            <Label htmlFor="appointment-type">Appointment Type</Label>
-            <Select value={appointmentType} onValueChange={setAppointmentType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select appointment type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="consultation">Consultation</SelectItem>
-                <SelectItem value="tour">Tour</SelectItem>
-                <SelectItem value="follow_up">Follow Up</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Participants
+            </Label>
+            <ParticipantsList participants={participants} onChange={setParticipants} />
           </div>
 
-          <div>
-            <Label htmlFor="location-type">Location Type</Label>
-            <Select value={locationType} onValueChange={setLocationType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select location type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="in_person">In Person</SelectItem>
-                <FeatureGate 
-                  requiredTier="elevate" 
-                  userType="professional"
-                  fallback={null}
-                >
-                  <SelectItem value="video">Video Call</SelectItem>
-                </FeatureGate>
-                <SelectItem value="phone">Phone Call</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <ParticipantsList
-            participants={participants}
-            onChange={setParticipants}
-          />
-
-          <div className="flex justify-end space-x-2 pt-4">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || !title.trim() || !appointmentType || !locationType}
-              className="bg-accent-gold hover:bg-accent-gold/80"
-            >
+            <Button type="submit" disabled={loading} className="bg-primary-sky hover:bg-blue-600">
               {loading ? 'Creating...' : 'Create Appointment'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
