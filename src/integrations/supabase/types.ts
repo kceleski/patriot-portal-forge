@@ -68,6 +68,41 @@ export type Database = {
           },
         ]
       }
+      appointment_participants: {
+        Row: {
+          appointment_id: string | null
+          created_at: string | null
+          id: string
+          is_organizer: boolean | null
+          participant_email: string
+          participant_name: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_organizer?: boolean | null
+          participant_email: string
+          participant_name?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_organizer?: boolean | null
+          participant_email?: string
+          participant_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_participants_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_type: string | null
@@ -487,6 +522,36 @@ export type Database = {
           },
         ]
       }
+      email_templates: {
+        Row: {
+          agent_id: string | null
+          body: string
+          created_at: string | null
+          id: string
+          name: string
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          body: string
+          created_at?: string | null
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          body?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       facility: {
         Row: {
           accepts_medicaid: boolean | null
@@ -665,6 +730,51 @@ export type Database = {
             columns: ["facility_id"]
             isOneToOne: false
             referencedRelation: "facility"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facility_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          facility_id: string | null
+          id: string
+          logged_by: string | null
+          payment_date: string | null
+          placement_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          facility_id?: string | null
+          id?: string
+          logged_by?: string | null
+          payment_date?: string | null
+          placement_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          facility_id?: string | null
+          id?: string
+          logged_by?: string | null
+          payment_date?: string | null
+          placement_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_payments_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facility"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facility_payments_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "placements"
             referencedColumns: ["id"]
           },
         ]
@@ -1059,8 +1169,13 @@ export type Database = {
           agent_commission_percentage: number | null
           agent_id: string | null
           commission_amount: number | null
+          commission_status:
+            | Database["public"]["Enums"]["commission_status"]
+            | null
           created_at: string | null
           facility_id: string | null
+          first_month_rent_fee: number | null
+          hpa_revenue: number | null
           hpa_revenue_percentage: number | null
           id: string
           monthly_rent: number | null
@@ -1073,8 +1188,13 @@ export type Database = {
           agent_commission_percentage?: number | null
           agent_id?: string | null
           commission_amount?: number | null
+          commission_status?:
+            | Database["public"]["Enums"]["commission_status"]
+            | null
           created_at?: string | null
           facility_id?: string | null
+          first_month_rent_fee?: number | null
+          hpa_revenue?: number | null
           hpa_revenue_percentage?: number | null
           id?: string
           monthly_rent?: number | null
@@ -1087,8 +1207,13 @@ export type Database = {
           agent_commission_percentage?: number | null
           agent_id?: string | null
           commission_amount?: number | null
+          commission_status?:
+            | Database["public"]["Enums"]["commission_status"]
+            | null
           created_at?: string | null
           facility_id?: string | null
+          first_month_rent_fee?: number | null
+          hpa_revenue?: number | null
           hpa_revenue_percentage?: number | null
           id?: string
           monthly_rent?: number | null
@@ -1945,6 +2070,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      appointment_type: "consultation" | "tour" | "follow_up"
       budget_range:
         | "$2,000 - $4,000"
         | "$4,000 - $6,000"
@@ -1959,6 +2085,7 @@ export type Database = {
         | "spouse"
         | "child"
       care_urgency: "immediate" | "2_weeks" | "30_days" | "6_months" | "1_year"
+      commission_status: "pending" | "paid" | "cancelled"
       contract_status_enum:
         | "PENDING_SIGNATURE"
         | "ACTIVE"
@@ -1974,6 +2101,7 @@ export type Database = {
         | "OVERDUE"
         | "CANCELLED"
       invoice_type_enum: "HPA" | "FACILITY"
+      location_type: "in_person" | "video" | "phone"
       payment_status: "pending" | "completed" | "failed" | "refunded"
       placement_status: "pending" | "confirmed" | "completed" | "canceled"
       role: "end_user" | "professional" | "facility_admin"
@@ -2099,6 +2227,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      appointment_type: ["consultation", "tour", "follow_up"],
       budget_range: [
         "$2,000 - $4,000",
         "$4,000 - $6,000",
@@ -2115,6 +2244,7 @@ export const Constants = {
         "child",
       ],
       care_urgency: ["immediate", "2_weeks", "30_days", "6_months", "1_year"],
+      commission_status: ["pending", "paid", "cancelled"],
       contract_status_enum: [
         "PENDING_SIGNATURE",
         "ACTIVE",
@@ -2132,6 +2262,7 @@ export const Constants = {
         "CANCELLED",
       ],
       invoice_type_enum: ["HPA", "FACILITY"],
+      location_type: ["in_person", "video", "phone"],
       payment_status: ["pending", "completed", "failed", "refunded"],
       placement_status: ["pending", "confirmed", "completed", "canceled"],
       role: ["end_user", "professional", "facility_admin"],

@@ -1,136 +1,114 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { QueryClient } from 'react-query';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import PublicLayout from "./layouts/PublicLayout";
-import DashboardLayout from "./layouts/DashboardLayout";
-import ProtectedRoute from "./components/ProtectedRoute";
+// Import components
+import PublicLayout from '@/layouts/PublicLayout';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import DashboardLayout from '@/layouts/DashboardLayout';
+import NotFound from '@/pages/NotFound';
 
 // Public Pages
-import HomePage from "./pages/public/HomePage";
-import PricingPage from "./pages/public/PricingPage";
-import FindCarePage from "./pages/public/FindCarePage";
-import LoginPage from "./pages/public/LoginPage";
-import RegisterPage from "./pages/public/RegisterPage";
+import HomePage from '@/pages/HomePage';
+import FindCarePage from '@/pages/FindCarePage';
+import PricingPage from '@/pages/PricingPage';
+import LoginPage from '@/pages/LoginPage';
+import RegisterPage from '@/pages/RegisterPage';
 
-// Family Portal Pages
-import FamilyDashboard from "./pages/family/FamilyDashboard";
-import FamilyMessaging from "./pages/family/FamilyMessaging";
-import SavedFavorites from "./pages/family/SavedFavorites";
+// Dashboard Pages
+import FamilyDashboard from '@/pages/dashboards/FamilyDashboard';
+import AgentDashboard from '@/pages/dashboards/AgentDashboard';
+import HealthcareDashboard from '@/pages/dashboards/HealthcareDashboard';
+import FacilityDashboard from '@/pages/dashboards/FacilityDashboard';
 
-// Healthcare Professional Portal Pages
-import HealthcareDashboard from "./pages/healthcare/HealthcareDashboard";
-import ClientTracking from "./pages/healthcare/ClientTracking";
-import ReferralManagement from "./pages/healthcare/ReferralManagement";
-import InvoicingTools from "./pages/healthcare/InvoicingTools";
-import FacilitiesDirectory from "./pages/healthcare/FacilitiesDirectory";
+// Family Routes
+import FamilyMessaging from '@/pages/dashboards/family/FamilyMessaging';
+import SavedFavorites from '@/pages/dashboards/family/SavedFavorites';
 
-// Placement Agent Portal Pages
-import AgentDashboard from "./pages/agent/AgentDashboard";
-import CRM from "./pages/agent/CRM";
-import PerformanceDashboard from "./pages/agent/PerformanceDashboard";
+// Agent Routes
+import CRM from '@/pages/dashboards/agent/CRM';
+import PerformanceDashboard from '@/pages/dashboards/agent/PerformanceDashboard';
 
-// Facility Portal Pages
-import FacilityDashboard from "./pages/facility/FacilityDashboard";
-import ListingManagement from "./pages/facility/ListingManagement";
-import FacilityAnalytics from "./pages/facility/FacilityAnalytics";
-import PlacementSpecialists from "./pages/facility/PlacementSpecialists";
-import WebinarManagement from "./pages/facility/WebinarManagement";
+// Healthcare Professional Routes
+import FacilitiesDirectory from '@/pages/dashboards/healthcare/FacilitiesDirectory';
+import ReferralManagement from '@/pages/dashboards/healthcare/ReferralManagement';
+import InvoicingTools from '@/pages/dashboards/healthcare/InvoicingTools';
+import ClientTracking from '@/pages/dashboards/healthcare/ClientTracking';
 
-// New Facility Pages
-import FacilitiesGallery from "./pages/FacilitiesGallery";
-import FacilitiesMap from "./pages/FacilitiesMap";
+// Facility Routes
+import ListingManagement from '@/pages/dashboards/facility/ListingManagement';
+import FacilityAnalytics from '@/pages/dashboards/facility/FacilityAnalytics';
+import PlacementSpecialists from '@/pages/dashboards/facility/PlacementSpecialists';
+import WebinarManagement from '@/pages/dashboards/facility/WebinarManagement';
 
-import NotFound from "./pages/NotFound";
-import AvaEnhanced from "./components/AvaEnhanced";
+// Shared Routes
+import FacilitiesGallery from '@/pages/FacilitiesGallery';
+import FacilitiesMap from '@/pages/FacilitiesMap';
 
-const queryClient = new QueryClient();
+// Contexts
+import { AuthProvider } from '@/contexts/AuthContext';
+import { CalendarPage } from '@/pages/Calendar';
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<PublicLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="pricing" element={<PricingPage />} />
-              <Route path="find-care" element={<FindCarePage />} />
-              <Route path="login" element={<LoginPage />} />
-              <Route path="register" element={<RegisterPage />} />
-            </Route>
+function App() {
+  return (
+    <QueryClient>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-primary-cream">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="find-care" element={<FindCarePage />} />
+                <Route path="pricing" element={<PricingPage />} />
+                <Route path="login" element={<LoginPage />} />
+                <Route path="register" element={<RegisterPage />} />
+              </Route>
 
-            {/* Family Portal Routes */}
-            <Route path="/family" element={
-              <ProtectedRoute allowedUserTypes={['family']}>
-                <DashboardLayout userType="family" />
-              </ProtectedRoute>
-            }>
-              <Route index element={<FamilyDashboard />} />
-              <Route path="messaging" element={<FamilyMessaging />} />
-              <Route path="favorites" element={<SavedFavorites />} />
-            </Route>
+              {/* Protected routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  {/* Family Dashboard */}
+                  <Route path="family" element={<FamilyDashboard />} />
+                  <Route path="family/messaging" element={<FamilyMessaging />} />
+                  <Route path="family/favorites" element={<SavedFavorites />} />
 
-            {/* Healthcare Professional Portal Routes */}
-            <Route path="/healthcare" element={
-              <ProtectedRoute allowedUserTypes={['healthcare']}>
-                <DashboardLayout userType="healthcare" />
-              </ProtectedRoute>
-            }>
-              <Route index element={<HealthcareDashboard />} />
-              <Route path="clients" element={<ClientTracking />} />
-              <Route path="referrals" element={<ReferralManagement />} />
-              <Route path="invoicing" element={<InvoicingTools />} />
-              <Route path="facilities" element={<FacilitiesDirectory />} />
-            </Route>
+                  {/* Agent Dashboard */}
+                  <Route path="agent" element={<AgentDashboard />} />
+                  <Route path="agent/crm" element={<CRM />} />
+                  <Route path="agent/performance" element={<PerformanceDashboard />} />
 
-            {/* Placement Agent Portal Routes */}
-            <Route path="/agent" element={
-              <ProtectedRoute allowedUserTypes={['agent']}>
-                <DashboardLayout userType="agent" />
-              </ProtectedRoute>
-            }>
-              <Route index element={<AgentDashboard />} />
-              <Route path="crm" element={<CRM />} />
-              <Route path="performance" element={<PerformanceDashboard />} />
-            </Route>
+                  {/* Healthcare Professional Dashboard */}
+                  <Route path="healthcare" element={<HealthcareDashboard />} />
+                  <Route path="healthcare/facilities" element={<FacilitiesDirectory />} />
+                  <Route path="healthcare/referrals" element={<ReferralManagement />} />
+                  <Route path="healthcare/invoicing" element={<InvoicingTools />} />
+                  <Route path="healthcare/clients" element={<ClientTracking />} />
 
-            {/* Facility Portal Routes */}
-            <Route path="/facility" element={
-              <ProtectedRoute allowedUserTypes={['facility']}>
-                <DashboardLayout userType="facility" />
-              </ProtectedRoute>
-            }>
-              <Route index element={<FacilityDashboard />} />
-              <Route path="listings" element={<ListingManagement />} />
-              <Route path="analytics" element={<FacilityAnalytics />} />
-              <Route path="specialists" element={<PlacementSpecialists />} />
-              <Route path="webinars" element={<WebinarManagement />} />
-            </Route>
+                  {/* Facility Dashboard */}
+                  <Route path="facility" element={<FacilityDashboard />} />
+                  <Route path="facility/listings" element={<ListingManagement />} />
+                  <Route path="facility/analytics" element={<FacilityAnalytics />} />
+                  <Route path="facility/specialists" element={<PlacementSpecialists />} />
+                  <Route path="facility/webinars" element={<WebinarManagement />} />
 
-            {/* Shared Facility Routes */}
-            <Route path="/facilities" element={
-              <ProtectedRoute allowedUserTypes={['healthcare', 'agent']}>
-                <DashboardLayout userType="shared" />
-              </ProtectedRoute>
-            }>
-              <Route index element={<FacilitiesGallery />} />
-              <Route path="map" element={<FacilitiesMap />} />
-            </Route>
+                  {/* Shared routes */}
+                  <Route path="facilities" element={<FacilitiesGallery />} />
+                  <Route path="facilities/map" element={<FacilitiesMap />} />
+                  <Route path="calendar" element={<CalendarPage />} />
+                </Route>
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <AvaEnhanced />
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+              {/* Catch all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </Router>
+      </AuthProvider>
+    </QueryClient>
+  );
+}
 
 export default App;
