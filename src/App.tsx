@@ -4,8 +4,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 import PublicLayout from "./layouts/PublicLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Public Pages
 import HomePage from "./pages/public/HomePage";
@@ -45,57 +47,75 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<PublicLayout />}>
-            <Route index element={<HomePage />} />
-            <Route path="pricing" element={<PricingPage />} />
-            <Route path="find-care" element={<FindCarePage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="register" element={<RegisterPage />} />
-          </Route>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<PublicLayout />}>
+              <Route index element={<HomePage />} />
+              <Route path="pricing" element={<PricingPage />} />
+              <Route path="find-care" element={<FindCarePage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="register" element={<RegisterPage />} />
+            </Route>
 
-          {/* Family Portal Routes */}
-          <Route path="/family" element={<DashboardLayout userType="family" />}>
-            <Route index element={<FamilyDashboard />} />
-            <Route path="messaging" element={<FamilyMessaging />} />
-            <Route path="favorites" element={<SavedFavorites />} />
-          </Route>
+            {/* Family Portal Routes */}
+            <Route path="/family" element={
+              <ProtectedRoute allowedUserTypes={['family']}>
+                <DashboardLayout userType="family" />
+              </ProtectedRoute>
+            }>
+              <Route index element={<FamilyDashboard />} />
+              <Route path="messaging" element={<FamilyMessaging />} />
+              <Route path="favorites" element={<SavedFavorites />} />
+            </Route>
 
-          {/* Healthcare Professional Portal Routes */}
-          <Route path="/healthcare" element={<DashboardLayout userType="healthcare" />}>
-            <Route index element={<HealthcareDashboard />} />
-            <Route path="clients" element={<ClientTracking />} />
-            <Route path="referrals" element={<ReferralManagement />} />
-            <Route path="invoicing" element={<InvoicingTools />} />
-            <Route path="facilities" element={<FacilitiesDirectory />} />
-          </Route>
+            {/* Healthcare Professional Portal Routes */}
+            <Route path="/healthcare" element={
+              <ProtectedRoute allowedUserTypes={['healthcare']}>
+                <DashboardLayout userType="healthcare" />
+              </ProtectedRoute>
+            }>
+              <Route index element={<HealthcareDashboard />} />
+              <Route path="clients" element={<ClientTracking />} />
+              <Route path="referrals" element={<ReferralManagement />} />
+              <Route path="invoicing" element={<InvoicingTools />} />
+              <Route path="facilities" element={<FacilitiesDirectory />} />
+            </Route>
 
-          {/* Placement Agent Portal Routes */}
-          <Route path="/agent" element={<DashboardLayout userType="agent" />}>
-            <Route index element={<AgentDashboard />} />
-            <Route path="crm" element={<CRM />} />
-            <Route path="performance" element={<PerformanceDashboard />} />
-          </Route>
+            {/* Placement Agent Portal Routes */}
+            <Route path="/agent" element={
+              <ProtectedRoute allowedUserTypes={['agent']}>
+                <DashboardLayout userType="agent" />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AgentDashboard />} />
+              <Route path="crm" element={<CRM />} />
+              <Route path="performance" element={<PerformanceDashboard />} />
+            </Route>
 
-          {/* Facility Portal Routes */}
-          <Route path="/facility" element={<DashboardLayout userType="facility" />}>
-            <Route index element={<FacilityDashboard />} />
-            <Route path="listings" element={<ListingManagement />} />
-            <Route path="analytics" element={<FacilityAnalytics />} />
-            <Route path="specialists" element={<PlacementSpecialists />} />
-            <Route path="webinars" element={<WebinarManagement />} />
-          </Route>
+            {/* Facility Portal Routes */}
+            <Route path="/facility" element={
+              <ProtectedRoute allowedUserTypes={['facility']}>
+                <DashboardLayout userType="facility" />
+              </ProtectedRoute>
+            }>
+              <Route index element={<FacilityDashboard />} />
+              <Route path="listings" element={<ListingManagement />} />
+              <Route path="analytics" element={<FacilityAnalytics />} />
+              <Route path="specialists" element={<PlacementSpecialists />} />
+              <Route path="webinars" element={<WebinarManagement />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Ava />
-      </BrowserRouter>
-    </TooltipProvider>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Ava />
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

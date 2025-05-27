@@ -1,20 +1,41 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
+import { useApi } from '@/hooks/useApi';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('');
+  const navigate = useNavigate();
+  const { signIn } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { execute: handleSignIn, loading } = useApi(signIn, {
+    showSuccessToast: true,
+    successMessage: 'Welcome back!'
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', { email, password, userType });
+    
+    const result = await handleSignIn(email, password);
+    if (result !== null) {
+      // Redirect based on user type
+      const redirectMap: Record<string, string> = {
+        family: '/family',
+        healthcare: '/healthcare',
+        agent: '/agent',
+        facility: '/facility'
+      };
+      
+      navigate(redirectMap[userType] || '/');
+    }
   };
 
   return (
@@ -34,7 +55,7 @@ const LoginPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <Label htmlFor="userType">Portal Type</Label>
-                  <Select value={userType} onValueChange={setUserType}>
+                  <Select value={userType} onValueChange={setUserType} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your portal" />
                     </SelectTrigger>
@@ -92,8 +113,9 @@ const LoginPage = () => {
                   type="submit" 
                   className="w-full bg-primary-red hover:bg-red-600"
                   size="lg"
+                  disabled={loading}
                 >
-                  Sign In
+                  {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
 
@@ -110,10 +132,10 @@ const LoginPage = () => {
                 <div className="text-center">
                   <p className="text-sm text-gray-600 mb-4">Or continue with</p>
                   <div className="grid grid-cols-2 gap-3">
-                    <Button variant="outline" type="button">
+                    <Button variant="outline" type="button" disabled={loading}>
                       Google
                     </Button>
-                    <Button variant="outline" type="button">
+                    <Button variant="outline" type="button" disabled={loading}>
                       Microsoft
                     </Button>
                   </div>

@@ -1,12 +1,14 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/contexts/AuthContext';
+import { useApi } from '@/hooks/useApi';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -21,9 +23,34 @@ const RegisterPage = () => {
     agreeToTerms: false
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
+
+  const { execute: handleSignUp, loading } = useApi(signUp, {
+    showSuccessToast: true,
+    successMessage: 'Account created successfully! Please check your email.'
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Registration attempt:', formData);
+    
+    if (formData.password !== formData.confirmPassword) {
+      return;
+    }
+
+    const userData = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      user_type: formData.userType,
+      organization: formData.organization,
+      phone: formData.phone,
+      subscription_tier: 'essentials' // Default tier
+    };
+
+    const result = await handleSignUp(formData.email, formData.password, userData);
+    if (result !== null) {
+      navigate('/login');
+    }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -94,7 +121,7 @@ const RegisterPage = () => {
 
                 <div>
                   <Label htmlFor="userType">Account Type</Label>
-                  <Select value={formData.userType} onValueChange={(value) => handleInputChange('userType', value)}>
+                  <Select value={formData.userType} onValueChange={(value) => handleInputChange('userType', value)} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your account type" />
                     </SelectTrigger>
@@ -170,9 +197,9 @@ const RegisterPage = () => {
                   type="submit" 
                   className="w-full bg-primary-red hover:bg-red-600"
                   size="lg"
-                  disabled={!formData.agreeToTerms}
+                  disabled={!formData.agreeToTerms || loading || formData.password !== formData.confirmPassword}
                 >
-                  Start Your Free Trial
+                  {loading ? 'Creating Account...' : 'Start Your Free Trial'}
                 </Button>
               </form>
 

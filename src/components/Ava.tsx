@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, X, Send, Mic, MicOff, Phone, Video, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { ApiService } from '@/services/apiService';
+import { useApi } from '@/hooks/useApi';
 
 // Declare Speech Recognition types for TypeScript
 declare global {
@@ -16,7 +19,6 @@ const Ava = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [conversationId, setConversationId] = useState(null);
@@ -29,18 +31,26 @@ const Ava = () => {
     }
   ]);
 
+  const { user, profile } = useAuth();
+
+  const { execute: sendMessage, loading: isLoading } = useApi(
+    ApiService.avaAssistant,
+    { showErrorToast: true }
+  );
+
+  const { execute: synthesizeVoice } = useApi(
+    ApiService.voiceSynthesis,
+    { showErrorToast: false }
+  );
+
   const playAudioResponse = async (text: string) => {
     if (!voiceEnabled || !text) return;
     
     try {
       setIsSpeaking(true);
-      const { data, error } = await supabase.functions.invoke('voice-synthesis', {
-        body: { text }
-      });
+      const data = await synthesizeVoice(text);
 
-      if (error) throw error;
-
-      if (data.audioContent) {
+      if (data?.audioContent) {
         const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], { type: 'audio/mpeg' });
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
@@ -70,33 +80,33 @@ const Ava = () => {
     
     setMessages(prev => [...prev, userMessage]);
     setMessage('');
-    setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('ava-assistant', {
-        body: {
-          action: 'chat',
-          assistant_type: 'end_user',
-          message: userMessage.text,
-          conversation_id: conversationId
-        }
+      const assistantType = profile?.user_type === 'healthcare' ? 'healthcare_professional' :
+                           profile?.user_type === 'agent' ? 'placement_agent' :
+                           profile?.user_type === 'facility' ? 'facility_administrator' :
+                           'end_user';
+
+      const data = await sendMessage('chat', {
+        assistant_type: assistantType,
+        message: userMessage.text,
+        conversation_id: conversationId
       });
 
-      if (error) throw error;
+      if (data) {
+        const avaResponse = {
+          id: messages.length + 2,
+          text: data.response,
+          sender: 'ava',
+          timestamp: new Date().toLocaleTimeString()
+        };
 
-      const avaResponse = {
-        id: messages.length + 2,
-        text: data.response,
-        sender: 'ava',
-        timestamp: new Date().toLocaleTimeString()
-      };
+        setMessages(prev => [...prev, avaResponse]);
+        setConversationId(data.conversation_id);
 
-      setMessages(prev => [...prev, avaResponse]);
-      setConversationId(data.conversation_id);
-
-      // Play voice response
-      await playAudioResponse(data.response);
-
+        // Play voice response
+        await playAudioResponse(data.response);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       const errorResponse = {
@@ -106,8 +116,6 @@ const Ava = () => {
         timestamp: new Date().toLocaleTimeString()
       };
       setMessages(prev => [...prev, errorResponse]);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -188,7 +196,7 @@ const Ava = () => {
               <div>
                 <h3 className="font-semibold">AVA Assistant</h3>
                 <p className="text-xs opacity-75">
-                  {isSpeaking ? 'Speaking...' : 'AI Care Specialist'}
+                  {isSpeaking ? 'Speaking...' : user ? `${profile?.user_type || 'Care'} Specialist` : 'AI Care Specialist'}
                 </p>
               </div>
             </div>

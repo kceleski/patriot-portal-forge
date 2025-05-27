@@ -3,12 +3,40 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useApi } from '@/hooks/useApi';
+import { ApiService } from '@/services/apiService';
+import { toast } from '@/hooks/use-toast';
 
 const PricingPage = () => {
+  const { user, profile } = useAuth();
+
+  const { execute: createSubscription, loading: subscriptionLoading } = useApi(
+    ApiService.createSubscription,
+    { showErrorToast: true }
+  );
+
+  const handleSubscribe = async (planId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to subscribe to a plan.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const result = await createSubscription(planId);
+    if (result?.checkout_url) {
+      window.open(result.checkout_url, '_blank');
+    }
+  };
+
   const pricingData = {
     'Families/Clients': {
       tiers: [
         {
+          id: 'family_essentials',
           name: 'Essentials',
           price: '$29',
           period: '/month',
@@ -21,6 +49,7 @@ const PricingPage = () => {
           ]
         },
         {
+          id: 'family_premium',
           name: 'Elevate',
           price: '$49',
           period: '/month',
@@ -31,10 +60,13 @@ const PricingPage = () => {
             'Priority support',
             'Placement agent access',
             'Document storage',
-            'Progress reports'
+            'Progress reports',
+            'Advanced AI prompts',
+            'Downloadable reports'
           ]
         },
         {
+          id: 'family_pinnacle',
           name: 'Pinnacle',
           price: '$79',
           period: '/month',
@@ -44,7 +76,8 @@ const PricingPage = () => {
             '24/7 phone support',
             'Custom care plans',
             'Family portal access',
-            'Premium analytics'
+            'Premium analytics',
+            'Personalized care-matching consultation'
           ]
         }
       ]
@@ -52,20 +85,23 @@ const PricingPage = () => {
     'Healthcare Professionals': {
       tiers: [
         {
+          id: 'pro_essentials',
           name: 'Essentials',
-          price: '$299',
+          price: '$99',
           period: '/month',
           features: [
             'Client management',
             'Basic referral tracking',
             'Facility directory access',
             'Standard reporting',
-            'Email support'
+            'Email support',
+            'Personalized landing page'
           ]
         },
         {
+          id: 'pro_elevate',
           name: 'Elevate',
-          price: '$499',
+          price: '$199',
           period: '/month',
           popular: true,
           features: [
@@ -74,10 +110,13 @@ const PricingPage = () => {
             'Automated referral management',
             'Invoicing tools',
             'Priority support',
-            'Custom dashboards'
+            'Custom dashboards',
+            'Virtual tours',
+            'Marketing support'
           ]
         },
         {
+          id: 'pro_pinnacle',
           name: 'Pinnacle',
           price: '$799',
           period: '/month',
@@ -87,7 +126,10 @@ const PricingPage = () => {
             'Advanced analytics',
             'API access',
             'Dedicated account manager',
-            'White-label options'
+            'White-label options',
+            'AI-Driven Chat (HPA AVA)',
+            'Full website integration',
+            'Webinar hosting'
           ]
         }
       ]
@@ -95,6 +137,7 @@ const PricingPage = () => {
     'Placement Agents': {
       tiers: [
         {
+          id: 'agent_essentials',
           name: 'Essentials',
           price: '$99',
           period: '/month',
@@ -107,20 +150,24 @@ const PricingPage = () => {
           ]
         },
         {
+          id: 'agent_elevate',
           name: 'Elevate',
           price: '$179',
           period: '/month',
           popular: true,
           features: [
             'Everything in Essentials',
-            'Advanced CRM features',
+            'Full CRM features',
             'Automated workflows',
             'Performance dashboard',
             'Commission tracking',
-            'Integration tools'
+            'Integration tools',
+            'Invoicing',
+            'Task management'
           ]
         },
         {
+          id: 'agent_pinnacle',
           name: 'Pinnacle',
           price: '$250',
           period: '/month',
@@ -156,7 +203,7 @@ const PricingPage = () => {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {data.tiers.map((tier, index) => (
+              {data.tiers.map((tier) => (
                 <Card 
                   key={tier.name} 
                   className={`relative ${
@@ -207,8 +254,10 @@ const PricingPage = () => {
                           : 'bg-primary-navy hover:bg-blue-900'
                       }`}
                       size="lg"
+                      onClick={() => handleSubscribe(tier.id)}
+                      disabled={subscriptionLoading}
                     >
-                      Start Free Trial
+                      {subscriptionLoading ? 'Processing...' : 'Start Free Trial'}
                     </Button>
                   </CardContent>
                 </Card>
