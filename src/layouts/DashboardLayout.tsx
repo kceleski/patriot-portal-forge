@@ -1,121 +1,132 @@
 
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, MessageSquare, User, Users, Calendar, Settings, BarChart, FileText, Building, Briefcase } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Home, 
+  Users, 
+  MessageSquare, 
+  Heart, 
+  Activity, 
+  RefreshCw, 
+  DollarSign, 
+  Building, 
+  BarChart3, 
+  UserPlus, 
+  Calendar,
+  Map,
+  Grid2X2,
+  LogOut
+} from 'lucide-react';
 
 interface DashboardLayoutProps {
-  userType: 'family' | 'healthcare' | 'agent' | 'facility';
+  userType: 'family' | 'healthcare' | 'agent' | 'facility' | 'shared';
 }
 
 const DashboardLayout = ({ userType }: DashboardLayoutProps) => {
+  const { signOut, profile } = useAuth();
   const location = useLocation();
 
   const getNavigationItems = () => {
-    const baseItems = [
-      { path: `/${userType}`, label: 'Dashboard', icon: Home }
-    ];
-
     switch (userType) {
       case 'family':
         return [
-          ...baseItems,
-          { path: `/${userType}/messaging`, label: 'Messages', icon: MessageSquare },
-          { path: `/${userType}/favorites`, label: 'Saved Favorites', icon: User }
+          { name: 'Dashboard', href: '/family', icon: Home },
+          { name: 'Messaging', href: '/family/messaging', icon: MessageSquare },
+          { name: 'Saved Favorites', href: '/family/favorites', icon: Heart },
         ];
       case 'healthcare':
         return [
-          ...baseItems,
-          { path: `/${userType}/clients`, label: 'Client Tracking', icon: Users },
-          { path: `/${userType}/referrals`, label: 'Referral Management', icon: User },
-          { path: `/${userType}/invoicing`, label: 'Invoicing Tools', icon: FileText },
-          { path: `/${userType}/facilities`, label: 'Facilities Directory', icon: Building }
+          { name: 'Dashboard', href: '/healthcare', icon: Home },
+          { name: 'Client Tracking', href: '/healthcare/clients', icon: Users },
+          { name: 'Referral Management', href: '/healthcare/referrals', icon: RefreshCw },
+          { name: 'Invoicing Tools', href: '/healthcare/invoicing', icon: DollarSign },
+          { name: 'Facilities Directory', href: '/healthcare/facilities', icon: Building },
+          { name: 'Facilities Gallery', href: '/facilities', icon: Grid2X2 },
+          { name: 'Facilities Map', href: '/facilities/map', icon: Map },
         ];
       case 'agent':
         return [
-          ...baseItems,
-          { path: `/${userType}/crm`, label: 'CRM', icon: Users },
-          { path: `/${userType}/performance`, label: 'Performance Dashboard', icon: BarChart }
+          { name: 'Dashboard', href: '/agent', icon: Home },
+          { name: 'CRM', href: '/agent/crm', icon: Users },
+          { name: 'Performance Dashboard', href: '/agent/performance', icon: BarChart3 },
+          { name: 'Facilities Gallery', href: '/facilities', icon: Grid2X2 },
+          { name: 'Facilities Map', href: '/facilities/map', icon: Map },
         ];
       case 'facility':
         return [
-          ...baseItems,
-          { path: `/${userType}/listings`, label: 'Listing Management', icon: Building },
-          { path: `/${userType}/analytics`, label: 'Analytics Dashboard', icon: BarChart },
-          { path: `/${userType}/specialists`, label: 'Placement Specialists', icon: Users },
-          { path: `/${userType}/webinars`, label: 'Webinar Management', icon: Calendar }
+          { name: 'Dashboard', href: '/facility', icon: Home },
+          { name: 'Listing Management', href: '/facility/listings', icon: Building },
+          { name: 'Analytics', href: '/facility/analytics', icon: BarChart3 },
+          { name: 'Placement Specialists', href: '/facility/specialists', icon: UserPlus },
+          { name: 'Webinar Management', href: '/facility/webinars', icon: Calendar },
+        ];
+      case 'shared':
+        return [
+          { name: 'Facilities Gallery', href: '/facilities', icon: Grid2X2 },
+          { name: 'Facilities Map', href: '/facilities/map', icon: Map },
         ];
       default:
-        return baseItems;
+        return [];
     }
   };
 
   const navigationItems = getNavigationItems();
 
-  const getUserTypeLabel = () => {
-    switch (userType) {
-      case 'family':
-        return 'Family Portal';
-      case 'healthcare':
-        return 'Healthcare Professional Portal';
-      case 'agent':
-        return 'Placement Agent Portal';
-      case 'facility':
-        return 'Facility Portal';
-      default:
-        return 'Portal';
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-secondary-off-white flex w-full">
+    <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-primary-navy text-white">
-        <div className="p-6">
-          <Link to="/" className="text-2xl font-bold block mb-8">
-            CareConnect
-          </Link>
-          <h2 className="text-sm text-gray-300 mb-6">{getUserTypeLabel()}</h2>
-          
-          <nav className="space-y-2">
-            {navigationItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              const Icon = item.icon;
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-primary-sky text-white'
-                      : 'text-gray-300 hover:bg-primary-sky/20 hover:text-white'
-                  }`}
-                >
-                  <Icon size={20} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+      <div className="w-64 bg-primary-navy text-white p-6">
+        <div className="mb-8">
+          <h1 className="text-xl font-bold">Health Portal Assistant</h1>
+          <p className="text-sm text-blue-200 mt-1">
+            {profile?.user_type?.charAt(0).toUpperCase() + profile?.user_type?.slice(1)} Portal
+          </p>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="border-t border-gray-600 pt-6">
-            <Link to="/login">
-              <Button variant="outline" className="w-full border-white text-white hover:bg-white hover:text-primary-navy">
-                Logout
-              </Button>
-            </Link>
+        <nav className="space-y-2">
+          {navigationItems.map((item) => {
+            const isActive = location.pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? 'bg-primary-sky text-white'
+                    : 'text-blue-100 hover:bg-blue-800'
+                }`}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="mt-auto pt-8">
+          <div className="border-t border-blue-700 pt-4">
+            <div className="mb-4">
+              <p className="text-sm text-blue-200">Logged in as:</p>
+              <p className="font-medium">{profile?.first_name} {profile?.last_name}</p>
+              <p className="text-xs text-blue-300">{profile?.subscription_tier}</p>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={signOut}
+              className="w-full justify-start text-blue-100 hover:bg-blue-800"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
         </div>
-      </aside>
+      </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          <Outlet />
-        </div>
-      </main>
+      <div className="flex-1 p-8">
+        <Outlet />
+      </div>
     </div>
   );
 };

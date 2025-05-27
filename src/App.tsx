@@ -40,8 +40,12 @@ import FacilityAnalytics from "./pages/facility/FacilityAnalytics";
 import PlacementSpecialists from "./pages/facility/PlacementSpecialists";
 import WebinarManagement from "./pages/facility/WebinarManagement";
 
+// New Facility Pages
+import FacilitiesGallery from "./pages/FacilitiesGallery";
+import FacilitiesMap from "./pages/FacilitiesMap";
+
 import NotFound from "./pages/NotFound";
-import Ava from "./components/Ava";
+import AvaEnhanced from "./components/AvaEnhanced";
 
 const queryClient = new QueryClient();
 
@@ -110,9 +114,19 @@ const App = () => (
               <Route path="webinars" element={<WebinarManagement />} />
             </Route>
 
+            {/* Shared Facility Routes */}
+            <Route path="/facilities" element={
+              <ProtectedRoute allowedUserTypes={['healthcare', 'agent']}>
+                <DashboardLayout userType="shared" />
+              </ProtectedRoute>
+            }>
+              <Route index element={<FacilitiesGallery />} />
+              <Route path="map" element={<FacilitiesMap />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <Ava />
+          <AvaEnhanced />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

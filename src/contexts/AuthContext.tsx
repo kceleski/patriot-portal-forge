@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,7 +85,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      
+      // Map the database fields to UserProfile interface
+      const userProfile: UserProfile = {
+        id: data.id,
+        email: data.email,
+        user_type: data.role as 'family' | 'healthcare' | 'agent' | 'facility',
+        subscription_tier: data.tier as 'essentials' | 'elevate' | 'pinnacle',
+        first_name: data.first_name,
+        last_name: data.last_name,
+        organization: data.phone // Using phone field as organization for now
+      };
+      
+      setProfile(userProfile);
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -192,12 +203,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Feature access matrix
     const featureAccess: Record<string, Record<string, string[]>> = {
       healthcare: {
-        pinnacle: ['ai_chat', 'website_integration', 'webinar_hosting', 'virtual_tours', 'marketing_support', 'landing_page'],
-        elevate: ['virtual_tours', 'marketing_support', 'landing_page'],
+        pinnacle: ['ai_chat', 'website_integration', 'webinar_hosting', 'virtual_tours', 'marketing_support', 'landing_page', 'advanced_filters'],
+        elevate: ['virtual_tours', 'marketing_support', 'landing_page', 'advanced_filters'],
         essentials: ['landing_page']
       },
       agent: {
-        elevate: ['full_crm', 'invoicing', 'task_management', 'basic_crm'],
+        elevate: ['full_crm', 'invoicing', 'task_management', 'basic_crm', 'advanced_filters'],
         essentials: ['basic_crm']
       },
       family: {
@@ -206,8 +217,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         essentials: ['basic_search']
       },
       facility: {
-        pinnacle: ['all_features'],
-        elevate: ['most_features'],
+        pinnacle: ['all_features', 'advanced_filters'],
+        elevate: ['most_features', 'advanced_filters'],
         essentials: ['basic_features']
       }
     };
