@@ -1,5 +1,7 @@
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -65,44 +67,106 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", sans-serif;
+    font-family: "Open Sans", sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    color: #2A2D34;
   }
   
+  /* HealthProAssist Typography System */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold text-text-dark-gray leading-tight;
+    font-family: "Montserrat", sans-serif;
+    @apply font-bold text-dark-gray leading-tight;
   }
   
   h1 {
-    @apply text-4xl lg:text-5xl font-bold;
+    @apply text-h1;
   }
   
   h2 {
-    @apply text-3xl lg:text-4xl font-bold;
+    @apply text-h2;
   }
   
   h3 {
-    @apply text-2xl lg:text-3xl font-semibold;
+    @apply text-h3;
+  }
+  
+  h4 {
+    @apply text-h4;
+  }
+  
+  h5 {
+    @apply text-h5;
+  }
+  
+  h6 {
+    @apply text-h6;
   }
   
   p {
-    @apply text-gray-600 leading-relaxed;
+    @apply text-body text-dark-gray leading-relaxed;
+  }
+  
+  .body-large {
+    @apply text-body-large;
+  }
+  
+  .body-small {
+    @apply text-body-small;
+  }
+  
+  .caption {
+    @apply text-caption;
+  }
+  
+  .mono {
+    font-family: "Roboto Mono", monospace;
   }
 }
 
 @layer components {
+  /* HealthProAssist Component Styles */
+  
+  /* Cards */
+  .healthpro-card {
+    @apply bg-white rounded-xl shadow-card p-lg transition-all duration-200;
+  }
+  
+  .healthpro-card:hover {
+    @apply shadow-card-hover;
+  }
+  
+  .healthpro-feature-card {
+    @apply bg-off-white rounded-xl shadow-card p-lg border-t-4 border-patriot-red transition-all duration-200;
+  }
+  
+  .healthpro-feature-card:hover {
+    @apply shadow-card-hover;
+  }
+  
+  /* Buttons */
+  .healthpro-btn-primary {
+    @apply bg-patriot-red text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:bg-red-600 disabled:opacity-50;
+  }
+  
+  .healthpro-btn-secondary {
+    @apply bg-sky-blue text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:bg-blue-600 disabled:opacity-50;
+  }
+  
+  .healthpro-btn-tertiary {
+    @apply bg-transparent text-navy-blue border-2 border-navy-blue font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:bg-light-blue hover:bg-opacity-10 disabled:opacity-50;
+  }
+  
+  /* Interactive Elements */
   .card-interactive {
-    @apply transition-all duration-300 hover:shadow-xl hover:scale-[1.02] cursor-pointer;
+    @apply transition-all duration-300 hover:shadow-card-hover hover:scale-[1.02] cursor-pointer;
   }
   
-  .card-elevated {
-    @apply shadow-lg;
-  }
-  
+  /* Backgrounds */
   .gradient-hero {
     background: linear-gradient(135deg, #1D3557 0%, #457B9D 100%);
   }
@@ -113,28 +177,71 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  
+  /* Navigation */
+  .nav-active {
+    @apply bg-sky-blue text-white;
+  }
+  
+  .nav-hover {
+    @apply hover:bg-blue-800 hover:bg-opacity-20;
+  }
+  
+  /* Alerts */
+  .alert-success {
+    @apply bg-success-green bg-opacity-10 border border-success-green rounded-lg p-md text-dark-gray;
+  }
+  
+  .alert-warning {
+    @apply bg-warning-orange bg-opacity-10 border border-warning-orange rounded-lg p-md text-dark-gray;
+  }
+  
+  .alert-error {
+    @apply bg-patriot-red bg-opacity-10 border border-patriot-red rounded-lg p-md text-dark-gray;
+  }
+  
+  .alert-info {
+    @apply bg-sky-blue bg-opacity-10 border border-sky-blue rounded-lg p-md text-dark-gray;
+  }
+  
+  /* Ava Assistant Styles */
+  .ava-chat-bubble {
+    @apply bg-sky-blue text-white rounded-2xl rounded-br-none p-md max-w-[80%];
+  }
+  
+  .user-chat-bubble {
+    @apply bg-light-blue text-dark-gray rounded-2xl rounded-bl-none p-md max-w-[80%];
+  }
+  
+  .ava-floating-button {
+    @apply bg-sky-blue text-white rounded-full w-14 h-14 shadow-ava-button fixed bottom-4 right-4 hover:scale-105 transition-transform duration-200;
+  }
+  
+  .ava-modal {
+    @apply bg-white rounded-2xl shadow-ava-modal max-w-sm md:max-w-md max-h-[80vh];
+  }
 }
 
-/* React Big Calendar Enhanced Styles */
+/* React Big Calendar Enhanced Styles with HealthProAssist Theme */
 .rbc-calendar {
   background: white;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  font-family: "Inter", sans-serif;
+  border: 1px solid #E5E5E5;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: "Open Sans", sans-serif;
 }
 
 .rbc-header {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #F1FAEE 0%, #A8DADC 100%);
   color: #1D3557;
   font-weight: 600;
   padding: 12px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #E5E5E5;
   font-size: 14px;
 }
 
 .rbc-month-view {
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E5E5E5;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -159,24 +266,25 @@
 }
 
 .rbc-today {
-  background-color: #fef3c7;
+  background-color: #FFD700;
+  background-color: rgba(255, 215, 0, 0.2);
   font-weight: 600;
 }
 
 .rbc-off-range-bg {
-  background-color: #f8fafc;
+  background-color: #F1FAEE;
 }
 
 .rbc-toolbar {
   padding: 20px 0;
   margin-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #E5E5E5;
 }
 
 .rbc-toolbar button {
   background: white;
-  border: 1px solid #d1d5db;
-  color: #374151;
+  border: 1px solid #E5E5E5;
+  color: #2A2D34;
   padding: 10px 18px;
   margin: 0 3px;
   border-radius: 8px;
@@ -187,8 +295,8 @@
 }
 
 .rbc-toolbar button:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #F1FAEE;
+  border-color: #A8DADC;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -201,34 +309,34 @@
 }
 
 .rbc-time-view .rbc-time-gutter {
-  background: #f8fafc;
-  border-right: 1px solid #e2e8f0;
+  background: #F1FAEE;
+  border-right: 1px solid #E5E5E5;
   font-size: 12px;
-  color: #6b7280;
+  color: #2A2D34;
 }
 
 .rbc-time-view .rbc-time-content {
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E5E5E5;
   border-top: none;
 }
 
 .rbc-time-slot {
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid #F1FAEE;
 }
 
 .rbc-timeslot-group {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #E5E5E5;
 }
 
-/* Custom event colors */
+/* Custom event colors using HealthProAssist palette */
 .rbc-event.tour-event {
-  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  background: linear-gradient(135deg, #457B9D 0%, #1D3557 100%);
 }
 
 .rbc-event.consultation-event {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: linear-gradient(135deg, #E63946 0%, #C5303A 100%);
 }
 
 .rbc-event.followup-event {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
 }
