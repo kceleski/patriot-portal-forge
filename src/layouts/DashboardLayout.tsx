@@ -74,58 +74,71 @@ const DashboardLayout = ({ userType }: DashboardLayoutProps) => {
   const navigationItems = getNavigationItems();
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-primary-navy text-white p-6">
-        <div className="mb-8">
-          <h1 className="text-xl font-bold">Health Portal Assistant</h1>
-          <p className="text-sm text-blue-200 mt-1">
-            {profile?.user_type?.charAt(0).toUpperCase() + profile?.user_type?.slice(1)} Portal
-          </p>
-        </div>
-
-        <nav className="space-y-2">
-          {navigationItems.map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-primary-sky text-white'
-                    : 'text-blue-100 hover:bg-blue-800'
-                }`}
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto pt-8">
-          <div className="border-t border-blue-700 pt-4">
-            <div className="mb-4">
-              <p className="text-sm text-blue-200">Logged in as:</p>
-              <p className="font-medium">{profile?.first_name} {profile?.last_name}</p>
-              <p className="text-xs text-blue-300">{profile?.subscription_tier}</p>
+    <div className="min-h-screen bg-secondary-off-white flex">
+      {/* Enhanced Sidebar */}
+      <div className="w-72 bg-primary-navy text-white shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-navy via-primary-navy to-primary-sky opacity-90"></div>
+        
+        <div className="relative z-10 p-8">
+          <div className="mb-12">
+            <h1 className="text-2xl font-bold text-accent-gold mb-2">HealthPro Assistant</h1>
+            <div className="bg-primary-sky/20 rounded-lg p-4 border border-primary-sky/30">
+              <p className="text-sm text-blue-200 mb-1">Portal Access</p>
+              <p className="font-semibold text-lg text-white">
+                {profile?.user_type?.charAt(0).toUpperCase() + profile?.user_type?.slice(1)} Portal
+              </p>
             </div>
-            <Button
-              variant="ghost"
-              onClick={signOut}
-              className="w-full justify-start text-blue-100 hover:bg-blue-800"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
+          </div>
+
+          <nav className="space-y-3">
+            {navigationItems.map((item) => {
+              const isActive = location.pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`flex items-center space-x-4 px-4 py-3 rounded-xl transition-all duration-300 group ${
+                    isActive
+                      ? 'bg-primary-sky text-white shadow-lg scale-105'
+                      : 'text-blue-100 hover:bg-primary-sky/30 hover:text-white hover:scale-105'
+                  }`}
+                >
+                  <item.icon className={`h-5 w-5 transition-transform duration-300 ${isActive ? 'text-white' : 'group-hover:scale-110'}`} />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="mt-auto pt-12">
+            <div className="border-t border-blue-700/50 pt-8">
+              <div className="bg-primary-sky/10 rounded-xl p-4 mb-6 border border-primary-sky/20">
+                <p className="text-sm text-blue-200 mb-1">Logged in as:</p>
+                <p className="font-semibold text-white text-lg">{profile?.first_name} {profile?.last_name}</p>
+                <div className="mt-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-accent-gold text-primary-navy">
+                    {profile?.subscription_tier}
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={signOut}
+                className="w-full justify-start text-blue-100 hover:bg-red-600/20 hover:text-red-200 transition-all duration-300 p-4 rounded-xl"
+              >
+                <LogOut className="h-4 w-4 mr-3" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 p-8">
-        <Outlet />
+      {/* Enhanced Main Content */}
+      <div className="flex-1 p-8 bg-gradient-to-br from-secondary-off-white to-white">
+        <div className="max-w-7xl mx-auto">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
