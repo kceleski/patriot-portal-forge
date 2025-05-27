@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -156,6 +155,12 @@ const FacilitiesGallery = () => {
     }
   };
 
+  const handlePriceRangeChange = (value: number[]) => {
+    if (value.length === 2) {
+      setPriceRange([value[0], value[1]]);
+    }
+  };
+
   const clearFilters = () => {
     setSelectedCareTypes([]);
     setSelectedAmenities([]);
@@ -240,7 +245,7 @@ const FacilitiesGallery = () => {
                   <div className="space-y-2">
                     <Slider
                       value={priceRange}
-                      onValueChange={setPriceRange}
+                      onValueChange={handlePriceRangeChange}
                       max={10000}
                       step={100}
                       className="w-full"

@@ -217,6 +217,12 @@ const FacilitiesMap = () => {
     }
   };
 
+  const handlePriceRangeChange = (value: number[]) => {
+    if (value.length === 2) {
+      setPriceRange([value[0], value[1]]);
+    }
+  };
+
   const clearFilters = () => {
     setSelectedCareTypes([]);
     setPriceRange([0, 10000]);
@@ -302,7 +308,7 @@ const FacilitiesMap = () => {
                   <div className="space-y-2">
                     <Slider
                       value={priceRange}
-                      onValueChange={setPriceRange}
+                      onValueChange={handlePriceRangeChange}
                       max={10000}
                       step={100}
                       className="w-full"
