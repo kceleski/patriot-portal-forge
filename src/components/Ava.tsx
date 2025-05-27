@@ -1,7 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, X, Send, Mic, MicOff, Phone, Video } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+
+// Declare Speech Recognition types for TypeScript
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
 
 const Ava = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -77,9 +86,10 @@ const Ava = () => {
 
   const toggleVoice = async () => {
     if (!isListening) {
-      // Start voice recognition
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      // Check if speech recognition is available
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         
         recognition.continuous = false;
@@ -90,7 +100,7 @@ const Ava = () => {
           setIsListening(true);
         };
 
-        recognition.onresult = (event) => {
+        recognition.onresult = (event: any) => {
           const transcript = event.results[0][0].transcript;
           setMessage(transcript);
           setIsListening(false);
@@ -105,6 +115,8 @@ const Ava = () => {
         };
 
         recognition.start();
+      } else {
+        console.warn('Speech recognition not supported in this browser');
       }
     } else {
       setIsListening(false);
