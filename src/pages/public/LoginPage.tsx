@@ -10,11 +10,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useApi } from '@/hooks/useApi';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('disabled');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('');
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn } = useAuth(disabled);
 
   const { execute: handleSignIn, loading } = useApi(signIn, {
     showSuccessToast: true,
