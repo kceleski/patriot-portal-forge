@@ -1,5 +1,3 @@
-// src/contexts/AccessibilityContext.tsx
-
 import React, { createContext, useContext, useState, useMemo } from 'react';
 
 interface AccessibilitySettings {
