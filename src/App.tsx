@@ -11,12 +11,13 @@ import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
 import PublicLayout from '@/layouts/PublicLayout';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import HomePage from '@/pages/HomePage';
+import HomePage from '@/pages/public/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
-import PricingPage from '@/pages/PricingPage';
-import LoginPage from '@/pages/LoginPage';
-import RegisterPage from '@/pages/RegisterPage';
+import PricingPage from '@/pages/public/PricingPage';
+import LoginPage from '@/pages/public/LoginPage';
+import RegisterPage from '@/pages/public/RegisterPage';
 import NotFound from '@/pages/NotFound';
+import FacilityDetail from '@/pages/FacilityDetail';
 import FamilyDashboard from '@/pages/family/FamilyDashboard';
 import FamilyMessaging from '@/pages/family/FamilyMessaging';
 import SavedFavorites from '@/pages/family/SavedFavorites';
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/" element={<PublicLayout />}>
                   <Route index element={<HomePage />} />
                   <Route path="find-care" element={<FindCarePage />} />
+                  <Route path="facility/:id" element={<FacilityDetail />} />
                   <Route path="pricing" element={<PricingPage />} />
                   <Route path="login" element={<LoginPage />} />
                   <Route path="register" element={<RegisterPage />} />
