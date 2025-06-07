@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import { useApi } from '@/hooks/useApi';
 import { Save, Send, FileText, User, Heart, Pill } from 'lucide-react';
 
 export const ClientIntakeForm: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     // Patient Information
     patient_name: '',
     facility_name: '',
@@ -64,7 +63,9 @@ export const ClientIntakeForm: React.FC = () => {
     // Signatures
     patient_signature_date: '',
     physician_signature_date: ''
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const { execute: submitForm, loading } = useApi(ApiService.submitIntakeForm, {
     showSuccessToast: true,
@@ -92,43 +93,7 @@ export const ClientIntakeForm: React.FC = () => {
     try {
       await submitForm(formData);
       // Reset form after successful submission
-      setFormData({
-        patient_name: '',
-        facility_name: '',
-        reason_for_visit: '',
-        primary_diagnosis: '',
-        secondary_diagnosis: '',
-        allergies: '',
-        level_of_care: '',
-        code_status: '',
-        medications: [],
-        medication_assistance_level: '',
-        functional_ability: {
-          mobility: '',
-          self_care: '',
-          communication: '',
-          cognitive_function: ''
-        },
-        cognitive_status: {
-          orientation: '',
-          memory: '',
-          decision_making: ''
-        },
-        vitals: {
-          blood_pressure: '',
-          heart_rate: '',
-          temperature: '',
-          weight: ''
-        },
-        dietary_restrictions: '',
-        can_be_met_by_facility: false,
-        dnr_directive_active: false,
-        allow_flu_vaccine: false,
-        allow_covid_vaccine: false,
-        allow_tuberculin_test: false,
-        patient_signature_date: '',
-        physician_signature_date: ''
-      });
+      setFormData(initialFormData);
     } catch (error) {
       console.error('Error submitting form:', error);
     }

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +11,7 @@ interface UserProfile {
   first_name?: string;
   last_name?: string;
   organization?: string;
+  phone?: string;
 }
 
 interface AuthContextType {
@@ -96,7 +96,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subscription_tier: data.tier as 'essentials' | 'elevate' | 'pinnacle',
         first_name: data.first_name,
         last_name: data.last_name,
-        organization: data.phone // Using phone field as organization for now
+        organization: data.phone, // Using phone field as organization for now
+        phone: data.phone
       };
       
       setProfile(userProfile);
