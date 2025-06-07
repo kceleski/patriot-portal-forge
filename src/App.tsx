@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -70,7 +69,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-primary-cream">
+          <div className="min-h-screen bg-background-main">
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<PublicLayout />}>
@@ -83,7 +82,7 @@ function App() {
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<DashboardLayout userType="shared" />}>
+                <Route path="/dashboard" element={<DashboardLayout />}>
                   {/* Family Dashboard */}
                   <Route path="family" element={<FamilyDashboard />} />
                   <Route path="family/messaging" element={<FamilyMessaging />} />

@@ -298,6 +298,102 @@ export type Database = {
         }
         Relationships: []
       }
+      "Combined Data": {
+        Row: {
+          accepted_payers: string | null
+          address: string | null
+          capacity: string | null
+          care_services: string | null
+          city: string | null
+          diagnoses_supported: string | null
+          email: string | null
+          "Funding Type": string | null
+          image_url: string | null
+          lat: string | null
+          license: string | null
+          lng: string | null
+          ltc: string | null
+          max_range: string | null
+          min_range: string | null
+          name: string | null
+          "Overall Star Rating": string | null
+          phone: string | null
+          "Quality Rating": string | null
+          specials: string | null
+          "Staffing Rating": string | null
+          state: string | null
+          street: string | null
+          "Survey Rating": string | null
+          tags: string | null
+          type: string | null
+          uuid: string
+          website: string | null
+          zip: number | null
+        }
+        Insert: {
+          accepted_payers?: string | null
+          address?: string | null
+          capacity?: string | null
+          care_services?: string | null
+          city?: string | null
+          diagnoses_supported?: string | null
+          email?: string | null
+          "Funding Type"?: string | null
+          image_url?: string | null
+          lat?: string | null
+          license?: string | null
+          lng?: string | null
+          ltc?: string | null
+          max_range?: string | null
+          min_range?: string | null
+          name?: string | null
+          "Overall Star Rating"?: string | null
+          phone?: string | null
+          "Quality Rating"?: string | null
+          specials?: string | null
+          "Staffing Rating"?: string | null
+          state?: string | null
+          street?: string | null
+          "Survey Rating"?: string | null
+          tags?: string | null
+          type?: string | null
+          uuid: string
+          website?: string | null
+          zip?: number | null
+        }
+        Update: {
+          accepted_payers?: string | null
+          address?: string | null
+          capacity?: string | null
+          care_services?: string | null
+          city?: string | null
+          diagnoses_supported?: string | null
+          email?: string | null
+          "Funding Type"?: string | null
+          image_url?: string | null
+          lat?: string | null
+          license?: string | null
+          lng?: string | null
+          ltc?: string | null
+          max_range?: string | null
+          min_range?: string | null
+          name?: string | null
+          "Overall Star Rating"?: string | null
+          phone?: string | null
+          "Quality Rating"?: string | null
+          specials?: string | null
+          "Staffing Rating"?: string | null
+          state?: string | null
+          street?: string | null
+          "Survey Rating"?: string | null
+          tags?: string | null
+          type?: string | null
+          uuid?: string
+          website?: string | null
+          zip?: number | null
+        }
+        Relationships: []
+      }
       commissions: {
         Row: {
           commission_amount: number | null
@@ -555,6 +651,54 @@ export type Database = {
         }
         Relationships: []
       }
+      enriched_facility_data: {
+        Row: {
+          Accommodations: string | null
+          Address: string | null
+          Amenities: string | null
+          "Care Type": string | null
+          City: string | null
+          "Image URL": string | null
+          MapView: string | null
+          "Medical Services": string | null
+          Phone: string | null
+          "Provider Name": string | null
+          State: string | null
+          Website: string | null
+          Zip: number | null
+        }
+        Insert: {
+          Accommodations?: string | null
+          Address?: string | null
+          Amenities?: string | null
+          "Care Type"?: string | null
+          City?: string | null
+          "Image URL"?: string | null
+          MapView?: string | null
+          "Medical Services"?: string | null
+          Phone?: string | null
+          "Provider Name"?: string | null
+          State?: string | null
+          Website?: string | null
+          Zip?: number | null
+        }
+        Update: {
+          Accommodations?: string | null
+          Address?: string | null
+          Amenities?: string | null
+          "Care Type"?: string | null
+          City?: string | null
+          "Image URL"?: string | null
+          MapView?: string | null
+          "Medical Services"?: string | null
+          Phone?: string | null
+          "Provider Name"?: string | null
+          State?: string | null
+          Website?: string | null
+          Zip?: number | null
+        }
+        Relationships: []
+      }
       facility: {
         Row: {
           accepts_medicaid: boolean | null
@@ -567,6 +711,7 @@ export type Database = {
           city: string | null
           created_at: string | null
           current_availability: number | null
+          data_source: string | null
           description: string | null
           email: string | null
           facility_type: string | null
@@ -579,11 +724,12 @@ export type Database = {
           longitude: number | null
           name: string
           phone: string | null
+          place_id: string | null
           price_range_max: number | null
           price_range_min: number | null
           rating: number | null
+          reviews_count: number | null
           state: string | null
-          storepoint_id: string | null
           subscription_end_date: string | null
           subscription_start_date: string | null
           subscription_status: string | null
@@ -603,6 +749,7 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           current_availability?: number | null
+          data_source?: string | null
           description?: string | null
           email?: string | null
           facility_type?: string | null
@@ -615,11 +762,12 @@ export type Database = {
           longitude?: number | null
           name: string
           phone?: string | null
+          place_id?: string | null
           price_range_max?: number | null
           price_range_min?: number | null
           rating?: number | null
+          reviews_count?: number | null
           state?: string | null
-          storepoint_id?: string | null
           subscription_end_date?: string | null
           subscription_start_date?: string | null
           subscription_status?: string | null
@@ -639,6 +787,7 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           current_availability?: number | null
+          data_source?: string | null
           description?: string | null
           email?: string | null
           facility_type?: string | null
@@ -651,11 +800,12 @@ export type Database = {
           longitude?: number | null
           name?: string
           phone?: string | null
+          place_id?: string | null
           price_range_max?: number | null
           price_range_min?: number | null
           rating?: number | null
+          reviews_count?: number | null
           state?: string | null
-          storepoint_id?: string | null
           subscription_end_date?: string | null
           subscription_start_date?: string | null
           subscription_status?: string | null
@@ -803,6 +953,51 @@ export type Database = {
         }
         Relationships: []
       }
+      HH_Hospice: {
+        Row: {
+          "Account Name": string | null
+          CCN: number | null
+          "External Facility Id": string
+          Phone: string | null
+          "Physical City": string | null
+          "Physical Latitude": number | null
+          "Physical Longitude": number | null
+          "Physical State/Province": string | null
+          "Physical Street": string | null
+          "Physical Zip Code": string | null
+          SubType: string | null
+          Type: string | null
+        }
+        Insert: {
+          "Account Name"?: string | null
+          CCN?: number | null
+          "External Facility Id": string
+          Phone?: string | null
+          "Physical City"?: string | null
+          "Physical Latitude"?: number | null
+          "Physical Longitude"?: number | null
+          "Physical State/Province"?: string | null
+          "Physical Street"?: string | null
+          "Physical Zip Code"?: string | null
+          SubType?: string | null
+          Type?: string | null
+        }
+        Update: {
+          "Account Name"?: string | null
+          CCN?: number | null
+          "External Facility Id"?: string
+          Phone?: string | null
+          "Physical City"?: string | null
+          "Physical Latitude"?: number | null
+          "Physical Longitude"?: number | null
+          "Physical State/Province"?: string | null
+          "Physical Street"?: string | null
+          "Physical Zip Code"?: string | null
+          SubType?: string | null
+          Type?: string | null
+        }
+        Relationships: []
+      }
       Home_Health_Providers: {
         Row: {
           Address: string | null
@@ -832,6 +1027,7 @@ export type Database = {
           "How often the home health team determined whether patients rece":
             | string
             | null
+          Medicare: boolean
           "Offers Home Health Aide Services": string | null
           "Offers Medical Social Services": string | null
           "Offers Nursing Care Services": string | null
@@ -845,6 +1041,7 @@ export type Database = {
           "Quality of patient care star rating": string | null
           State: string | null
           "Telephone Number": string | null
+          uuid: string
           "ZIP Code": number | null
         }
         Insert: {
@@ -875,6 +1072,7 @@ export type Database = {
           "How often the home health team determined whether patients rece"?:
             | string
             | null
+          Medicare?: boolean
           "Offers Home Health Aide Services"?: string | null
           "Offers Medical Social Services"?: string | null
           "Offers Nursing Care Services"?: string | null
@@ -888,6 +1086,7 @@ export type Database = {
           "Quality of patient care star rating"?: string | null
           State?: string | null
           "Telephone Number"?: string | null
+          uuid?: string
           "ZIP Code"?: number | null
         }
         Update: {
@@ -918,6 +1117,7 @@ export type Database = {
           "How often the home health team determined whether patients rece"?:
             | string
             | null
+          Medicare?: boolean
           "Offers Home Health Aide Services"?: string | null
           "Offers Medical Social Services"?: string | null
           "Offers Nursing Care Services"?: string | null
@@ -931,6 +1131,73 @@ export type Database = {
           "Quality of patient care star rating"?: string | null
           State?: string | null
           "Telephone Number"?: string | null
+          uuid?: string
+          "ZIP Code"?: number | null
+        }
+        Relationships: []
+      }
+      "images of providers": {
+        Row: {
+          "Call to Action Text": string | null
+          City: string | null
+          "Core Services (comma-separated)": string | null
+          "CTA Button 1 Link": string | null
+          "CTA Button 1 Text": string | null
+          "CTA Button 2 Link": string | null
+          "CTA Button 2 Text": string | null
+          Description: string | null
+          Email: string | null
+          "Facility Name": string
+          "Image URL 1": string | null
+          "Image URL 2": string | null
+          "Image URL 3": string | null
+          "Lifestyle Amenities (comma-separated)": string | null
+          Phone: string | null
+          State: string | null
+          "Street Address": string | null
+          Website: string | null
+          "ZIP Code": number | null
+        }
+        Insert: {
+          "Call to Action Text"?: string | null
+          City?: string | null
+          "Core Services (comma-separated)"?: string | null
+          "CTA Button 1 Link"?: string | null
+          "CTA Button 1 Text"?: string | null
+          "CTA Button 2 Link"?: string | null
+          "CTA Button 2 Text"?: string | null
+          Description?: string | null
+          Email?: string | null
+          "Facility Name": string
+          "Image URL 1"?: string | null
+          "Image URL 2"?: string | null
+          "Image URL 3"?: string | null
+          "Lifestyle Amenities (comma-separated)"?: string | null
+          Phone?: string | null
+          State?: string | null
+          "Street Address"?: string | null
+          Website?: string | null
+          "ZIP Code"?: number | null
+        }
+        Update: {
+          "Call to Action Text"?: string | null
+          City?: string | null
+          "Core Services (comma-separated)"?: string | null
+          "CTA Button 1 Link"?: string | null
+          "CTA Button 1 Text"?: string | null
+          "CTA Button 2 Link"?: string | null
+          "CTA Button 2 Text"?: string | null
+          Description?: string | null
+          Email?: string | null
+          "Facility Name"?: string
+          "Image URL 1"?: string | null
+          "Image URL 2"?: string | null
+          "Image URL 3"?: string | null
+          "Lifestyle Amenities (comma-separated)"?: string | null
+          Phone?: string | null
+          State?: string | null
+          "Street Address"?: string | null
+          Website?: string | null
           "ZIP Code"?: number | null
         }
         Relationships: []
@@ -1080,6 +1347,123 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      merged_facilities: {
+        Row: {
+          accepts_medicaid: boolean | null
+          accepts_medicare: boolean | null
+          accepts_va_benefits: boolean | null
+          address_line1: string | null
+          address_line2: string | null
+          amenities: Json | null
+          business_hours: Json | null
+          capacity: number | null
+          city: string | null
+          created_at: string | null
+          current_availability: number | null
+          data_source: string | null
+          description: string | null
+          email: string | null
+          facility_type: string | null
+          id: string
+          image_urls: Json | null
+          is_active: boolean | null
+          is_verified: boolean | null
+          latitude: number | null
+          license_number: string | null
+          license_type: string | null
+          longitude: number | null
+          name: string
+          original_id: string | null
+          phone: string | null
+          price_range_max: number | null
+          price_range_min: number | null
+          rating: number | null
+          reviews_count: number | null
+          services: Json | null
+          state: string | null
+          updated_at: string | null
+          virtual_tour_url: string | null
+          website: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          accepts_medicaid?: boolean | null
+          accepts_medicare?: boolean | null
+          accepts_va_benefits?: boolean | null
+          address_line1?: string | null
+          address_line2?: string | null
+          amenities?: Json | null
+          business_hours?: Json | null
+          capacity?: number | null
+          city?: string | null
+          created_at?: string | null
+          current_availability?: number | null
+          data_source?: string | null
+          description?: string | null
+          email?: string | null
+          facility_type?: string | null
+          id?: string
+          image_urls?: Json | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          latitude?: number | null
+          license_number?: string | null
+          license_type?: string | null
+          longitude?: number | null
+          name: string
+          original_id?: string | null
+          phone?: string | null
+          price_range_max?: number | null
+          price_range_min?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          services?: Json | null
+          state?: string | null
+          updated_at?: string | null
+          virtual_tour_url?: string | null
+          website?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          accepts_medicaid?: boolean | null
+          accepts_medicare?: boolean | null
+          accepts_va_benefits?: boolean | null
+          address_line1?: string | null
+          address_line2?: string | null
+          amenities?: Json | null
+          business_hours?: Json | null
+          capacity?: number | null
+          city?: string | null
+          created_at?: string | null
+          current_availability?: number | null
+          data_source?: string | null
+          description?: string | null
+          email?: string | null
+          facility_type?: string | null
+          id?: string
+          image_urls?: Json | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          latitude?: number | null
+          license_number?: string | null
+          license_type?: string | null
+          longitude?: number | null
+          name?: string
+          original_id?: string | null
+          phone?: string | null
+          price_range_max?: number | null
+          price_range_min?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          services?: Json | null
+          state?: string | null
+          updated_at?: string | null
+          virtual_tour_url?: string | null
+          website?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -1321,25 +1705,31 @@ export type Database = {
           "City/Town": string | null
           Latitude: number | null
           Longitude: number | null
+          Medicare: boolean
           "Provider Address": string | null
           "Provider Name": string | null
           "Telephone Number": number | null
+          UUID: string
         }
         Insert: {
           "City/Town"?: string | null
           Latitude?: number | null
           Longitude?: number | null
+          Medicare?: boolean
           "Provider Address"?: string | null
           "Provider Name"?: string | null
           "Telephone Number"?: number | null
+          UUID?: string
         }
         Update: {
           "City/Town"?: string | null
           Latitude?: number | null
           Longitude?: number | null
+          Medicare?: boolean
           "Provider Address"?: string | null
           "Provider Name"?: string | null
           "Telephone Number"?: number | null
+          UUID?: string
         }
         Relationships: []
       }
@@ -1391,6 +1781,41 @@ export type Database = {
         }
         Relationships: []
       }
+      serperapi_raw_results: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          parsing_status: string | null
+          raw_json_data: Json
+          user_search_request_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          parsing_status?: string | null
+          raw_json_data: Json
+          user_search_request_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          parsing_status?: string | null
+          raw_json_data?: Json
+          user_search_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "serpapi_raw_results_user_search_request_id_fkey"
+            columns: ["user_search_request_id"]
+            isOneToOne: false
+            referencedRelation: "user_search_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       specialist_notes: {
         Row: {
           content: string
@@ -1426,128 +1851,53 @@ export type Database = {
       Storepoint: {
         Row: {
           address: string | null
-          altcs: string | null
-          azdhs: string | null
           capacity: string | null
           city: string | null
-          contact_us: string | null
           email: string | null
-          extra: string | null
-          extra2: string | null
-          extra3: string | null
-          facebook: string | null
-          features: string | null
-          features2: string | null
-          friday: string | null
           image_url: string | null
-          instagram: string | null
           lat: string | null
-          license: string | null
           lng: string | null
-          monday: string | null
           name: string | null
           phone: string | null
           reviews: string | null
-          saturday: string | null
-          schedule_tour: string | null
-          specials: string | null
           state: string | null
           street: string | null
-          sunday: string | null
-          thursday: string | null
-          tiktok: string | null
-          tuesday: string | null
-          twitter: string | null
           type: string | null
-          virtual_tour: string | null
-          visit_website: string | null
           website: string | null
-          wednesday: string | null
-          youtube: string | null
           zip: number | null
         }
         Insert: {
           address?: string | null
-          altcs?: string | null
-          azdhs?: string | null
           capacity?: string | null
           city?: string | null
-          contact_us?: string | null
           email?: string | null
-          extra?: string | null
-          extra2?: string | null
-          extra3?: string | null
-          facebook?: string | null
-          features?: string | null
-          features2?: string | null
-          friday?: string | null
           image_url?: string | null
-          instagram?: string | null
           lat?: string | null
-          license?: string | null
           lng?: string | null
-          monday?: string | null
           name?: string | null
           phone?: string | null
           reviews?: string | null
-          saturday?: string | null
-          schedule_tour?: string | null
-          specials?: string | null
           state?: string | null
           street?: string | null
-          sunday?: string | null
-          thursday?: string | null
-          tiktok?: string | null
-          tuesday?: string | null
-          twitter?: string | null
           type?: string | null
-          virtual_tour?: string | null
-          visit_website?: string | null
           website?: string | null
-          wednesday?: string | null
-          youtube?: string | null
           zip?: number | null
         }
         Update: {
           address?: string | null
-          altcs?: string | null
-          azdhs?: string | null
           capacity?: string | null
           city?: string | null
-          contact_us?: string | null
           email?: string | null
-          extra?: string | null
-          extra2?: string | null
-          extra3?: string | null
-          facebook?: string | null
-          features?: string | null
-          features2?: string | null
-          friday?: string | null
           image_url?: string | null
-          instagram?: string | null
           lat?: string | null
-          license?: string | null
           lng?: string | null
-          monday?: string | null
           name?: string | null
           phone?: string | null
           reviews?: string | null
-          saturday?: string | null
-          schedule_tour?: string | null
-          specials?: string | null
           state?: string | null
           street?: string | null
-          sunday?: string | null
-          thursday?: string | null
-          tiktok?: string | null
-          tuesday?: string | null
-          twitter?: string | null
           type?: string | null
-          virtual_tour?: string | null
-          visit_website?: string | null
           website?: string | null
-          wednesday?: string | null
-          youtube?: string | null
           zip?: number | null
         }
         Relationships: []
@@ -1693,6 +2043,78 @@ export type Database = {
         }
         Relationships: []
       }
+      subsribed: {
+        Row: {
+          "Call to Action Text": string | null
+          City: string | null
+          "Core Services (comma-separated)": string | null
+          "CTA Button 1 Link": string | null
+          "CTA Button 1 Text": string | null
+          "CTA Button 2 Link": string | null
+          "CTA Button 2 Text": string | null
+          Description: string | null
+          Email: string | null
+          "Facility Name": string | null
+          "Image URL 1": string | null
+          "Image URL 2": string | null
+          "Image URL 3": string | null
+          "Lifestyle Amenities (comma-separated)": string | null
+          Map: string | null
+          Phone: string | null
+          State: string | null
+          "Street Address": string | null
+          uuid: string
+          Website: string | null
+          "ZIP Code": number | null
+        }
+        Insert: {
+          "Call to Action Text"?: string | null
+          City?: string | null
+          "Core Services (comma-separated)"?: string | null
+          "CTA Button 1 Link"?: string | null
+          "CTA Button 1 Text"?: string | null
+          "CTA Button 2 Link"?: string | null
+          "CTA Button 2 Text"?: string | null
+          Description?: string | null
+          Email?: string | null
+          "Facility Name"?: string | null
+          "Image URL 1"?: string | null
+          "Image URL 2"?: string | null
+          "Image URL 3"?: string | null
+          "Lifestyle Amenities (comma-separated)"?: string | null
+          Map?: string | null
+          Phone?: string | null
+          State?: string | null
+          "Street Address"?: string | null
+          uuid?: string
+          Website?: string | null
+          "ZIP Code"?: number | null
+        }
+        Update: {
+          "Call to Action Text"?: string | null
+          City?: string | null
+          "Core Services (comma-separated)"?: string | null
+          "CTA Button 1 Link"?: string | null
+          "CTA Button 1 Text"?: string | null
+          "CTA Button 2 Link"?: string | null
+          "CTA Button 2 Text"?: string | null
+          Description?: string | null
+          Email?: string | null
+          "Facility Name"?: string | null
+          "Image URL 1"?: string | null
+          "Image URL 2"?: string | null
+          "Image URL 3"?: string | null
+          "Lifestyle Amenities (comma-separated)"?: string | null
+          Map?: string | null
+          Phone?: string | null
+          State?: string | null
+          "Street Address"?: string | null
+          uuid?: string
+          Website?: string | null
+          "ZIP Code"?: number | null
+        }
+        Relationships: []
+      }
       tours: {
         Row: {
           created_at: string
@@ -1747,6 +2169,156 @@ export type Database = {
           },
         ]
       }
+      unified_facilities: {
+        Row: {
+          accepts_medicaid: boolean | null
+          accepts_medicare: boolean | null
+          accepts_va_benefits: boolean | null
+          address_line1: string | null
+          address_line2: string | null
+          amenities: Json | null
+          business_hours: Json | null
+          capacity: number | null
+          city: string | null
+          created_at: string | null
+          current_availability: number | null
+          data_source: string | null
+          description: string | null
+          email: string | null
+          facility_type: string | null
+          id: string
+          image_urls: Json | null
+          is_active: boolean | null
+          is_verified: boolean | null
+          latitude: number | null
+          license_number: string | null
+          license_type: string | null
+          longitude: number | null
+          name: string
+          original_id: string | null
+          phone: string | null
+          price_range_max: number | null
+          price_range_min: number | null
+          rating: number | null
+          reviews_count: number | null
+          services: Json | null
+          state: string | null
+          updated_at: string | null
+          virtual_tour_url: string | null
+          website: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          accepts_medicaid?: boolean | null
+          accepts_medicare?: boolean | null
+          accepts_va_benefits?: boolean | null
+          address_line1?: string | null
+          address_line2?: string | null
+          amenities?: Json | null
+          business_hours?: Json | null
+          capacity?: number | null
+          city?: string | null
+          created_at?: string | null
+          current_availability?: number | null
+          data_source?: string | null
+          description?: string | null
+          email?: string | null
+          facility_type?: string | null
+          id?: string
+          image_urls?: Json | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          latitude?: number | null
+          license_number?: string | null
+          license_type?: string | null
+          longitude?: number | null
+          name: string
+          original_id?: string | null
+          phone?: string | null
+          price_range_max?: number | null
+          price_range_min?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          services?: Json | null
+          state?: string | null
+          updated_at?: string | null
+          virtual_tour_url?: string | null
+          website?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          accepts_medicaid?: boolean | null
+          accepts_medicare?: boolean | null
+          accepts_va_benefits?: boolean | null
+          address_line1?: string | null
+          address_line2?: string | null
+          amenities?: Json | null
+          business_hours?: Json | null
+          capacity?: number | null
+          city?: string | null
+          created_at?: string | null
+          current_availability?: number | null
+          data_source?: string | null
+          description?: string | null
+          email?: string | null
+          facility_type?: string | null
+          id?: string
+          image_urls?: Json | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          latitude?: number | null
+          license_number?: string | null
+          license_type?: string | null
+          longitude?: number | null
+          name?: string
+          original_id?: string | null
+          phone?: string | null
+          price_range_max?: number | null
+          price_range_min?: number | null
+          rating?: number | null
+          reviews_count?: number | null
+          services?: Json | null
+          state?: string | null
+          updated_at?: string | null
+          virtual_tour_url?: string | null
+          website?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      "updated providers may 2025": {
+        Row: {
+          Address: string | null
+          City: string | null
+          "Facility Name": string | null
+          "Internal ID": string
+          "License ID": string | null
+          Source: string | null
+          State: string | null
+          Zip: number | null
+        }
+        Insert: {
+          Address?: string | null
+          City?: string | null
+          "Facility Name"?: string | null
+          "Internal ID": string
+          "License ID"?: string | null
+          Source?: string | null
+          State?: string | null
+          Zip?: number | null
+        }
+        Update: {
+          Address?: string | null
+          City?: string | null
+          "Facility Name"?: string | null
+          "Internal ID"?: string
+          "License ID"?: string | null
+          Source?: string | null
+          State?: string | null
+          Zip?: number | null
+        }
+        Relationships: []
+      }
       user_favorites: {
         Row: {
           created_at: string | null
@@ -1788,6 +2360,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_interactions: {
+        Row: {
+          created_at: string | null
+          generate_document_summary: Json | null
+          send_results_summary: Json | null
+          send_user_intent_summary: Json | null
+          uuid: string
+        }
+        Insert: {
+          created_at?: string | null
+          generate_document_summary?: Json | null
+          send_results_summary?: Json | null
+          send_user_intent_summary?: Json | null
+          uuid?: string
+        }
+        Update: {
+          created_at?: string | null
+          generate_document_summary?: Json | null
+          send_results_summary?: Json | null
+          send_user_intent_summary?: Json | null
+          uuid?: string
+        }
+        Relationships: []
       }
       user_profile_end_user: {
         Row: {
@@ -1960,6 +2556,36 @@ export type Database = {
           },
         ]
       }
+      user_search_requests: {
+        Row: {
+          agent_id: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          search_criteria: Json
+          serpapi_query_sent: string | null
+          status: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          search_criteria: Json
+          serpapi_query_sent?: string | null
+          status?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          search_criteria?: Json
+          serpapi_query_sent?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           created_at: string | null
@@ -2065,12 +2691,106 @@ export type Database = {
         }
         Relationships: []
       }
+      working_data: {
+        Row: {
+          address: string | null
+          altcs: string | null
+          capacity: string | null
+          city: string | null
+          contact_us: string | null
+          email: string | null
+          "Funding Type": string | null
+          ID: number
+          image_url: string | null
+          lat: string | null
+          license: string | null
+          lng: string | null
+          name: string | null
+          phone: string | null
+          reviews: string | null
+          schedule_tour: string | null
+          specials: string | null
+          state: string | null
+          street: string | null
+          tags: string | null
+          type: string | null
+          virtual_tour: string | null
+          visit_website: string | null
+          website: string | null
+          zip: number | null
+        }
+        Insert: {
+          address?: string | null
+          altcs?: string | null
+          capacity?: string | null
+          city?: string | null
+          contact_us?: string | null
+          email?: string | null
+          "Funding Type"?: string | null
+          ID: number
+          image_url?: string | null
+          lat?: string | null
+          license?: string | null
+          lng?: string | null
+          name?: string | null
+          phone?: string | null
+          reviews?: string | null
+          schedule_tour?: string | null
+          specials?: string | null
+          state?: string | null
+          street?: string | null
+          tags?: string | null
+          type?: string | null
+          virtual_tour?: string | null
+          visit_website?: string | null
+          website?: string | null
+          zip?: number | null
+        }
+        Update: {
+          address?: string | null
+          altcs?: string | null
+          capacity?: string | null
+          city?: string | null
+          contact_us?: string | null
+          email?: string | null
+          "Funding Type"?: string | null
+          ID?: number
+          image_url?: string | null
+          lat?: string | null
+          license?: string | null
+          lng?: string | null
+          name?: string | null
+          phone?: string | null
+          reviews?: string | null
+          schedule_tour?: string | null
+          specials?: string | null
+          state?: string | null
+          street?: string | null
+          tags?: string | null
+          type?: string | null
+          virtual_tour?: string | null
+          visit_website?: string | null
+          website?: string | null
+          zip?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      insert_user_interaction: {
+        Args: {
+          user_intent_summary: Json
+          results_summary: Json
+          document_summary: Json
+        }
+        Returns: {
+          uuid: string
+          confirmation_message: string
+        }[]
+      }
     }
     Enums: {
       appointment_type: "consultation" | "tour" | "follow_up"

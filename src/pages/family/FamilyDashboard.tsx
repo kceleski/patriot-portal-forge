@@ -1,10 +1,14 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MessageSquare, User, Heart, Clock, MapPin, Phone } from 'lucide-react';
+import PlacementFeeModal from '@/components/PlacementFeeModal';
 
 const FamilyDashboard = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const recentActivity = [
     { id: 1, type: 'message', content: 'New message from Sunrise Senior Living', time: '2 hours ago' },
     { id: 2, type: 'appointment', content: 'Care assessment scheduled', time: '1 day ago' },
@@ -21,10 +25,13 @@ const FamilyDashboard = () => {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-text-dark-gray">Family Dashboard</h1>
+          <h1 className="text-3xl font-bold text-text-primary font-heading">Family Dashboard</h1>
           <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your care plan.</p>
         </div>
-        <Button className="bg-primary-red hover:bg-red-600">
+        <Button 
+          className="bg-brand-red hover:bg-red-600"
+          onClick={() => setIsModalOpen(true)}
+        >
           Request an Agent
         </Button>
       </div>
@@ -34,9 +41,9 @@ const FamilyDashboard = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Heart className="h-8 w-8 text-primary-red" />
+              <Heart className="h-8 w-8 text-brand-red" />
               <div className="ml-4">
-                <p className="text-2xl font-bold text-text-dark-gray">1</p>
+                <p className="text-2xl font-bold text-text-primary">1</p>
                 <p className="text-gray-600">Active Care Plan</p>
               </div>
             </div>
@@ -46,9 +53,9 @@ const FamilyDashboard = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <MessageSquare className="h-8 w-8 text-primary-sky" />
+              <MessageSquare className="h-8 w-8 text-brand-sky" />
               <div className="ml-4">
-                <p className="text-2xl font-bold text-text-dark-gray">3</p>
+                <p className="text-2xl font-bold text-text-primary">3</p>
                 <p className="text-gray-600">Unread Messages</p>
               </div>
             </div>
@@ -58,9 +65,9 @@ const FamilyDashboard = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <Calendar className="h-8 w-8 text-accent-gold" />
+              <Calendar className="h-8 w-8 text-brand-gold" />
               <div className="ml-4">
-                <p className="text-2xl font-bold text-text-dark-gray">2</p>
+                <p className="text-2xl font-bold text-text-primary">2</p>
                 <p className="text-gray-600">Upcoming Appointments</p>
               </div>
             </div>
@@ -70,9 +77,9 @@ const FamilyDashboard = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
-              <User className="h-8 w-8 text-primary-navy" />
+              <User className="h-8 w-8 text-brand-navy" />
               <div className="ml-4">
-                <p className="text-2xl font-bold text-text-dark-gray">5</p>
+                <p className="text-2xl font-bold text-text-primary">5</p>
                 <p className="text-gray-600">Saved Favorites</p>
               </div>
             </div>
@@ -85,7 +92,7 @@ const FamilyDashboard = () => {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center font-heading">
                 <Clock className="h-5 w-5 mr-2" />
                 Recent Activity
               </CardTitle>
@@ -96,12 +103,12 @@ const FamilyDashboard = () => {
                 {recentActivity.map((activity) => (
                   <div key={activity.id} className="flex items-start space-x-4 p-4 border rounded-lg">
                     <div className="flex-shrink-0">
-                      {activity.type === 'message' && <MessageSquare className="h-5 w-5 text-primary-sky" />}
-                      {activity.type === 'appointment' && <Calendar className="h-5 w-5 text-accent-gold" />}
-                      {activity.type === 'update' && <User className="h-5 w-5 text-primary-red" />}
+                      {activity.type === 'message' && <MessageSquare className="h-5 w-5 text-brand-sky" />}
+                      {activity.type === 'appointment' && <Calendar className="h-5 w-5 text-brand-gold" />}
+                      {activity.type === 'update' && <User className="h-5 w-5 text-brand-red" />}
                     </div>
                     <div className="flex-1">
-                      <p className="text-text-dark-gray">{activity.content}</p>
+                      <p className="text-text-primary">{activity.content}</p>
                       <p className="text-sm text-gray-500 mt-1">{activity.time}</p>
                     </div>
                   </div>
@@ -115,7 +122,7 @@ const FamilyDashboard = () => {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center font-heading">
                 <User className="h-5 w-5 mr-2" />
                 Your Care Team
               </CardTitle>
@@ -125,7 +132,7 @@ const FamilyDashboard = () => {
               <div className="space-y-4">
                 {careTeam.map((member, index) => (
                   <div key={index} className="p-4 border rounded-lg">
-                    <h4 className="font-semibold text-text-dark-gray">{member.name}</h4>
+                    <h4 className="font-semibold text-text-primary font-heading">{member.name}</h4>
                     <p className="text-sm text-gray-600 mb-2">{member.role}</p>
                     <div className="flex items-center text-sm text-gray-500">
                       <Phone className="h-4 w-4 mr-1" />
@@ -142,20 +149,20 @@ const FamilyDashboard = () => {
       {/* Current Care Plan */}
       <Card>
         <CardHeader>
-          <CardTitle>Current Care Plan</CardTitle>
+          <CardTitle className="font-heading">Current Care Plan</CardTitle>
           <CardDescription>Overview of your selected care solution</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold text-text-dark-gray mb-4">Facility Information</h3>
+              <h3 className="font-semibold text-text-primary mb-4 font-heading">Facility Information</h3>
               <div className="space-y-3">
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 text-gray-500 mr-2" />
                   <span>Sunrise Senior Living - Beverly Hills</span>
                 </div>
                 <div className="flex items-center">
-                  <Badge variant="outline" className="text-primary-sky border-primary-sky">
+                  <Badge variant="outline" className="text-brand-sky border-brand-sky">
                     Assisted Living
                   </Badge>
                 </div>
@@ -166,17 +173,17 @@ const FamilyDashboard = () => {
             </div>
             
             <div>
-              <h3 className="font-semibold text-text-dark-gray mb-4">Next Steps</h3>
+              <h3 className="font-semibold text-text-primary mb-4 font-heading">Next Steps</h3>
               <div className="space-y-3">
                 <div className="flex items-center">
-                  <Calendar className="h-4 w-4 text-accent-gold mr-2" />
+                  <Calendar className="h-4 w-4 text-brand-gold mr-2" />
                   <span>Care Assessment - Dec 15, 2024</span>
                 </div>
                 <div className="flex items-center">
-                  <Calendar className="h-4 w-4 text-accent-gold mr-2" />
+                  <Calendar className="h-4 w-4 text-brand-gold mr-2" />
                   <span>Move-in Date - Jan 1, 2025</span>
                 </div>
-                <Button className="w-full bg-primary-sky hover:bg-blue-600 mt-4">
+                <Button className="w-full bg-brand-sky hover:bg-blue-600 mt-4">
                   View Full Care Plan
                 </Button>
               </div>
@@ -184,6 +191,12 @@ const FamilyDashboard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Placement Fee Modal */}
+      <PlacementFeeModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 };

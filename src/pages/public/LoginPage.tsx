@@ -10,11 +10,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useApi } from '@/hooks/useApi';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('disabled');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState('');
   const navigate = useNavigate();
-  const { signIn } = useAuth(disabled);
+  const { signIn } = useAuth();
 
   const { execute: handleSignIn, loading } = useApi(signIn, {
     showSuccessToast: true,
@@ -28,13 +28,13 @@ const LoginPage = () => {
     if (result !== null) {
       // Redirect based on user type
       const redirectMap: Record<string, string> = {
-        family: '/family',
-        healthcare: '/healthcare',
-        agent: '/agent',
-        facility: '/facility'
+        family: '/dashboard/family',
+        healthcare: '/dashboard/healthcare',
+        agent: '/dashboard/agent',
+        facility: '/dashboard/facility'
       };
       
-      navigate(redirectMap[userType] || '/');
+      navigate(redirectMap[userType] || '/dashboard');
     }
   };
 
@@ -44,7 +44,7 @@ const LoginPage = () => {
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-text-dark-gray">
+              <CardTitle className="text-3xl font-bold text-text-primary font-heading">
                 Welcome Back
               </CardTitle>
               <CardDescription>
@@ -98,20 +98,20 @@ const LoginPage = () => {
                       id="remember"
                       name="remember"
                       type="checkbox"
-                      className="h-4 w-4 text-primary-red"
+                      className="h-4 w-4 text-brand-red"
                     />
                     <label htmlFor="remember" className="ml-2 text-sm text-gray-600">
                       Remember me
                     </label>
                   </div>
-                  <Link to="#" className="text-sm text-primary-sky hover:underline">
+                  <Link to="#" className="text-sm text-brand-sky hover:underline">
                     Forgot password?
                   </Link>
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary-red hover:bg-red-600"
+                  className="w-full bg-brand-red hover:bg-red-600"
                   size="lg"
                   disabled={loading}
                 >
@@ -122,7 +122,7 @@ const LoginPage = () => {
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
                   Don't have an account?{' '}
-                  <Link to="/register" className="text-primary-sky hover:underline font-medium">
+                  <Link to="/register" className="text-brand-sky hover:underline font-medium">
                     Sign up for free
                   </Link>
                 </p>
