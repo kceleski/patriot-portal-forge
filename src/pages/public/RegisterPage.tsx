@@ -67,7 +67,7 @@ const RegisterPage = () => {
                 Create Your Account
               </CardTitle>
               <CardDescription>
-                Join CareConnect and start your 30-day free trial
+                Join HealthProAssist and start your 14-day free trial
               </CardDescription>
             </CardHeader>
             <CardContent>
