@@ -1,229 +1,447 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/hooks/use-toast";
-import { ApiService } from "@/services/apiService";
-import { useApi } from "@/hooks/useApi";
-import { PlusCircle, Trash2 } from "lucide-react";
 
-// --- Zod Validation Schema ---
-// This schema is derived from all the fields in your uploaded documents.
-const intakeFormSchema = z.object({
-  patientName: z.string().min(2, "Patient name is required."),
-  facilityName: z.string().min(2, "Facility name is required."),
-  reasonForVisit: z.string().optional(),
-  allergies: z.string().optional(),
-  levelOfCare: z.enum(["Supervisory", "Personal", "Directed"], {
-    required_error: "You need to select a level of care.",
-  }),
-  
-  medications: z.array(z.object({
-    name: z.string().min(1, "Name is required."),
-    dosage: z.string().min(1, "Dosage is required."),
-    route: z.string().min(1, "Route is required."),
-    time: z.string().min(1, "Time is required."),
-    notes: z.string().optional(),
-  })),
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ApiService } from '@/services/apiService';
+import { useApi } from '@/hooks/useApi';
+import { Save, Send, FileText, User, Heart, Pill } from 'lucide-react';
 
-  medicationAssistance: z.enum(["None", "Some", "Full"], {
-    required_error: "You need to select a medication assistance level.",
-  }),
-
-  diagnosisAndTreatments: z.string().optional(),
-  dietaryRestrictions: z.string().optional(),
-
-  functionalAbility: z.object({
-    eating: z.enum(["I", "A", "D"]),
-    toileting: z.enum(["I", "A", "D"]),
-    transferring: z.enum(["I", "A", "D"]),
-    ambulation: z.enum(["I", "A", "D"]),
-    dressing: z.enum(["I", "A", "D"]),
-    bathing: z.enum(["I", "A", "D"]),
-  }),
-
-  cognitiveStatus: z.object({
-    orientation: z.enum(["I", "A", "D"]),
-    memory: z.enum(["I", "A", "D"]),
-    dementia: z.enum(["I", "A", "D"]),
-    depression: z.enum(["I", "A", "D"]),
-  }),
-
-  authorizations: z.object({
-    fluVaccine: z.boolean().default(false),
-    tuberculinTest: z.boolean().default(false),
-    covidVaccine: z.boolean().default(false),
-    dnrDirective: z.boolean().default(false),
-  }),
-});
-
-type IntakeFormValues = z.infer<typeof intakeFormSchema>;
-
-// Helper array for rendering the assessment grids
-const functionalAbilityItems = [
-    { id: 'eating', label: 'Eating' },
-    { id: 'toileting', label: 'Toileting' },
-    { id: 'transferring', label: 'Transferring' },
-    { id: 'ambulation', label: 'Ambulation' },
-    { id: 'dressing', label: 'Dressing' },
-    { id: 'bathing', label: 'Bathing' },
-] as const;
-
-const cognitiveStatusItems = [
-    { id: 'orientation', label: 'Orientation' },
-    { id: 'memory', label: 'Memory' },
-    { id: 'dementia', label: 'Dementia' },
-    { id: 'depression', label: 'Depression' },
-] as const;
-
-export function ClientIntakeForm() {
-  const { execute: submitForm, loading } = useApi(ApiService.submitIntakeForm, {
-      showSuccessToast: true,
-      successMessage: "The patient intake form has been saved and processed.",
-  });
-
-  const form = useForm<IntakeFormValues>({
-    resolver: zodResolver(intakeFormSchema),
-    defaultValues: {
-      patientName: "",
-      facilityName: "",
-      reasonForVisit: "",
-      allergies: "",
-      medications: [],
-      functionalAbility: { eating: 'I', toileting: 'I', transferring: 'I', ambulation: 'I', dressing: 'I', bathing: 'I' },
-      cognitiveStatus: { orientation: 'I', memory: 'I', dementia: 'I', depression: 'I' },
-      authorizations: { fluVaccine: false, tuberculinTest: false, covidVaccine: false, dnrDirective: false },
+export const ClientIntakeForm: React.FC = () => {
+  const [formData, setFormData] = useState({
+    // Patient Information
+    patient_name: '',
+    facility_name: '',
+    reason_for_visit: '',
+    
+    // Medical Information
+    primary_diagnosis: '',
+    secondary_diagnosis: '',
+    allergies: '',
+    level_of_care: '',
+    code_status: '',
+    
+    // Medications
+    medications: [],
+    medication_assistance_level: '',
+    
+    // Functional Assessment
+    functional_ability: {
+      mobility: '',
+      self_care: '',
+      communication: '',
+      cognitive_function: ''
     },
-  });
-  
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "medications",
+    
+    // Cognitive Status
+    cognitive_status: {
+      orientation: '',
+      memory: '',
+      decision_making: ''
+    },
+    
+    // Vital Signs
+    vitals: {
+      blood_pressure: '',
+      heart_rate: '',
+      temperature: '',
+      weight: ''
+    },
+    
+    // Additional Care Information
+    dietary_restrictions: '',
+    can_be_met_by_facility: false,
+    dnr_directive_active: false,
+    allow_flu_vaccine: false,
+    allow_covid_vaccine: false,
+    allow_tuberculin_test: false,
+    
+    // Signatures
+    patient_signature_date: '',
+    physician_signature_date: ''
   });
 
-  async function onSubmit(data: IntakeFormValues) {
-    const result = await submitForm(data);
-    if (result) {
-        form.reset();
+  const { execute: submitForm, loading } = useApi(ApiService.submitIntakeForm, {
+    showSuccessToast: true,
+    successMessage: "Intake form submitted successfully!"
+  });
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleNestedInputChange = (section: string, field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section as keyof typeof prev],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await submitForm(formData);
+      // Reset form after successful submission
+      setFormData({
+        patient_name: '',
+        facility_name: '',
+        reason_for_visit: '',
+        primary_diagnosis: '',
+        secondary_diagnosis: '',
+        allergies: '',
+        level_of_care: '',
+        code_status: '',
+        medications: [],
+        medication_assistance_level: '',
+        functional_ability: {
+          mobility: '',
+          self_care: '',
+          communication: '',
+          cognitive_function: ''
+        },
+        cognitive_status: {
+          orientation: '',
+          memory: '',
+          decision_making: ''
+        },
+        vitals: {
+          blood_pressure: '',
+          heart_rate: '',
+          temperature: '',
+          weight: ''
+        },
+        dietary_restrictions: '',
+        can_be_met_by_facility: false,
+        dnr_directive_active: false,
+        allow_flu_vaccine: false,
+        allow_covid_vaccine: false,
+        allow_tuberculin_test: false,
+        patient_signature_date: '',
+        physician_signature_date: ''
+      });
+    } catch (error) {
+      console.error('Error submitting form:', error);
     }
-  }
+  };
 
   return (
-    <Card className="max-w-4xl mx-auto">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-h1 font-heading text-text-primary">Client Intake Form</h1>
+        <p className="text-body-large text-text-secondary mt-1">Comprehensive medical and care assessment form for new clients.</p>
+      </div>
+
+      <Card className="bg-background-card border-ui-border">
         <CardHeader>
-            <CardTitle>Comprehensive Patient Intake Form</CardTitle>
-            <CardDescription>
-                Digitized intake form based on the Doctor's Order, Physician's Order, and PPOC documents.
-            </CardDescription>
+          <CardTitle className="flex items-center text-text-primary">
+            <FileText className="w-5 h-5 mr-2" />
+            Healthcare Assessment Form
+          </CardTitle>
         </CardHeader>
         <CardContent>
-            <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <Tabs defaultValue="patient-info">
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="patient-info">Patient Info</TabsTrigger>
-                        <TabsTrigger value="medical-orders">Medical & Diet</TabsTrigger>
-                        <TabsTrigger value="assessment">Assessments</TabsTrigger>
-                        <TabsTrigger value="authorizations">Authorizations</TabsTrigger>
-                    </TabsList>
+          <Tabs defaultValue="patient-info" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="patient-info" className="flex items-center">
+                <User className="w-4 h-4 mr-2" />
+                Patient Info
+              </TabsTrigger>
+              <TabsTrigger value="medical" className="flex items-center">
+                <Heart className="w-4 h-4 mr-2" />
+                Medical
+              </TabsTrigger>
+              <TabsTrigger value="medications" className="flex items-center">
+                <Pill className="w-4 h-4 mr-2" />
+                Medications
+              </TabsTrigger>
+              <TabsTrigger value="assessment" className="flex items-center">
+                <FileText className="w-4 h-4 mr-2" />
+                Assessment
+              </TabsTrigger>
+            </TabsList>
 
-                    <TabsContent value="patient-info" className="space-y-4 pt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField control={form.control} name="patientName" render={({ field }) => (<FormItem><FormLabel>Patient Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="facilityName" render={({ field }) => (<FormItem><FormLabel>Current Facility</FormLabel><FormControl><Input placeholder="Sunset Senior Living" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="reasonForVisit" render={({ field }) => (<FormItem><FormLabel>Reason for Visit</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={form.control} name="allergies" render={({ field }) => (<FormItem><FormLabel>Allergies</FormLabel><FormControl><Input placeholder="Penicillin, Peanuts" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        </div>
-                        <FormField control={form.control} name="levelOfCare" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Level of Care</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">{['Supervisory', 'Personal', 'Directed'].map(level => (<FormItem key={level} className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value={level} /></FormControl><FormLabel className="font-normal">{level}</FormLabel></FormItem>))}</RadioGroup></FormControl><FormMessage /></FormItem>)} />
-                    </TabsContent>
-
-                    <TabsContent value="medical-orders" className="space-y-6 pt-4">
-                        <Card>
-                            <CardHeader><CardTitle>Medication List</CardTitle></CardHeader>
-                            <CardContent className="space-y-4">
-                                {fields.map((field, index) => (
-                                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-start border p-4 rounded-lg relative">
-                                        <FormField control={form.control} name={`medications.${index}.name`} render={({ field }) => (<FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage/></FormItem>)} />
-                                        <FormField control={form.control} name={`medications.${index}.dosage`} render={({ field }) => (<FormItem><FormLabel>Dosage</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage/></FormItem>)} />
-                                        <FormField control={form.control} name={`medications.${index}.route`} render={({ field }) => (<FormItem><FormLabel>Route</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage/></FormItem>)} />
-                                        <FormField control={form.control} name={`medications.${index}.time`} render={({ field }) => (<FormItem><FormLabel>Time/Frequency</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage/></FormItem>)} />
-                                        <FormField control={form.control} name={`medications.${index}.notes`} render={({ field }) => (<FormItem><FormLabel>Notes</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage/></FormItem>)} />
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="absolute -top-3 -right-3 bg-destructive text-destructive-foreground hover:bg-destructive/80 h-6 w-6"><Trash2 className="h-4 w-4" /></Button>
-                                    </div>
-                                ))}
-                                <Button type="button" variant="outline" size="sm" onClick={() => append({ name: "", dosage: "", route: "", time: "", notes: "" })}><PlusCircle className="mr-2 h-4 w-4"/>Add Medication</Button>
-                            </CardContent>
-                        </Card>
-                        <FormField control={form.control} name="medicationAssistance" render={({ field }) => (<FormItem className="space-y-3"><FormLabel>Medication Administration Assistance</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">{['None', 'Some', 'Full'].map(level => (<FormItem key={level} className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value={level} /></FormControl><FormLabel className="font-normal">{`${level} Assistance`}</FormLabel></FormItem>))}</RadioGroup></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="diagnosisAndTreatments" render={({ field }) => (<FormItem><FormLabel>Diagnosis / Current Treatments</FormLabel><FormControl><Textarea placeholder="List current diagnoses and treatments..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                        <FormField control={form.control} name="dietaryRestrictions" render={({ field }) => (<FormItem><FormLabel>Dietary Restrictions / Special Diets</FormLabel><FormControl><Textarea placeholder="List any dietary needs..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    </TabsContent>
-                    
-                    <TabsContent value="assessment" className="space-y-6 pt-4">
-                        <Card>
-                            <CardHeader><CardTitle>Functional Ability Assessment</CardTitle><CardDescription>I=Independent, A=Assistance, D=Dependent</CardDescription></CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                                {functionalAbilityItems.map(item => (
-                                    <FormField key={item.id} control={form.control} name={`functionalAbility.${item.id}`} render={({ field }) => (<FormItem><FormLabel>{item.label}</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
-                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="I" /></FormControl><FormLabel className="font-normal">I</FormLabel></FormItem>
-                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="A" /></FormControl><FormLabel className="font-normal">A</FormLabel></FormItem>
-                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="D" /></FormControl><FormLabel className="font-normal">D</FormLabel></FormItem>
-                                    </RadioGroup></FormControl></FormItem>)}/>
-                                ))}
-                            </CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader><CardTitle>Cognitive & Behavioral Assessment</CardTitle><CardDescription>I=Independent, A=Assistance, D=Dependent</CardDescription></CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                                {cognitiveStatusItems.map(item => (
-                                    <FormField key={item.id} control={form.control} name={`cognitiveStatus.${item.id}`} render={({ field }) => (<FormItem><FormLabel>{item.label}</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4">
-                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="I" /></FormControl><FormLabel className="font-normal">I</FormLabel></FormItem>
-                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="A" /></FormControl><FormLabel className="font-normal">A</FormLabel></FormItem>
-                                        <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="D" /></FormControl><FormLabel className="font-normal">D</FormLabel></FormItem>
-                                    </RadioGroup></FormControl></FormItem>)}/>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="authorizations" className="space-y-4 pt-4">
-                        <Card>
-                            <CardHeader><CardTitle>Authorizations & Directives</CardTitle></CardHeader>
-                            <CardContent className="space-y-3">
-                                <FormField control={form.control} name="authorizations.fluVaccine" render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange}/></FormControl><div className="space-y-1 leading-none"><FormLabel>May have annual flu vaccine if not contraindicated.</FormLabel></div></FormItem>)} />
-                                <FormField control={form.control} name="authorizations.tuberculinTest" render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange}/></FormControl><div className="space-y-1 leading-none"><FormLabel>May have annual tuberculin test if not contraindicated.</FormLabel></div></FormItem>)} />
-                                <FormField control={form.control} name="authorizations.covidVaccine" render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange}/></FormControl><div className="space-y-1 leading-none"><FormLabel>May have COVID vaccine if not contraindicated.</FormLabel></div></FormItem>)} />
-                                <FormField control={form.control} name="authorizations.dnrDirective" render={({ field }) => (<FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-red-50 border-red-200"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange}/></FormControl><div className="space-y-1 leading-none"><FormLabel>Refuse Resuscitation (DNR)</FormLabel><FormDescription>In the event of cardiac or respiratory arrest, I refuse any resuscitation measures.</FormDescription></div></FormItem>)} />
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-                
-                <div className="flex justify-end pt-8">
-                    <Button type="submit" size="lg" disabled={loading} className="bg-brand-navy hover:bg-brand-navy/90">
-                        {loading ? 'Submitting...' : 'Submit Intake Form'}
-                    </Button>
+            <TabsContent value="patient-info" className="space-y-6 mt-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="patient_name" className="text-text-primary">Patient Name *</Label>
+                  <Input
+                    id="patient_name"
+                    value={formData.patient_name}
+                    onChange={(e) => handleInputChange('patient_name', e.target.value)}
+                    placeholder="Full patient name"
+                    className="bg-white border-ui-border text-text-primary"
+                    required
+                  />
                 </div>
-            </form>
-            </Form>
-        </CardContent>
-    </Card>
-  );
-}
+                <div className="space-y-2">
+                  <Label htmlFor="facility_name" className="text-text-primary">Facility Name</Label>
+                  <Input
+                    id="facility_name"
+                    value={formData.facility_name}
+                    onChange={(e) => handleInputChange('facility_name', e.target.value)}
+                    placeholder="Name of care facility"
+                    className="bg-white border-ui-border text-text-primary"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reason_for_visit" className="text-text-primary">Reason for Visit/Assessment</Label>
+                <Textarea
+                  id="reason_for_visit"
+                  value={formData.reason_for_visit}
+                  onChange={(e) => handleInputChange('reason_for_visit', e.target.value)}
+                  placeholder="Describe the reason for this assessment..."
+                  className="bg-white border-ui-border text-text-primary min-h-[100px]"
+                />
+              </div>
+            </TabsContent>
 
-export default ClientIntakeForm;
+            <TabsContent value="medical" className="space-y-6 mt-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="primary_diagnosis" className="text-text-primary">Primary Diagnosis</Label>
+                  <Input
+                    id="primary_diagnosis"
+                    value={formData.primary_diagnosis}
+                    onChange={(e) => handleInputChange('primary_diagnosis', e.target.value)}
+                    placeholder="Primary medical diagnosis"
+                    className="bg-white border-ui-border text-text-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="secondary_diagnosis" className="text-text-primary">Secondary Diagnosis</Label>
+                  <Input
+                    id="secondary_diagnosis"
+                    value={formData.secondary_diagnosis}
+                    onChange={(e) => handleInputChange('secondary_diagnosis', e.target.value)}
+                    placeholder="Secondary medical diagnosis"
+                    className="bg-white border-ui-border text-text-primary"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="allergies" className="text-text-primary">Known Allergies</Label>
+                <Textarea
+                  id="allergies"
+                  value={formData.allergies}
+                  onChange={(e) => handleInputChange('allergies', e.target.value)}
+                  placeholder="List all known allergies and reactions..."
+                  className="bg-white border-ui-border text-text-primary"
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label className="text-text-primary">Level of Care Required</Label>
+                  <RadioGroup 
+                    value={formData.level_of_care} 
+                    onValueChange={(value) => handleInputChange('level_of_care', value)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="independent" id="independent" />
+                      <Label htmlFor="independent" className="text-text-primary">Independent Living</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="assisted" id="assisted" />
+                      <Label htmlFor="assisted" className="text-text-primary">Assisted Living</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="memory" id="memory" />
+                      <Label htmlFor="memory" className="text-text-primary">Memory Care</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="skilled" id="skilled" />
+                      <Label htmlFor="skilled" className="text-text-primary">Skilled Nursing</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-text-primary">Code Status</Label>
+                  <RadioGroup 
+                    value={formData.code_status} 
+                    onValueChange={(value) => handleInputChange('code_status', value)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="full" id="full" />
+                      <Label htmlFor="full" className="text-text-primary">Full Code</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="dnr" id="dnr" />
+                      <Label htmlFor="dnr" className="text-text-primary">Do Not Resuscitate</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="dni" id="dni" />
+                      <Label htmlFor="dni" className="text-text-primary">Do Not Intubate</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="medications" className="space-y-6 mt-6">
+              <div className="space-y-2">
+                <Label className="text-text-primary">Medication Assistance Level</Label>
+                <RadioGroup 
+                  value={formData.medication_assistance_level} 
+                  onValueChange={(value) => handleInputChange('medication_assistance_level', value)}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="independent" id="med-independent" />
+                    <Label htmlFor="med-independent" className="text-text-primary">Independent</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="reminders" id="med-reminders" />
+                    <Label htmlFor="med-reminders" className="text-text-primary">Reminders Only</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="administration" id="med-administration" />
+                    <Label htmlFor="med-administration" className="text-text-primary">Full Administration</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-4">
+                <Label className="text-text-primary">Vaccination Consent</Label>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="flu_vaccine"
+                      checked={formData.allow_flu_vaccine}
+                      onCheckedChange={(checked) => handleInputChange('allow_flu_vaccine', checked)}
+                    />
+                    <Label htmlFor="flu_vaccine" className="text-text-primary">Allow Annual Flu Vaccination</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="covid_vaccine"
+                      checked={formData.allow_covid_vaccine}
+                      onCheckedChange={(checked) => handleInputChange('allow_covid_vaccine', checked)}
+                    />
+                    <Label htmlFor="covid_vaccine" className="text-text-primary">Allow COVID-19 Vaccination</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="tuberculin_test"
+                      checked={formData.allow_tuberculin_test}
+                      onCheckedChange={(checked) => handleInputChange('allow_tuberculin_test', checked)}
+                    />
+                    <Label htmlFor="tuberculin_test" className="text-text-primary">Allow Tuberculin Testing</Label>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="assessment" className="space-y-6 mt-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-h4 font-semibold text-text-primary mb-4">Vital Signs</h3>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="blood_pressure" className="text-text-primary">Blood Pressure</Label>
+                      <Input
+                        id="blood_pressure"
+                        value={formData.vitals.blood_pressure}
+                        onChange={(e) => handleNestedInputChange('vitals', 'blood_pressure', e.target.value)}
+                        placeholder="120/80"
+                        className="bg-white border-ui-border text-text-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="heart_rate" className="text-text-primary">Heart Rate</Label>
+                      <Input
+                        id="heart_rate"
+                        value={formData.vitals.heart_rate}
+                        onChange={(e) => handleNestedInputChange('vitals', 'heart_rate', e.target.value)}
+                        placeholder="72 bpm"
+                        className="bg-white border-ui-border text-text-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="temperature" className="text-text-primary">Temperature</Label>
+                      <Input
+                        id="temperature"
+                        value={formData.vitals.temperature}
+                        onChange={(e) => handleNestedInputChange('vitals', 'temperature', e.target.value)}
+                        placeholder="98.6°F"
+                        className="bg-white border-ui-border text-text-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="weight" className="text-text-primary">Weight</Label>
+                      <Input
+                        id="weight"
+                        value={formData.vitals.weight}
+                        onChange={(e) => handleNestedInputChange('vitals', 'weight', e.target.value)}
+                        placeholder="150 lbs"
+                        className="bg-white border-ui-border text-text-primary"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dietary_restrictions" className="text-text-primary">Dietary Restrictions</Label>
+                  <Textarea
+                    id="dietary_restrictions"
+                    value={formData.dietary_restrictions}
+                    onChange={(e) => handleInputChange('dietary_restrictions', e.target.value)}
+                    placeholder="List any dietary restrictions, preferences, or special needs..."
+                    className="bg-white border-ui-border text-text-primary"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="can_be_met"
+                      checked={formData.can_be_met_by_facility}
+                      onCheckedChange={(checked) => handleInputChange('can_be_met_by_facility', checked)}
+                    />
+                    <Label htmlFor="can_be_met" className="text-text-primary">Care needs can be met by this facility</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="dnr_active"
+                      checked={formData.dnr_directive_active}
+                      onCheckedChange={(checked) => handleInputChange('dnr_directive_active', checked)}
+                    />
+                    <Label htmlFor="dnr_active" className="text-text-primary">DNR directive is active and on file</Label>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-ui-border">
+            <Button
+              variant="outline"
+              className="border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save Draft
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || !formData.patient_name}
+              className="bg-brand-red hover:bg-brand-red/90 text-white"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {loading ? 'Submitting...' : 'Submit Form'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

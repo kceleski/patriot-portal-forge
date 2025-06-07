@@ -1212,21 +1212,26 @@ export type Database = {
           client_id: string | null
           code_status: string | null
           cognitive_status: Json | null
+          created_at: string | null
           created_by_user_id: string | null
           dietary_restrictions: string | null
           dnr_directive_active: boolean | null
+          facility_name: string | null
           functional_ability: Json | null
           id: string
           level_of_care: string | null
           medication_assistance_level: string | null
           medications: Json | null
+          patient_name: string | null
           patient_signature_date: string | null
           patient_signature_url: string | null
           physician_signature_date: string | null
           physician_signature_url: string | null
           primary_diagnosis: string | null
+          reason_for_visit: string | null
           secondary_diagnosis: string | null
           status: string | null
+          updated_at: string | null
           vitals: Json | null
         }
         Insert: {
@@ -1238,21 +1243,26 @@ export type Database = {
           client_id?: string | null
           code_status?: string | null
           cognitive_status?: Json | null
+          created_at?: string | null
           created_by_user_id?: string | null
           dietary_restrictions?: string | null
           dnr_directive_active?: boolean | null
+          facility_name?: string | null
           functional_ability?: Json | null
           id?: string
           level_of_care?: string | null
           medication_assistance_level?: string | null
           medications?: Json | null
+          patient_name?: string | null
           patient_signature_date?: string | null
           patient_signature_url?: string | null
           physician_signature_date?: string | null
           physician_signature_url?: string | null
           primary_diagnosis?: string | null
+          reason_for_visit?: string | null
           secondary_diagnosis?: string | null
           status?: string | null
+          updated_at?: string | null
           vitals?: Json | null
         }
         Update: {
@@ -1264,21 +1274,26 @@ export type Database = {
           client_id?: string | null
           code_status?: string | null
           cognitive_status?: Json | null
+          created_at?: string | null
           created_by_user_id?: string | null
           dietary_restrictions?: string | null
           dnr_directive_active?: boolean | null
+          facility_name?: string | null
           functional_ability?: Json | null
           id?: string
           level_of_care?: string | null
           medication_assistance_level?: string | null
           medications?: Json | null
+          patient_name?: string | null
           patient_signature_date?: string | null
           patient_signature_url?: string | null
           physician_signature_date?: string | null
           physician_signature_url?: string | null
           primary_diagnosis?: string | null
+          reason_for_visit?: string | null
           secondary_diagnosis?: string | null
           status?: string | null
+          updated_at?: string | null
           vitals?: Json | null
         }
         Relationships: [
