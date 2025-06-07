@@ -11,7 +11,7 @@ import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
 import PublicLayout from '@/layouts/PublicLayout';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import HomePage from '@/pages/HomePage';
+import HomePage from '@/pages/Public/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
 import PricingPage from '@/pages/PricingPage';
 import LoginPage from '@/pages/LoginPage';
