@@ -24,7 +24,7 @@ const HomePage = () => {
               </Button>
             </Link>
             <Link to="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand-navy px-8 py-4 font-body">
+              <Button size="lg" variant="outline" className="border-white text-brand-navy hover:bg-red-600 hover:text-brand-navy px-8 py-4 font-body">
                 View Pricing
               </Button>
             </Link>
