@@ -152,7 +152,7 @@ const HomePage = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-20">
             <h2 className="text-5xl font-bold text-text-primary mb-6 font-heading">
-              Why Choose CareConnect?
+              Why Choose HealthProAssist?
             </h2>
             <p className="text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Comprehensive tools for every step of the care journey, powered by innovation
