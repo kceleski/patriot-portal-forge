@@ -14,7 +14,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import HomePage from '@/pages/Public/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
 import PricingPage from '@/pages/PricingPage';
-import LoginPage from '@/pages/LoginPage';
+import LoginPage from '@/pages/public/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import NotFound from '@/pages/NotFound';
 import FacilityDetail from '@/pages/FacilityDetail';
