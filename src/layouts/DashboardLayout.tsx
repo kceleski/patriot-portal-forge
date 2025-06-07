@@ -77,10 +77,16 @@ const DashboardLayout = () => {
         
         <div className="relative z-10 p-8">
           <div className="mb-12">
-            <h1 className="text-2xl font-bold text-brand-gold mb-2">HealthPro Assistant</h1>
+            <div className="mb-4">
+              <img 
+                src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
+                alt="HealthProAssist Logo" 
+                className="h-8 w-auto mb-2"
+              />
+            </div>
             <div className="bg-brand-sky/20 rounded-lg p-4 border border-brand-sky/30">
-              <p className="text-sm text-blue-200 mb-1">Portal Access</p>
-              <p className="font-semibold text-lg text-white">
+              <p className="text-sm text-blue-200 mb-1 font-body">Portal Access</p>
+              <p className="font-semibold text-lg text-white font-heading">
                 {profile?.user_type?.charAt(0).toUpperCase() + profile?.user_type?.slice(1)} Portal
               </p>
             </div>
@@ -93,7 +99,7 @@ const DashboardLayout = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-4 px-4 py-3 rounded-xl transition-all duration-300 group ${
+                  className={`flex items-center space-x-4 px-4 py-3 rounded-xl transition-all duration-300 group font-body ${
                     isActive
                       ? 'bg-brand-sky text-white shadow-lg scale-105'
                       : 'text-blue-100 hover:bg-brand-sky/30 hover:text-white hover:scale-105'
@@ -109,10 +115,10 @@ const DashboardLayout = () => {
           <div className="mt-auto pt-12">
             <div className="border-t border-blue-700/50 pt-8">
               <div className="bg-brand-sky/10 rounded-xl p-4 mb-6 border border-brand-sky/20">
-                <p className="text-sm text-blue-200 mb-1">Logged in as:</p>
-                <p className="font-semibold text-white text-lg">{profile?.first_name} {profile?.last_name}</p>
+                <p className="text-sm text-blue-200 mb-1 font-body">Logged in as:</p>
+                <p className="font-semibold text-white text-lg font-heading">{profile?.first_name} {profile?.last_name}</p>
                 <div className="mt-2">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-gold text-brand-navy">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-gold text-brand-navy font-body">
                     {profile?.subscription_tier}
                   </span>
                 </div>
@@ -120,7 +126,7 @@ const DashboardLayout = () => {
               <Button
                 variant="ghost"
                 onClick={signOut}
-                className="w-full justify-start text-blue-100 hover:bg-red-600/20 hover:text-red-200 transition-all duration-300 p-4 rounded-xl"
+                className="w-full justify-start text-blue-100 hover:bg-red-600/20 hover:text-red-200 transition-all duration-300 p-4 rounded-xl font-body"
               >
                 <LogOut className="h-4 w-4 mr-3" />
                 Sign Out

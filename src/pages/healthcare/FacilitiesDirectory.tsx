@@ -38,28 +38,6 @@ const FacilitiesDirectory = () => {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const navigate = useNavigate();
 
-  const { execute: fetchFacilities, loading } = useApi(
-    () => ApiService.facilityService('search_facilities', {
-      location: locationFilter !== 'all' ? locationFilter : undefined,
-      care_type: careTypeFilter !== 'all' ? careTypeFilter : undefined,
-    }),
-    {
-      showSuccessToast: false,
-      onSuccess: (data) => {
-        if (data && Array.isArray(data)) {
-          setFacilities(data);
-        } else {
-          // Fallback to mock data if API returns empty or invalid data
-          setFacilities(mockFacilities);
-        }
-      },
-      onError: () => {
-        // Use mock data as fallback
-        setFacilities(mockFacilities);
-      }
-    }
-  );
-
   // Mock data as fallback
   const mockFacilities: Facility[] = [
     {
@@ -124,8 +102,29 @@ const FacilitiesDirectory = () => {
     }
   ];
 
+  const { execute: fetchFacilities, loading } = useApi(
+    () => ApiService.facilityService('search_facilities', {
+      location: locationFilter !== 'all' ? locationFilter : undefined,
+      care_type: careTypeFilter !== 'all' ? careTypeFilter : undefined,
+    }),
+    {
+      showSuccessToast: false,
+      showErrorToast: false
+    }
+  );
+
   useEffect(() => {
-    fetchFacilities();
+    const loadFacilities = async () => {
+      const result = await fetchFacilities();
+      if (result && Array.isArray(result)) {
+        setFacilities(result);
+      } else {
+        // Fallback to mock data if API returns empty or invalid data
+        setFacilities(mockFacilities);
+      }
+    };
+    
+    loadFacilities();
   }, [careTypeFilter, locationFilter]);
 
   const getPartnershipColor = (status: string) => {
