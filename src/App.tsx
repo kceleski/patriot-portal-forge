@@ -11,13 +11,12 @@ import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
 import PublicLayout from '@/layouts/PublicLayout';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import HomePage from '@/pages/public/HomePage';
+import HomePage from '@/pages/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
 import PricingPage from '@/pages/PricingPage';
 import LoginPage from '@/pages/public/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import NotFound from '@/pages/NotFound';
-import { FacilitiesGallery } from '@/pages/FacilitiesGallery';
 import FacilitiesMap from '@/pages/FacilitiesMap';
 import FacilityDetail from '@/pages/FacilityDetail';
 
@@ -50,7 +49,6 @@ function AppRoutes() {
       <Route path="/" element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="find-care" element={<FindCarePage />} />
-        <Route path="facilities-gallery" element={<FacilitiesGallery />} /> 
         <Route path="facility/:id" element={<FacilityDetail />} />
         <Route path="facilities-map" element={<FacilitiesMap />} />     
         <Route path="pricing" element={<PricingPage />} />
