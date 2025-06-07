@@ -37,7 +37,7 @@ const HomePage = () => {
               <span className="bg-gradient-to-r from-brand-gold to-yellow-300 bg-clip-text text-transparent"> Quality Care Solutions</span>
             </h1>
             <p className="text-2xl mb-12 max-w-4xl mx-auto text-blue-100 leading-relaxed font-light">
-              CareConnect simplifies the process of finding and managing care services for your loved ones.
+              HealthProAssist simplifies the process of finding and managing care services for your loved ones.
               Whether you're a family, healthcare professional, placement agent, or facility, we have the innovative tools you need.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
