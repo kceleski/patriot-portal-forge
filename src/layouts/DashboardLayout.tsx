@@ -1,5 +1,7 @@
+
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Home, 
@@ -15,13 +17,11 @@ import {
   Calendar,
   Map,
   Grid2X2,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
 
-// The userType prop is no longer needed
-interface DashboardLayoutProps {}
-
-const DashboardLayout = (props: DashboardLayoutProps) => {
+const DashboardLayout = () => {
   const { signOut, profile } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,7 +32,6 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
   };
 
   const getNavigationItems = () => {
-    // We now use the user's actual role from their profile
     const userRole = profile?.user_type;
 
     switch (userRole) {
@@ -41,7 +40,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           { name: 'Dashboard', href: '/dashboard/family', icon: Home },
           { name: 'Messaging', href: '/dashboard/family/messaging', icon: MessageSquare },
           { name: 'Saved Favorites', href: '/dashboard/family/favorites', icon: Heart },
-          { name: 'Profile & Settings', href: '/dashboard/family/profile', icon: Settings },
+          { name: 'Profile & Settings', href: '/dashboard/profile', icon: User },
         ];
       case 'healthcare':
         return [
@@ -50,6 +49,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           { name: 'Referral Management', href: '/dashboard/healthcare/referrals', icon: RefreshCw },
           { name: 'Intake Form', href: '/dashboard/healthcare/intake-form', icon: UserPlus },
           { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
+          { name: 'Profile & Settings', href: '/dashboard/profile', icon: User },
         ];
       case 'agent':
         return [
@@ -57,6 +57,7 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           { name: 'CRM', href: '/dashboard/agent/crm', icon: Users },
           { name: 'Performance', href: '/dashboard/agent/performance', icon: BarChart3 },
           { name: 'Facilities Map', href: '/dashboard/facilities/map', icon: Map },
+          { name: 'Profile & Settings', href: '/dashboard/profile', icon: User },
         ];
       case 'facility':
         return [
@@ -64,9 +65,9 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
           { name: 'Listing Management', href: '/dashboard/facility/listings', icon: Building },
           { name: 'Analytics', href: '/dashboard/facility/analytics', icon: BarChart3 },
           { name: 'Webinars', href: '/dashboard/facility/webinars', icon: Calendar },
+          { name: 'Profile & Settings', href: '/dashboard/profile', icon: User },
         ];
       default:
-        // Fallback for loading state or unexpected roles
         return [];
     }
   };
@@ -78,7 +79,14 @@ const DashboardLayout = (props: DashboardLayoutProps) => {
     <div className="min-h-screen bg-brand-off-white flex">
       <div className="w-72 bg-brand-navy text-white shadow-2xl flex flex-col p-6">
           <div className="mb-10">
-            <h1 className="text-2xl font-bold text-brand-gold mb-2">HealthProAssist</h1>
+            <div className="flex items-center space-x-3 mb-6">
+              <img 
+                src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
+                alt="HealthProAssist" 
+                className="h-10 w-auto"
+              />
+              <h1 className="text-xl font-bold text-white font-heading">HealthProAssist</h1>
+            </div>
             <div className="bg-brand-sky/20 rounded-lg p-3 border border-brand-sky/30">
               <p className="text-xs text-brand-light-blue mb-1">Portal Access</p>
               <p className="font-semibold text-white">{portalName}</p>

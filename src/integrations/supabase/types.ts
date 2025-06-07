@@ -1202,6 +1202,95 @@ export type Database = {
         }
         Relationships: []
       }
+      intake_forms: {
+        Row: {
+          allergies: string | null
+          allow_covid_vaccine: boolean | null
+          allow_flu_vaccine: boolean | null
+          allow_tuberculin_test: boolean | null
+          can_be_met_by_facility: boolean | null
+          client_id: string | null
+          code_status: string | null
+          cognitive_status: Json | null
+          created_by_user_id: string | null
+          dietary_restrictions: string | null
+          dnr_directive_active: boolean | null
+          functional_ability: Json | null
+          id: string
+          level_of_care: string | null
+          medication_assistance_level: string | null
+          medications: Json | null
+          patient_signature_date: string | null
+          patient_signature_url: string | null
+          physician_signature_date: string | null
+          physician_signature_url: string | null
+          primary_diagnosis: string | null
+          secondary_diagnosis: string | null
+          status: string | null
+          vitals: Json | null
+        }
+        Insert: {
+          allergies?: string | null
+          allow_covid_vaccine?: boolean | null
+          allow_flu_vaccine?: boolean | null
+          allow_tuberculin_test?: boolean | null
+          can_be_met_by_facility?: boolean | null
+          client_id?: string | null
+          code_status?: string | null
+          cognitive_status?: Json | null
+          created_by_user_id?: string | null
+          dietary_restrictions?: string | null
+          dnr_directive_active?: boolean | null
+          functional_ability?: Json | null
+          id?: string
+          level_of_care?: string | null
+          medication_assistance_level?: string | null
+          medications?: Json | null
+          patient_signature_date?: string | null
+          patient_signature_url?: string | null
+          physician_signature_date?: string | null
+          physician_signature_url?: string | null
+          primary_diagnosis?: string | null
+          secondary_diagnosis?: string | null
+          status?: string | null
+          vitals?: Json | null
+        }
+        Update: {
+          allergies?: string | null
+          allow_covid_vaccine?: boolean | null
+          allow_flu_vaccine?: boolean | null
+          allow_tuberculin_test?: boolean | null
+          can_be_met_by_facility?: boolean | null
+          client_id?: string | null
+          code_status?: string | null
+          cognitive_status?: Json | null
+          created_by_user_id?: string | null
+          dietary_restrictions?: string | null
+          dnr_directive_active?: boolean | null
+          functional_ability?: Json | null
+          id?: string
+          level_of_care?: string | null
+          medication_assistance_level?: string | null
+          medications?: Json | null
+          patient_signature_date?: string | null
+          patient_signature_url?: string | null
+          physician_signature_date?: string | null
+          physician_signature_url?: string | null
+          primary_diagnosis?: string | null
+          secondary_diagnosis?: string | null
+          status?: string | null
+          vitals?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_forms_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_items: {
         Row: {
           amount: number

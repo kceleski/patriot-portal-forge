@@ -21,7 +21,7 @@ import FacilityDetail from '@/pages/FacilityDetail';
 import FamilyDashboard from '@/pages/family/FamilyDashboard';
 import FamilyMessaging from '@/pages/family/FamilyMessaging';
 import SavedFavorites from '@/pages/family/SavedFavorites';
-import UserProfile from '@/pages/family/UserProfile';
+import UserProfile from '@/pages/UserProfile';
 import AgentDashboard from '@/pages/agent/AgentDashboard';
 import HealthcareDashboard from '@/pages/healthcare/HealthcareDashboard';
 import FacilityDashboard from '@/pages/facility/FacilityDashboard';
@@ -61,7 +61,6 @@ function App() {
                     <Route path="family" element={<FamilyDashboard />} />
                     <Route path="family/messaging" element={<FamilyMessaging />} />
                     <Route path="family/favorites" element={<SavedFavorites />} />
-                    <Route path="family/profile" element={<UserProfile />} />
 
                     {/* Agent Routes */}
                     <Route path="agent" element={<AgentDashboard />} />
@@ -75,6 +74,7 @@ function App() {
                     
                     {/* Shared Routes */}
                     <Route path="calendar" element={<CalendarPage />} />
+                    <Route path="profile" element={<UserProfile />} />
                   </Route>
                 </Route>
                 
