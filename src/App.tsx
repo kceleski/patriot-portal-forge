@@ -36,6 +36,8 @@ import FacilitiesDirectory from '@/pages/healthcare/FacilitiesDirectory';
 import ReferralManagement from '@/pages/healthcare/ReferralManagement';
 import InvoicingTools from '@/pages/healthcare/InvoicingTools';
 import ClientTracking from '@/pages/healthcare/ClientTracking';
+// ADD THIS IMPORT: Import the new intake form component
+import { ClientIntakeForm } from '@/pages/healthcare/ClientIntakeForm';
 
 // Facility Routes
 import ListingManagement from '@/pages/facility/ListingManagement';
@@ -69,7 +71,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-background-main">
+          <div className="min-h-screen bg-primary-cream">
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<PublicLayout />}>
@@ -82,7 +84,7 @@ function App() {
 
               {/* Protected routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<DashboardLayout userType="shared" />}>
                   {/* Family Dashboard */}
                   <Route path="family" element={<FamilyDashboard />} />
                   <Route path="family/messaging" element={<FamilyMessaging />} />
@@ -99,6 +101,9 @@ function App() {
                   <Route path="healthcare/referrals" element={<ReferralManagement />} />
                   <Route path="healthcare/invoicing" element={<InvoicingTools />} />
                   <Route path="healthcare/clients" element={<ClientTracking />} />
+                  {/* ADD THIS ROUTE: Add the route for the new intake form */}
+                  <Route path="healthcare/intake-form" element={<ClientIntakeForm />} />
+
 
                   {/* Facility Dashboard */}
                   <Route path="facility" element={<FacilityDashboard />} />
