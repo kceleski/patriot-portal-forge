@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export class ApiService {
@@ -49,6 +48,15 @@ export class ApiService {
     return this.handleRequest(() =>
       supabase.functions.invoke('voice-synthesis', {
         body: { text, voice_id: voiceId }
+      })
+    );
+  }
+
+  // New method for submitting the comprehensive intake form
+  static async submitIntakeForm(formData: any) {
+    return this.handleRequest(() =>
+      supabase.functions.invoke('submit-intake-form', {
+        body: { formData }
       })
     );
   }
