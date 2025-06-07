@@ -108,4 +108,3 @@ export class ApiService {
       commission_amount: commissionAmount
     });
   }
-}
