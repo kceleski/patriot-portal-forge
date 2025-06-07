@@ -1,4 +1,4 @@
-import React from 'react';
+ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -17,6 +17,8 @@ import PricingPage from '@/pages/PricingPage';
 import LoginPage from '@/pages/public/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import NotFound from '@/pages/NotFound';
+import { FacilitiesGallery } from '@/pages/FacilitiesGallery';
+import FacilitiesMap from '@/pages/FacilitiesMap';
 import FacilityDetail from '@/pages/FacilityDetail';
 
 // Dashboards
@@ -48,7 +50,9 @@ function AppRoutes() {
       <Route path="/" element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="find-care" element={<FindCarePage />} />
+        <Route path="facilities-gallery" element={<FacilitiesGallery />} /> 
         <Route path="facility/:id" element={<FacilityDetail />} />
+        <Route path="facilities-map" element={<FacilitiesMap />} />     
         <Route path="pricing" element={<PricingPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
