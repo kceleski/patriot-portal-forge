@@ -116,4 +116,26 @@
   .gradient-hero {
     background: linear-gradient(135deg, #1D3557 0%, #457B9D 100%);
   }
-}
+}/* src/index.css */
+
+/* ... keep all existing styles ... */
+
+@layer components {
+  /* ... keep existing @layer components ... */
+
+  /* Add these new styles for the Senior Portal Theme */
+  .senior-heading {
+    @apply text-3xl font-bold text-gray-800;
+  }
+  .senior-text {
+    @apply text-lg text-gray-600 leading-relaxed;
+  }
+  .senior-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200;
+  }
+  .senior-button {
+      @apply font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50;
+  }
+  .text-senior-base {
+      @apply text-base text-gray-800;
+  }
