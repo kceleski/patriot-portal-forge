@@ -133,10 +133,10 @@ const LoginPage = () => {
                   <p className="text-sm text-gray-600 mb-4">Or continue with</p>
                   <div className="grid grid-cols-2 gap-3">
                     <Button variant="outline" type="button" disabled={loading}>
-                      Google
+                      Google (coming soon)
                     </Button>
                     <Button variant="outline" type="button" disabled={loading}>
-                      Microsoft
+                      Microsoft (coming soon)
                     </Button>
                   </div>
                 </div>
