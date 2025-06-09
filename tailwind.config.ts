@@ -26,7 +26,7 @@ export default {
 				'brand-sky': '#457B9D',
 				'brand-light-blue': '#A8DADC',
 				'brand-off-white': '#F1FAEE',
-                'brand-white': '#FFFFFF';
+                'brand-white': '#FFFFFF',
 
 				
 				// Semantic Colors
