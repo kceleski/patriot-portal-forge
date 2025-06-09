@@ -11,8 +11,52 @@ import { ApiService } from '@/services/apiService';
 import { useApi } from '@/hooks/useApi';
 import { Save, Send, FileText, User, Heart, Pill } from 'lucide-react';
 
+interface FunctionalAbility {
+  mobility: string;
+  self_care: string;
+  communication: string;
+  cognitive_function: string;
+}
+
+interface CognitiveStatus {
+  orientation: string;
+  memory: string;
+  decision_making: string;
+}
+
+interface Vitals {
+  blood_pressure: string;
+  heart_rate: string;
+  temperature: string;
+  weight: string;
+}
+
+interface IntakeFormData {
+  patient_name: string;
+  facility_name: string;
+  reason_for_visit: string;
+  primary_diagnosis: string;
+  secondary_diagnosis: string;
+  allergies: string;
+  level_of_care: string;
+  code_status: string;
+  medications: string[];
+  medication_assistance_level: string;
+  functional_ability: FunctionalAbility;
+  cognitive_status: CognitiveStatus;
+  vitals: Vitals;
+  dietary_restrictions: string;
+  can_be_met_by_facility: boolean;
+  dnr_directive_active: boolean;
+  allow_flu_vaccine: boolean;
+  allow_covid_vaccine: boolean;
+  allow_tuberculin_test: boolean;
+  patient_signature_date: string;
+  physician_signature_date: string;
+}
+
 export const ClientIntakeForm: React.FC = () => {
-  const initialFormData = {
+  const initialFormData: IntakeFormData = {
     // Patient Information
     patient_name: '',
     facility_name: '',
@@ -65,25 +109,25 @@ export const ClientIntakeForm: React.FC = () => {
     physician_signature_date: ''
   };
 
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] = useState<IntakeFormData>(initialFormData);
 
   const { execute: submitForm, loading } = useApi(ApiService.submitIntakeForm, {
     showSuccessToast: true,
     successMessage: "Intake form submitted successfully!"
   });
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: keyof IntakeFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
-  const handleNestedInputChange = (section: string, field: string, value: any) => {
+  const handleNestedInputChange = (section: keyof Pick<IntakeFormData, 'functional_ability' | 'cognitive_status' | 'vitals'>, field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [section]: {
-        ...prev[section as keyof typeof prev],
+        ...prev[section],
         [field]: value
       }
     }));

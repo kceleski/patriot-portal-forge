@@ -1,4 +1,5 @@
- import React from 'react';
+
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -15,18 +16,18 @@ import HomePage from '@/pages/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
 import PricingPage from '@/pages/PricingPage';
 import LoginPage from '@/pages/public/LoginPage';
-import RegisterPage from '@/pages/RegisterPage';
+import RegisterPage from '@/pages/public/RegisterPage';
 import NotFound from '@/pages/NotFound';
 import FacilitiesMap from '@/pages/FacilitiesMap';
 import FacilityDetail from '@/pages/FacilityDetail';
 
 // Dashboards
-import FamilyDashboard from '@/pages/FamilyDashboard/family';
-import FamilyMessaging from '@/pages/FamilyMessaging/family';
-import SavedFavorites from '@/pages/SavedFavorites/family';
-import AgentDashboard from '@/pages/AgentDashboard/agent';
-import HealthcareDashboard from '@/pages/HealthcareDashboard/healthcare';
-import FacilityDashboard from '@/pages/FacilityDashboard/facility';
+import FamilyDashboard from '@/pages/family/FamilyDashboard';
+import FamilyMessaging from '@/pages/family/FamilyMessaging';
+import SavedFavorites from '@/pages/family/SavedFavorites';
+import AgentDashboard from '@/pages/agent/AgentDashboard';
+import HealthcareDashboard from '@/pages/healthcare/HealthcareDashboard';
+import FacilityDashboard from '@/pages/facility/FacilityDashboard';
 
 // Shared
 import { CalendarPage } from '@/pages/Calendar';

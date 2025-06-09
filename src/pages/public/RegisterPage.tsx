@@ -63,7 +63,7 @@ const RegisterPage = () => {
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-text-dark-gray">
+              <CardTitle className="text-3xl font-bold text-text-primary">
                 Create Your Account
               </CardTitle>
               <CardDescription>
@@ -183,11 +183,11 @@ const RegisterPage = () => {
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     I agree to the{' '}
-                    <Link to="#" className="text-primary-sky hover:underline">
+                    <Link to="#" className="text-brand-sky hover:underline">
                       Terms of Service
                     </Link>{' '}
                     and{' '}
-                    <Link to="#" className="text-primary-sky hover:underline">
+                    <Link to="#" className="text-brand-sky hover:underline">
                       Privacy Policy
                     </Link>
                   </label>
@@ -195,7 +195,7 @@ const RegisterPage = () => {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-primary-red hover:bg-red-600"
+                  className="w-full bg-brand-red hover:bg-red-600"
                   size="lg"
                   disabled={!formData.agreeToTerms || loading || formData.password !== formData.confirmPassword}
                 >
@@ -206,7 +206,7 @@ const RegisterPage = () => {
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
                   Already have an account?{' '}
-                  <Link to="/login" className="text-primary-sky hover:underline font-medium">
+                  <Link to="/login" className="text-brand-sky hover:underline font-medium">
                     Sign in here
                   </Link>
                 </p>
