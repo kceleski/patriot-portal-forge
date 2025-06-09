@@ -1,142 +1,128 @@
-
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Home, 
-  Users, 
-  MessageSquare, 
-  Heart, 
-  Settings,
-  RefreshCw, 
-  DollarSign, 
-  Building, 
-  BarChart3, 
-  UserPlus, 
+import React, { useState } from 'react';
+import {
+  LayoutDashboard,
+  Search,
+  MessageSquare,
+  Heart,
+  FileText,
+  Users,
+  Building,
+  Receipt,
+  BarChart3,
+  Database,
   Calendar,
-  Map,
-  Grid2X2,
-  LogOut,
-  User
+  User,
+  MapPin,
+  Mail
 } from 'lucide-react';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from '@/contexts/AuthContext';
+import TempLoginModal from '@/components/TempLoginModal';
 
 const DashboardLayout = () => {
-  const { signOut, profile } = useAuth();
-  const location = useLocation();
+  const { profile } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
-  };
+  const location = useLocation();
 
   const getNavigationItems = () => {
-    const userRole = profile?.user_type;
+    if (!profile?.user_type) return [];
 
-    switch (userRole) {
-      case 'family':
-        return [
-          { name: 'Dashboard', href: '/dashboard/family', icon: Home },
-          { name: 'Messaging', href: '/dashboard/family/messaging', icon: MessageSquare },
-          { name: 'Saved Favorites', href: '/dashboard/family/favorites', icon: Heart },
-          { name: 'Profile & Settings', href: '/dashboard/profile', icon: User },
-        ];
-      case 'healthcare':
-        return [
-          { name: 'Dashboard', href: '/dashboard/healthcare', icon: Home },
-          { name: 'Client Tracking', href: '/dashboard/healthcare/clients', icon: Users },
-          { name: 'Referral Management', href: '/dashboard/healthcare/referrals', icon: RefreshCw },
-          { name: 'Intake Form', href: '/dashboard/healthcare/intake-form', icon: UserPlus },
-          { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
-          { name: 'Profile & Settings', href: '/dashboard/profile', icon: User },
-        ];
-      case 'agent':
-        return [
-          { name: 'Dashboard', href: '/dashboard/agent', icon: Home },
-          { name: 'CRM', href: '/dashboard/agent/crm', icon: Users },
-          { name: 'Performance', href: '/dashboard/agent/performance', icon: BarChart3 },
-          { name: 'Facilities Map', href: '/dashboard/facilities/map', icon: Map },
-          { name: 'Profile & Settings', href: '/dashboard/profile', icon: User },
-        ];
-      case 'facility':
-        return [
-          { name: 'Dashboard', href: '/dashboard/facility', icon: Home },
-          { name: 'Listing Management', href: '/dashboard/facility/listings', icon: Building },
-          { name: 'Analytics', href: '/dashboard/facility/analytics', icon: BarChart3 },
-          { name: 'Webinars', href: '/dashboard/facility/webinars', icon: Calendar },
-          { name: 'Profile & Settings', href: '/dashboard/profile', icon: User },
-        ];
-      default:
-        return [];
-    }
+    const baseItems = [
+      { 
+        icon: LayoutDashboard, 
+        label: 'Dashboard', 
+        href: `/dashboard/${profile.user_type}` 
+      }
+    ];
+
+    const roleSpecificItems = {
+      family: [
+        { icon: Search, label: 'Find Care', href: '/find-care' },
+        { icon: MessageSquare, label: 'Messages', href: '/dashboard/family/messaging' },
+        { icon: Heart, label: 'Saved Favorites', href: '/dashboard/family/favorites' },
+      ],
+      healthcare: [
+        { icon: FileText, label: 'Client Intake', href: '/dashboard/healthcare/intake-form' },
+        { icon: Users, label: 'Client Tracking', href: '/dashboard/healthcare/clients' },
+        { icon: Building, label: 'Facilities Directory', href: '/dashboard/healthcare/facilities' },
+        { icon: Receipt, label: 'Invoicing', href: '/dashboard/healthcare/invoicing' },
+      ],
+      agent: [
+        { icon: MapPin, label: 'Facility Map', href: '/dashboard/agent/facility-map' },
+        { icon: Users, label: 'Contact Book', href: '/dashboard/agent/contacts' },
+        { icon: FileText, label: 'Form Builder', href: '/dashboard/agent/form-builder' },
+        { icon: Mail, label: 'Inbox', href: '/dashboard/agent/inbox' },
+        { icon: BarChart3, label: 'Performance', href: '/dashboard/agent/performance' },
+        { icon: Database, label: 'CRM', href: '/dashboard/agent/crm' },
+      ],
+      facility: [
+        { icon: Building, label: 'Listing Management', href: '/dashboard/facility/listings' },
+        { icon: BarChart3, label: 'Analytics', href: '/dashboard/facility/analytics' },
+        { icon: Users, label: 'Placement Specialists', href: '/dashboard/facility/specialists' },
+        { icon: Calendar, label: 'Events & Webinars', href: '/dashboard/facility/webinars' },
+      ]
+    };
+
+    const sharedItems = [
+      { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
+      { icon: User, label: 'Profile & Settings', href: '/dashboard/profile' },
+    ];
+
+    return [
+      ...baseItems,
+      ...(roleSpecificItems[profile.user_type] || []),
+      ...sharedItems
+    ];
   };
 
-  const navigationItems = getNavigationItems();
-  const portalName = profile?.user_type ? `${profile.user_type.charAt(0).toUpperCase()}${profile.user_type.slice(1)} Portal` : 'Dashboard';
-
   return (
-    <div className="min-h-screen bg-brand-off-white flex">
-      <div className="w-72 bg-brand-navy text-white shadow-2xl flex flex-col p-6">
-          <div className="mb-10">
-            <div className="flex items-center space-x-3 mb-6">
-              <img 
-                src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
-                alt="HealthProAssist" 
-                className="h-10 w-auto rounded-lg shadow-md"
-              />
-              <h1 className="text-xl font-bold text-white font-heading">HealthProAssist</h1>
-            </div>
-            <div className="bg-brand-sky/20 rounded-lg p-3 border border-brand-sky/30">
-              <p className="text-xs text-brand-light-blue mb-1">Portal Access</p>
-              <p className="font-semibold text-white">{portalName}</p>
-            </div>
+    <div className="min-h-screen bg-background-main">
+      {/* Mobile Navigation */}
+      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+        <SheetTrigger asChild>
+          <Button variant="outline" className="md:hidden absolute top-4 left-4 z-50">
+            Menu
+          </Button>
+        </SheetTrigger>
+        <SheetContent className="sm:max-w-xs pt-6">
+          <SheetHeader>
+            <SheetTitle>Dashboard Menu</SheetTitle>
+          </SheetHeader>
+          <Separator className="my-4" />
+          <div className="flex flex-col space-y-2">
+            {getNavigationItems().map((item) => (
+              <Link key={item.href} to={item.href} className="flex items-center space-x-2 py-2 px-4 rounded-md hover:bg-accent hover:text-accent-foreground" onClick={() => setIsSidebarOpen(false)}>
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </Link>
+            ))}
           </div>
+        </SheetContent>
+      </Sheet>
 
-          <nav className="flex-1 space-y-2">
-            {navigationItems.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
-                    isActive
-                      ? 'bg-brand-sky text-white shadow-md border border-brand-light-blue/30'
-                      : 'text-brand-light-blue hover:bg-brand-sky/20 hover:text-white hover:shadow-sm'
-                  }`}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="mt-auto">
-            <div className="border-t border-brand-sky/30 pt-4">
-               <div className="bg-brand-sky/10 rounded-lg p-3 mb-4 text-center border border-brand-sky/20">
-                  <p className="text-sm font-semibold text-white">{profile?.first_name} {profile?.last_name}</p>
-                  <Badge variant="secondary" className="mt-2 bg-brand-gold text-brand-navy font-medium">
-                    {profile?.subscription_tier} Tier
-                  </Badge>
-              </div>
-              <Button
-                variant="ghost"
-                onClick={handleSignOut}
-                className="w-full justify-center text-brand-light-blue hover:bg-brand-red/80 hover:text-white transition-all duration-200 py-3 border border-transparent hover:border-red-400/30"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-      </div>
-
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-7xl mx-auto">
-          <Outlet />
+      {/* Desktop Navigation */}
+      <nav className="hidden md:flex flex-col w-64 bg-secondary text-secondary-foreground border-r border-muted h-screen fixed top-0 left-0 z-40">
+        <div className="p-4 flex items-center justify-center">
+          <span className="text-lg font-bold">HealthProAssist</span>
         </div>
+        <Separator className="my-2" />
+        <div className="flex flex-col space-y-2 p-2">
+          {getNavigationItems().map((item) => (
+            <Link key={item.href} to={item.href} className={`flex items-center space-x-2 py-2 px-4 rounded-md hover:bg-accent hover:text-accent-foreground ${location.pathname === item.href ? 'bg-accent text-accent-foreground font-medium' : ''}`}>
+              <item.icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="md:ml-64 p-6">
+        <Outlet />
       </main>
     </div>
   );

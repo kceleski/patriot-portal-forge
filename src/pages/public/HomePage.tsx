@@ -1,13 +1,18 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, User, Building, Briefcase, ArrowRight, Shield, Zap, Heart, CheckCircle } from 'lucide-react';
 import ElevenLabsWidget from '@/components/ElevenLabsWidget';
+import TempLoginModal from '@/components/TempLoginModal';
+import { useTempAuth } from '@/contexts/TempAuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const [showWidget, setShowWidget] = useState(false);
+  const [isTempLoginOpen, setIsTempLoginOpen] = useState(false);
+  const { user } = useTempAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +27,21 @@ const HomePage = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handlePortalAccess = (userType: string) => {
+    if (user) {
+      navigate(`/dashboard/${userType}`);
+    } else {
+      setIsTempLoginOpen(true);
+    }
+  };
+
+  const handleTempLoginClose = () => {
+    setIsTempLoginOpen(false);
+    if (user) {
+      navigate(`/dashboard/${user.userType}`);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -80,12 +100,13 @@ const HomePage = () => {
                 <CardDescription className="text-lg text-gray-600 leading-relaxed">Find and manage care services for your loved ones with ease</CardDescription>
               </CardHeader>
               <CardContent className="text-center p-8 pt-0">
-                <Link to="/dashboard/family">
-                  <Button className="btn-primary btn-enhanced w-full text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced">
-                    Access Family Portal
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={() => handlePortalAccess('family')}
+                  className="btn-primary btn-enhanced w-full text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced"
+                >
+                  Access Family Portal
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </CardContent>
             </Card>
 
@@ -98,12 +119,13 @@ const HomePage = () => {
                 <CardDescription className="text-lg text-gray-600 leading-relaxed">Manage clients, referrals, and track placements efficiently</CardDescription>
               </CardHeader>
               <CardContent className="text-center p-8 pt-0">
-                <Link to="/dashboard/healthcare">
-                  <Button className="btn-secondary btn-enhanced w-full text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced">
-                    Access Healthcare Portal
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={() => handlePortalAccess('healthcare')}
+                  className="btn-secondary btn-enhanced w-full text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced"
+                >
+                  Access Healthcare Portal
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </CardContent>
             </Card>
 
@@ -116,12 +138,13 @@ const HomePage = () => {
                 <CardDescription className="text-lg text-gray-600 leading-relaxed">CRM tools, performance tracking, and comprehensive client management</CardDescription>
               </CardHeader>
               <CardContent className="text-center p-8 pt-0">
-                <Link to="/dashboard/agent">
-                  <Button className="w-full bg-brand-gold hover:bg-yellow-500 text-brand-navy btn-enhanced text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced">
-                    Access Agent Portal
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={() => handlePortalAccess('agent')}
+                  className="w-full bg-brand-gold hover:bg-yellow-500 text-brand-navy btn-enhanced text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced"
+                >
+                  Access Agent Portal
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </CardContent>
             </Card>
 
@@ -134,12 +157,13 @@ const HomePage = () => {
                 <CardDescription className="text-lg text-gray-600 leading-relaxed">Manage listings, analytics, and placement specialist relationships</CardDescription>
               </CardHeader>
               <CardContent className="text-center p-8 pt-0">
-                <Link to="/dashboard/facility">
-                  <Button className="w-full bg-brand-navy hover:bg-blue-900 text-white btn-enhanced text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced">
-                    Access Facility Portal
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={() => handlePortalAccess('facility')}
+                  className="w-full bg-brand-navy hover:bg-blue-900 text-white btn-enhanced text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced"
+                >
+                  Access Facility Portal
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -240,6 +264,11 @@ const HomePage = () => {
       >
         <ElevenLabsWidget variant="fullscreen" />
       </div>
+
+      <TempLoginModal 
+        isOpen={isTempLoginOpen} 
+        onClose={handleTempLoginClose}
+      />
     </div>
   );
 };

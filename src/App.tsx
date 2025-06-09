@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -7,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // Providers
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
+import { TempAuthProvider } from '@/contexts/TempAuthContext';
 
 // Layouts and Pages
 import PublicLayout from '@/layouts/PublicLayout';
@@ -34,6 +34,12 @@ import { CalendarPage } from '@/pages/Calendar';
 import { ClientIntakeForm } from '@/pages/healthcare/ClientIntakeForm';
 import UserProfile from '@/pages/UserProfile';
 import ElevenLabsWidget from '@/components/ElevenLabsWidget';
+
+// Import new agent pages
+import FacilityMapView from '@/pages/agent/FacilityMapView';
+import FacilityContactBook from '@/pages/agent/FacilityContactBook';
+import DocumentFormBuilder from '@/pages/agent/DocumentFormBuilder';
+import InboxMessaging from '@/pages/agent/InboxMessaging';
 
 const queryClient = new QueryClient();
 
@@ -65,8 +71,12 @@ function AppRoutes() {
           <Route path="family/messaging" element={<FamilyMessaging />} />
           <Route path="family/favorites" element={<SavedFavorites />} />
 
-          {/* Agent */}
+          {/* Agent - Enhanced with new features */}
           <Route path="agent" element={<AgentDashboard />} />
+          <Route path="agent/facility-map" element={<FacilityMapView />} />
+          <Route path="agent/contacts" element={<FacilityContactBook />} />
+          <Route path="agent/form-builder" element={<DocumentFormBuilder />} />
+          <Route path="agent/inbox" element={<InboxMessaging />} />
 
           {/* Healthcare */}
           <Route path="healthcare" element={<HealthcareDashboard />} />
@@ -92,13 +102,15 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AccessibilityProvider>
-          <Router>
-            <div className="min-h-screen bg-brand-off-white">
-              <AppRoutes />
-              <FloatingWidgetWrapper />
-              <Toaster />
-            </div>
-          </Router>
+          <TempAuthProvider>
+            <Router>
+              <div className="min-h-screen bg-brand-off-white">
+                <AppRoutes />
+                <FloatingWidgetWrapper />
+                <Toaster />
+              </div>
+            </Router>
+          </TempAuthProvider>
         </AccessibilityProvider>
       </AuthProvider>
     </QueryClientProvider>
