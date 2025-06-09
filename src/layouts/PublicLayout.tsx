@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Building2, Phone, Mail } from 'lucide-react';
+import MobileNavigation from '@/components/mobile/MobileNavigation';
 
 const PublicLayout = () => {
   const location = useLocation();
@@ -9,19 +11,20 @@ const PublicLayout = () => {
 
   return (
     <div className="min-h-screen bg-background-main">
-      <nav className="navbar-enhanced sticky top-0 z-50">
-        <div className="container mx-auto px-4">
+      <nav className="navbar-enhanced sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-ui-border">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center space-x-3">
-              <div className="logo-enhanced bg-brand-navy p-2 rounded-lg">
-                <Building2 className="h-8 w-8 text-white" />
+            <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
+              <div className="logo-enhanced bg-brand-navy p-1.5 sm:p-2 rounded-lg">
+                <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
               </div>
-              <span className="text-2xl font-bold text-brand-navy font-heading">
+              <span className="text-lg sm:text-2xl font-bold text-brand-navy font-heading">
                 HealthProAssist
               </span>
             </Link>
 
-            <div className="hidden md:flex items-center space-x-8">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
               <Link 
                 to="/find-care" 
                 className="text-brand-navy hover:text-brand-sky font-medium transition-colors duration-300 focus-enhanced"
@@ -43,34 +46,25 @@ const PublicLayout = () => {
               
               <div className="flex items-center space-x-3">
                 <Link to="/super-login">
-                  <Button variant="outline" className="btn-outline focus-enhanced">
+                  <Button variant="outline" size="sm" className="btn-outline focus-enhanced hidden lg:inline-flex">
                     Super User Login
                   </Button>
                 </Link>
                 <Link to="/login">
-                  <Button variant="outline" className="btn-outline focus-enhanced">
+                  <Button variant="outline" size="sm" className="btn-outline focus-enhanced">
                     Sign In
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button className="btn-primary focus-enhanced">
+                  <Button size="sm" className="btn-primary focus-enhanced">
                     Get Started
                   </Button>
                 </Link>
               </div>
             </div>
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <Button variant="outline" size="sm" className="focus-enhanced">
-                <span className="sr-only">Open menu</span>
-                <div className="w-6 h-6 flex flex-col justify-center items-center">
-                  <span className="block w-5 h-0.5 bg-brand-navy mb-1"></span>
-                  <span className="block w-5 h-0.5 bg-brand-navy mb-1"></span>
-                  <span className="block w-5 h-0.5 bg-brand-navy"></span>
-                </div>
-              </Button>
-            </div>
+            {/* Mobile Navigation */}
+            <MobileNavigation />
           </div>
         </div>
       </nav>
@@ -80,22 +74,22 @@ const PublicLayout = () => {
       </main>
 
       {!isHomePage && (
-        <footer className="bg-brand-navy text-white py-12 mt-20">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
+        <footer className="bg-brand-navy text-white py-8 sm:py-12 mt-12 sm:mt-20">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+              <div className="sm:col-span-2 lg:col-span-1">
                 <div className="flex items-center space-x-3 mb-4">
-                  <Building2 className="h-8 w-8 text-brand-gold" />
-                  <span className="text-xl font-bold font-heading">HealthProAssist</span>
+                  <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-brand-gold" />
+                  <span className="text-lg sm:text-xl font-bold font-heading">HealthProAssist</span>
                 </div>
-                <p className="text-blue-200 leading-relaxed">
+                <p className="text-blue-200 leading-relaxed text-sm sm:text-base">
                   Connecting families with quality care solutions through innovative technology and personalized service.
                 </p>
               </div>
               
               <div>
-                <h4 className="font-semibold mb-4 text-brand-gold font-heading">Services</h4>
-                <ul className="space-y-2 text-blue-200">
+                <h4 className="font-semibold mb-4 text-brand-gold font-heading text-base sm:text-lg">Services</h4>
+                <ul className="space-y-2 text-blue-200 text-sm sm:text-base">
                   <li><Link to="/find-care" className="hover:text-white transition-colors">Find Care</Link></li>
                   <li><Link to="/facilities-map" className="hover:text-white transition-colors">Facility Directory</Link></li>
                   <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing Plans</Link></li>
@@ -103,8 +97,8 @@ const PublicLayout = () => {
               </div>
               
               <div>
-                <h4 className="font-semibold mb-4 text-brand-gold font-heading">Portals</h4>
-                <ul className="space-y-2 text-blue-200">
+                <h4 className="font-semibold mb-4 text-brand-gold font-heading text-base sm:text-lg">Portals</h4>
+                <ul className="space-y-2 text-blue-200 text-sm sm:text-base">
                   <li><Link to="/dashboard/family" className="hover:text-white transition-colors">Family Portal</Link></li>
                   <li><Link to="/dashboard/healthcare" className="hover:text-white transition-colors">Healthcare Portal</Link></li>
                   <li><Link to="/dashboard/agent" className="hover:text-white transition-colors">Agent Portal</Link></li>
@@ -113,21 +107,21 @@ const PublicLayout = () => {
               </div>
               
               <div>
-                <h4 className="font-semibold mb-4 text-brand-gold font-heading">Contact</h4>
-                <div className="space-y-3 text-blue-200">
+                <h4 className="font-semibold mb-4 text-brand-gold font-heading text-base sm:text-lg">Contact</h4>
+                <div className="space-y-3 text-blue-200 text-sm sm:text-base">
                   <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4" />
+                    <Phone className="h-4 w-4 flex-shrink-0" />
                     <span>(555) 123-4567</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4" />
-                    <span>support@healthproassist.com</span>
+                    <Mail className="h-4 w-4 flex-shrink-0" />
+                    <span className="break-all">support@healthproassist.com</span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="border-t border-blue-800 mt-8 pt-8 text-center text-blue-200">
+            <div className="border-t border-blue-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-blue-200 text-sm sm:text-base">
               <p>&copy; 2024 HealthProAssist. All rights reserved.</p>
             </div>
           </div>
