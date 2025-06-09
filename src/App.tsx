@@ -15,7 +15,7 @@ import DashboardLayout from '@/layouts/DashboardLayout';
 import SuperUserProtectedRoute from '@/components/SuperUserProtectedRoute';
 import HomePage from '@/pages/public/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
-import PricingPage from '@/pages/PricingPage';
+import PricingPage from '@/pages/public/PricingPage';
 import LoginPage from '@/pages/public/LoginPage';
 import RegisterPage from '@/pages/public/RegisterPage';
 import SuperUserLogin from '@/pages/SuperUserLogin';
