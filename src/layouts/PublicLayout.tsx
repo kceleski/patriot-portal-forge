@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -132,7 +131,7 @@ const PublicLayout = () => {
               <p>&copy; 2024 HealthProAssist. All rights reserved.</p>
             </div>
           </div>
-        </div>
+        </footer>
       )}
     </div>
   );
