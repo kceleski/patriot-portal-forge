@@ -1,29 +1,15 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Building2, Phone, Mail } from 'lucide-react';
-import TempLoginModal from '@/components/TempLoginModal';
-import { useTempAuth } from '@/contexts/TempAuthContext';
+import { useSuperUser } from '@/contexts/SuperUserContext';
 import { useNavigate } from 'react-router-dom';
 
 const PublicLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
-  const { user, logout } = useTempAuth();
-  const [isTempLoginOpen, setIsTempLoginOpen] = useState(false);
-
-  const handlePortalClick = (userType: string) => {
-    setIsTempLoginOpen(true);
-  };
-
-  const handleTempLoginClose = () => {
-    setIsTempLoginOpen(false);
-    if (user) {
-      navigate(`/dashboard/${user.userType}`);
-    }
-  };
+  const { user, logout } = useSuperUser();
 
   return (
     <div className="min-h-screen bg-background-main">
@@ -62,11 +48,11 @@ const PublicLayout = () => {
               <div className="flex items-center space-x-3">
                 {user ? (
                   <div className="flex items-center space-x-3">
-                    <span className="text-brand-navy">Welcome, {user.name}</span>
+                    <span className="text-brand-navy">Super User: {user.username}</span>
                     <Button onClick={logout} variant="outline" className="btn-outline focus-enhanced">
                       Sign Out
                     </Button>
-                    <Link to={`/dashboard/${user.userType}`}>
+                    <Link to={`/dashboard/${user.currentPortal}`}>
                       <Button className="btn-primary focus-enhanced">
                         Go to Dashboard
                       </Button>
@@ -74,13 +60,11 @@ const PublicLayout = () => {
                   </div>
                 ) : (
                   <>
-                    <Button 
-                      onClick={() => setIsTempLoginOpen(true)}
-                      variant="outline" 
-                      className="btn-outline focus-enhanced"
-                    >
-                      Sign In
-                    </Button>
+                    <Link to="/super-login">
+                      <Button variant="outline" className="btn-outline focus-enhanced">
+                        Super User Login
+                      </Button>
+                    </Link>
                     <Link to="/register">
                       <Button className="btn-primary focus-enhanced">
                         Get Started

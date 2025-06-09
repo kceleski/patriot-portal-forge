@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -6,17 +7,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // Providers
 import { AuthProvider } from '@/contexts/AuthContext';
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
-import { TempAuthProvider } from '@/contexts/TempAuthContext';
+import { SuperUserProvider } from '@/contexts/SuperUserContext';
 
 // Layouts and Pages
 import PublicLayout from '@/layouts/PublicLayout';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import SuperUserProtectedRoute from '@/components/SuperUserProtectedRoute';
 import HomePage from '@/pages/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
 import PricingPage from '@/pages/PricingPage';
 import LoginPage from '@/pages/public/LoginPage';
 import RegisterPage from '@/pages/public/RegisterPage';
+import SuperUserLogin from '@/pages/SuperUserLogin';
 import NotFound from '@/pages/NotFound';
 import FacilitiesMap from '@/pages/FacilitiesMap';
 import FacilityDetail from '@/pages/FacilityDetail';
@@ -33,9 +35,9 @@ import FacilityDashboard from '@/pages/facility/FacilityDashboard';
 import { CalendarPage } from '@/pages/Calendar';
 import { ClientIntakeForm } from '@/pages/healthcare/ClientIntakeForm';
 import UserProfile from '@/pages/UserProfile';
-import ElevenLabsWidget from '@/components/ElevenLabsWidget';
+import ElevenLabsAgent from '@/components/ElevenLabsAgent';
 
-// Import new agent pages
+// Import agent pages
 import FacilityMapView from '@/pages/agent/FacilityMapView';
 import FacilityContactBook from '@/pages/agent/FacilityContactBook';
 import DocumentFormBuilder from '@/pages/agent/DocumentFormBuilder';
@@ -43,15 +45,19 @@ import InboxMessaging from '@/pages/agent/InboxMessaging';
 
 const queryClient = new QueryClient();
 
-const FloatingWidgetWrapper = () => {
+const FloatingAgentWrapper = () => {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
-  return isHomePage ? null : <ElevenLabsWidget variant="floating" />;
+  const isLoginPage = location.pathname === '/super-login';
+  return (isHomePage || isLoginPage) ? null : <ElevenLabsAgent />;
 };
 
 function AppRoutes() {
   return (
     <Routes>
+      {/* Super User Login */}
+      <Route path="/super-login" element={<SuperUserLogin />} />
+
       {/* Public Routes */}
       <Route path="/" element={<PublicLayout />}>
         <Route index element={<HomePage />} />
@@ -63,8 +69,8 @@ function AppRoutes() {
         <Route path="register" element={<RegisterPage />} />
       </Route>
 
-      {/* Protected Routes */}
-      <Route path="/dashboard" element={<ProtectedRoute />}>
+      {/* Protected Routes - Requires Super User Authentication */}
+      <Route path="/dashboard" element={<SuperUserProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           {/* Family */}
           <Route path="family" element={<FamilyDashboard />} />
@@ -102,15 +108,15 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AccessibilityProvider>
-          <TempAuthProvider>
+          <SuperUserProvider>
             <Router>
               <div className="min-h-screen bg-brand-off-white">
                 <AppRoutes />
-                <FloatingWidgetWrapper />
+                <FloatingAgentWrapper />
                 <Toaster />
               </div>
             </Router>
-          </TempAuthProvider>
+          </SuperUserProvider>
         </AccessibilityProvider>
       </AuthProvider>
     </QueryClientProvider>

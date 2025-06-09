@@ -1,0 +1,197 @@
+
+import React, { useState } from 'react';
+import { useConversation } from '@elevenlabs/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MessageSquare, X, Mic, MicOff, Volume2, VolumeX, Phone } from 'lucide-react';
+
+const ElevenLabsAgent = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+  const [isVolumeEnabled, setIsVolumeEnabled] = useState(true);
+
+  const conversation = useConversation({
+    onConnect: () => {
+      console.log("AVA Agent connected");
+    },
+    onMessage: (message) => {
+      console.log("Message received:", message);
+    },
+    onError: (error) => {
+      console.error("Conversation error:", error);
+    },
+    onDisconnect: () => {
+      console.log("AVA Agent disconnected");
+    }
+  });
+
+  const { status, isSpeaking } = conversation;
+
+  const startConversation = async () => {
+    try {
+      // Request microphone access
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Start the conversation using agent ID from environment or fallback
+      await conversation.startSession({
+        agentId: "YOUR_ELEVENLABS_AGENT_ID_HERE" // This should be replaced with actual agent ID
+      });
+    } catch (error) {
+      console.error("Failed to start conversation:", error);
+    }
+  };
+
+  const endConversation = async () => {
+    try {
+      await conversation.endSession();
+    } catch (error) {
+      console.error("Failed to end conversation:", error);
+    }
+  };
+
+  const handleVolumeChange = (newVolume: number) => {
+    setVolume(newVolume);
+    if (conversation.setVolume) {
+      conversation.setVolume({ volume: newVolume });
+    }
+  };
+
+  const toggleVolume = () => {
+    setIsVolumeEnabled(!isVolumeEnabled);
+    handleVolumeChange(isVolumeEnabled ? 0 : 0.5);
+  };
+
+  return (
+    <>
+      {/* Floating AVA Button */}
+      {!isOpen && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <Button
+            onClick={() => setIsOpen(true)}
+            className="w-16 h-16 rounded-full bg-brand-red hover:bg-red-600 shadow-lg"
+          >
+            <MessageSquare className="h-6 w-6 text-white" />
+          </Button>
+          
+          {/* AVA Badge */}
+          <div className="absolute -top-2 -left-2 bg-brand-gold text-brand-navy text-xs font-bold px-2 py-1 rounded-full">
+            AVA
+          </div>
+        </div>
+      )}
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 flex flex-col">
+          {/* Header */}
+          <div className="bg-brand-navy text-white p-4 rounded-t-2xl flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center">
+                <span className="text-brand-navy font-bold text-sm">AVA</span>
+              </div>
+              <div>
+                <h3 className="font-semibold">AVA Assistant</h3>
+                <p className="text-xs opacity-75">
+                  Status: {status} {isSpeaking ? '(Speaking...)' : ''}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleVolume}
+                className="text-white hover:bg-white/20 h-8 w-8 p-0"
+              >
+                {isVolumeEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+                className="text-white hover:bg-white/20 h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 p-4 flex flex-col items-center justify-center space-y-4">
+            <div className="text-center">
+              <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                Voice AI Assistant
+              </h4>
+              <p className="text-sm text-gray-600 mb-4">
+                Click the microphone to start a voice conversation with AVA
+              </p>
+            </div>
+
+            {/* Microphone Status Indicator */}
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
+              status === 'connected' ? 'bg-green-100' : 'bg-gray-100'
+            }`}>
+              {status === 'connected' ? (
+                <Mic className={`h-8 w-8 ${isSpeaking ? 'text-red-500' : 'text-green-600'}`} />
+              ) : (
+                <MicOff className="h-8 w-8 text-gray-400" />
+              )}
+            </div>
+
+            {/* Status Text */}
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-700">
+                {status === 'connected' ? 
+                  (isSpeaking ? 'AVA is speaking...' : 'Listening...') : 
+                  'Ready to connect'
+                }
+              </p>
+            </div>
+
+            {/* Volume Control */}
+            {status === 'connected' && (
+              <div className="w-full">
+                <label className="text-xs text-gray-600 mb-2 block">Volume</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={volume}
+                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Control Buttons */}
+          <div className="p-4 border-t border-gray-100">
+            <div className="flex space-x-2">
+              {status !== 'connected' ? (
+                <Button
+                  onClick={startConversation}
+                  className="flex-1 bg-brand-sky hover:bg-blue-600"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Start Conversation
+                </Button>
+              ) : (
+                <Button
+                  onClick={endConversation}
+                  variant="destructive"
+                  className="flex-1"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  End Conversation
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default ElevenLabsAgent;
