@@ -15,7 +15,9 @@ import {
   User,
   MapPin,
   Mail,
-  Settings
+  Settings,
+  Zap,
+  ChevronRight
 } from 'lucide-react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -23,6 +25,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSuperUser } from '@/contexts/SuperUserContext';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 const DashboardLayout = () => {
   const { user, switchPortal } = useSuperUser();
@@ -33,6 +40,36 @@ const DashboardLayout = () => {
   const handlePortalSwitch = (portal: 'family' | 'healthcare' | 'agent' | 'facility') => {
     switchPortal(portal);
     navigate(`/dashboard/${portal}`);
+  };
+
+  const getQuickActionsForPortal = () => {
+    if (!user?.currentPortal) return [];
+
+    const quickActions = {
+      family: [
+        { label: 'Search Facilities', href: '/find-care', icon: Search },
+        { label: 'Schedule Tour', href: '/dashboard/calendar', icon: Calendar },
+        { label: 'Message Advisor', href: '/dashboard/family/messaging', icon: MessageSquare }
+      ],
+      healthcare: [
+        { label: 'New Client Intake', href: '/dashboard/healthcare/intake-form', icon: FileText },
+        { label: 'Generate Invoice', href: '/dashboard/healthcare/invoicing', icon: Receipt },
+        { label: 'Update Client Status', href: '/dashboard/healthcare/clients', icon: Users }
+      ],
+      agent: [
+        { label: 'Schedule Facility Tour', href: '/dashboard/calendar', icon: Calendar },
+        { label: 'Send Follow-up Email', href: '/dashboard/agent/inbox', icon: Mail },
+        { label: 'Update CRM', href: '/dashboard/agent/crm', icon: Database },
+        { label: 'Add New Contact', href: '/dashboard/agent/contacts', icon: Users }
+      ],
+      facility: [
+        { label: 'Update Listing', href: '/dashboard/facility/listings', icon: Building },
+        { label: 'Schedule Webinar', href: '/dashboard/facility/webinars', icon: Calendar },
+        { label: 'View Analytics', href: '/dashboard/facility/analytics', icon: BarChart3 }
+      ]
+    };
+
+    return quickActions[user.currentPortal] || [];
   };
 
   const getNavigationItems = () => {
@@ -79,14 +116,49 @@ const DashboardLayout = () => {
       { icon: User, label: 'Profile & Settings', href: '/dashboard/profile' },
     ];
 
+    const quickActionsItem = {
+      icon: Zap,
+      label: 'Quick Actions',
+      href: '#',
+      isQuickActions: true
+    };
+
     return [
       ...baseItems,
       ...(roleSpecificItems[user.currentPortal] || []),
+      quickActionsItem,
       ...sharedItems
     ];
   };
 
   const navigationItems = getNavigationItems();
+  const quickActions = getQuickActionsForPortal();
+
+  const QuickActionsDropdown = () => (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <div className="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-gray-100 transition-colors text-gray-700 cursor-pointer">
+          <Zap className="h-5 w-5" />
+          <span>Quick Actions</span>
+          <ChevronRight className="h-4 w-4 ml-auto" />
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent side="right" className="w-60 p-2">
+        <div className="space-y-1">
+          {quickActions.map((action) => (
+            <Link
+              key={action.href}
+              to={action.href}
+              className="flex items-center space-x-2 py-2 px-3 rounded-md hover:bg-gray-100 transition-colors text-sm"
+            >
+              <action.icon className="h-4 w-4" />
+              <span>{action.label}</span>
+            </Link>
+          ))}
+        </div>
+      </HoverCardContent>
+    </HoverCard>
+  );
 
   return (
     <div className="min-h-screen bg-background-main">
@@ -163,16 +235,20 @@ const DashboardLayout = () => {
         
         <div className="flex flex-col space-y-1 p-2 flex-1">
           {navigationItems.map((item) => (
-            <Link 
-              key={item.href} 
-              to={item.href} 
-              className={`flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-gray-100 transition-colors ${
-                location.pathname === item.href ? 'bg-brand-sky/10 text-brand-sky border-r-2 border-brand-sky font-medium' : 'text-gray-700'
-              }`}
-            >
-              <item.icon className="h-5 w-5" />
-              <span>{item.label}</span>
-            </Link>
+            item.isQuickActions ? (
+              <QuickActionsDropdown key="quick-actions" />
+            ) : (
+              <Link 
+                key={item.href} 
+                to={item.href} 
+                className={`flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-gray-100 transition-colors ${
+                  location.pathname === item.href ? 'bg-brand-sky/10 text-brand-sky border-r-2 border-brand-sky font-medium' : 'text-gray-700'
+                }`}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </Link>
+            )
           ))}
         </div>
         

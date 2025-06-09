@@ -1,10 +1,15 @@
-
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, DollarSign, TrendingUp, Calendar, Phone, Mail, Clock, CheckCircle } from 'lucide-react';
+import { ReportGeneratorModal } from '@/components/agent/ReportGeneratorModal';
+import { useNavigate } from 'react-router-dom';
 
 const AgentDashboard = () => {
+  const [showReportModal, setShowReportModal] = useState(false);
+  const navigate = useNavigate();
+
   const recentActivity = [
     { id: 1, type: 'placement', content: 'Successful placement: Mary Johnson at Sunrise Senior Living', time: '2 hours ago', value: '$1,250' },
     { id: 2, type: 'call', content: 'Follow-up call with Smith family', time: '4 hours ago', value: null },
@@ -32,10 +37,13 @@ const AgentDashboard = () => {
           <p className="text-gray-600 mt-2">Track your placements, commissions, and client pipeline.</p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setShowReportModal(true)}>
             Generate Report
           </Button>
-          <Button className="bg-primary-red hover:bg-red-600">
+          <Button 
+            className="bg-primary-red hover:bg-red-600 text-white"
+            onClick={() => navigate('/dashboard/agent/new-client')}
+          >
             Add New Client
           </Button>
         </div>
@@ -129,7 +137,11 @@ const AgentDashboard = () => {
                 </div>
               ))}
             </div>
-            <Button variant="outline" className="w-full mt-4">
+            <Button 
+              variant="outline" 
+              className="w-full mt-4"
+              onClick={() => navigate('/dashboard/agent/clients')}
+            >
               View All Clients
             </Button>
           </CardContent>
@@ -212,25 +224,8 @@ const AgentDashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button className="w-full bg-primary-sky hover:bg-blue-600" size="sm">
-              Schedule Facility Tour
-            </Button>
-            <Button className="w-full bg-accent-gold hover:bg-yellow-500 text-text-dark-gray" size="sm">
-              Send Follow-up Email
-            </Button>
-            <Button className="w-full bg-primary-red hover:bg-red-600" size="sm">
-              Generate Commission Report
-            </Button>
-          </CardContent>
-        </Card>
-
+      {/* This Month's Goals - moved from Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">This Month's Goals</CardTitle>
@@ -258,32 +253,12 @@ const AgentDashboard = () => {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Facility Network</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Partner Facilities</span>
-                <span className="font-semibold">24</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Preferred Partners</span>
-                <span className="font-semibold">8</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Available Beds</span>
-                <span className="font-semibold text-green-600">156</span>
-              </div>
-              <Button variant="outline" size="sm" className="w-full mt-3">
-                View Directory
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      <ReportGeneratorModal 
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+      />
     </div>
   );
 };

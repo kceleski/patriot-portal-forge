@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,7 @@ const FacilitiesMap = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const storepointLoadedRef = useRef<boolean>(false);
   const [facilities, setFacilities] = useState<SerperMapResult[]>([]);
   const [filteredFacilities, setFilteredFacilities] = useState<SerperMapResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,6 +33,7 @@ const FacilitiesMap = () => {
 
   useEffect(() => {
     loadGoogleMaps();
+    loadStorepointMap();
   }, []);
 
   useEffect(() => {
@@ -80,6 +81,16 @@ const FacilitiesMap = () => {
     });
 
     mapInstanceRef.current = map;
+  };
+
+  const loadStorepointMap = () => {
+    if (storepointLoadedRef.current) return;
+    
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://cdn.storepoint.co/api/v1/js/1645a775a8a422.js';
+    document.head.appendChild(script);
+    storepointLoadedRef.current = true;
   };
 
   const handleSearch = async () => {
@@ -342,24 +353,69 @@ const FacilitiesMap = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Facility Network Card - moved from AgentDashboard */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Facility Network</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Partner Facilities</span>
+                  <span className="font-semibold">24</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Preferred Partners</span>
+                  <span className="font-semibold">8</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Available Beds</span>
+                  <span className="font-semibold text-green-600">156</span>
+                </div>
+                <Button variant="outline" size="sm" className="w-full mt-3">
+                  View Directory
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Map */}
-        <div className="flex-1">
-          <Card className="h-[600px]">
-            <div
-              ref={mapRef}
-              className="w-full h-full rounded-lg"
-              style={{ minHeight: '600px' }}
-            />
-            {loading && (
-              <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-red mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading map...</p>
+        {/* Maps Container */}
+        <div className="flex-1 space-y-6">
+          {/* Google Maps */}
+          <Card className="h-[400px]">
+            <CardHeader>
+              <CardTitle>Search Results Map</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div
+                ref={mapRef}
+                className="w-full h-[350px] rounded-lg"
+              />
+              {loading && (
+                <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-red mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading map...</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Storepoint Map */}
+          <Card className="h-[400px]">
+            <CardHeader>
+              <CardTitle>Interactive Facility Map</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div 
+                id="storepoint-container" 
+                data-map-id="1645a775a8a422"
+                className="w-full h-[350px] rounded-lg"
+              ></div>
+            </CardContent>
           </Card>
         </div>
       </div>
