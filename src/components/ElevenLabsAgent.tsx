@@ -32,9 +32,9 @@ const ElevenLabsAgent = () => {
       // Request microphone access
       await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      // Start the conversation using agent ID from environment or fallback
+      // Start the conversation using your agent ID
       await conversation.startSession({
-        agentId: "YOUR_ELEVENLABS_AGENT_ID_HERE" // This should be replaced with actual agent ID
+        agentId: "agent_01jx5am7c9f2m9vnp81ygyvvvt"
       });
     } catch (error) {
       console.error("Failed to start conversation:", error);
