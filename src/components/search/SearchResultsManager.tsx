@@ -22,12 +22,15 @@ const SearchResultsManager: React.FC<SearchResultsManagerProps> = ({
     if (!searchQuery || results.length === 0) return;
     
     try {
+      // Convert results to JSON-compatible format
+      const jsonResults = JSON.parse(JSON.stringify(results));
+      
       // Save the search query and results
       const { data: searchRecord, error: searchError } = await supabase
         .from('search_results')
         .insert({
           query: searchQuery,
-          results: results,
+          results: jsonResults,
           senior_id: userId || null
         })
         .select()

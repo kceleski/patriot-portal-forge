@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,14 +48,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (session?.user) {
-          // Fetch user profile
+        if (session?.user && event === 'SIGNED_IN') {
+          // Fetch or create user profile after sign in
           setTimeout(() => {
-            fetchUserProfile(session.user.id);
-          }, 0);
+            fetchOrCreateUserProfile(session.user);
+          }, 100);
         } else {
           setProfile(null);
         }
@@ -65,11 +67,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserProfile(session.user.id);
+        fetchOrCreateUserProfile(session.user);
       } else {
         setLoading(false);
       }
@@ -78,31 +81,73 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchOrCreateUserProfile = async (authUser: User) => {
     try {
-      const { data, error } = await supabase
+      console.log('Fetching profile for user:', authUser.id);
+      
+      // First try to get existing profile
+      let { data: existingProfile, error: fetchError } = await supabase
         .from('users')
         .select('*')
-        .eq('id', userId)
+        .eq('id', authUser.id)
         .single();
 
-      if (error) throw error;
-      
-      // Map the database fields to UserProfile interface with correct organization mapping
-      const userProfile: UserProfile = {
-        id: data.id,
-        email: data.email,
-        user_type: data.role as 'family' | 'healthcare' | 'agent' | 'facility',
-        subscription_tier: data.tier as 'essentials' | 'elevate' | 'pinnacle',
-        first_name: data.first_name,
-        last_name: data.last_name,
-        organization: data.organization, // Fixed: now correctly mapping organization field
-        phone: data.phone
-      };
-      
-      setProfile(userProfile);
+      if (fetchError && fetchError.code === 'PGRST116') {
+        // No profile exists, create one from auth metadata
+        console.log('Creating new user profile from metadata:', authUser.user_metadata);
+        
+        const newUserData = {
+          id: authUser.id,
+          email: authUser.email || '',
+          role: authUser.user_metadata?.user_type || 'family',
+          tier: authUser.user_metadata?.subscription_tier || 'essentials',
+          first_name: authUser.user_metadata?.first_name || '',
+          last_name: authUser.user_metadata?.last_name || '',
+          organization: authUser.user_metadata?.organization || '',
+          phone: authUser.user_metadata?.phone || ''
+        };
+
+        const { data: createdProfile, error: createError } = await supabase
+          .from('users')
+          .insert(newUserData)
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating user profile:', createError);
+          throw createError;
+        }
+
+        existingProfile = createdProfile;
+        console.log('Created new user profile:', existingProfile);
+      } else if (fetchError) {
+        console.error('Error fetching user profile:', fetchError);
+        throw fetchError;
+      }
+
+      if (existingProfile) {
+        // Map database fields to UserProfile interface
+        const userProfile: UserProfile = {
+          id: existingProfile.id,
+          email: existingProfile.email,
+          user_type: existingProfile.role as 'family' | 'healthcare' | 'agent' | 'facility',
+          subscription_tier: existingProfile.tier as 'essentials' | 'elevate' | 'pinnacle',
+          first_name: existingProfile.first_name,
+          last_name: existingProfile.last_name,
+          organization: existingProfile.organization,
+          phone: existingProfile.phone
+        };
+        
+        console.log('Setting user profile:', userProfile);
+        setProfile(userProfile);
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error in fetchOrCreateUserProfile:', error);
+      toast({
+        title: "Profile Error",
+        description: "There was an issue loading your profile. Please try refreshing the page.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -134,7 +179,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email,
       password,
       options: {
-        data: userData
+        data: {
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          user_type: userData.user_type,
+          organization: userData.organization,
+          phone: userData.phone,
+          subscription_tier: userData.subscription_tier || 'essentials'
+        }
       }
     });
 
@@ -177,7 +229,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { error } = await supabase
         .from('users')
-        .update(updates)
+        .update({
+          first_name: updates.first_name,
+          last_name: updates.last_name,
+          organization: updates.organization,
+          phone: updates.phone,
+          role: updates.user_type,
+          tier: updates.subscription_tier
+        })
         .eq('id', user.id);
 
       if (error) throw error;

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -46,6 +45,9 @@ import DocumentFormBuilder from '@/pages/agent/DocumentFormBuilder';
 import InboxMessaging from '@/pages/agent/InboxMessaging';
 import NewClient from '@/pages/agent/NewClient';
 
+// Add the import at the top
+import PresentationMockData from '@/components/presentation/PresentationMockData';
+
 const queryClient = new QueryClient();
 
 const FloatingAgentWrapper = () => {
@@ -60,6 +62,13 @@ function AppRoutes() {
     <Routes>
       {/* Super User Login - kept separate for dev access */}
       <Route path="/super-login" element={<SuperUserLogin />} />
+
+      {/* Presentation Route - for demo purposes */}
+      <Route path="/presentation" element={
+        <div className="min-h-screen">
+          <PresentationMockData />
+        </div>
+      } />
 
       {/* Public Routes */}
       <Route path="/" element={<PublicLayout />}>
