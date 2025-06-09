@@ -48,7 +48,7 @@ const HomePage = () => {
                 </Button>
               </Link>
               <Link to="/pricing" className="group">
-                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-brand-navy px-10 py-6 text-xl font-semibold transition-all duration-300 transform hover:scale-105">
+                <Button size="lg" variant="outline" className="border-2 border-white text-brand-navy hover:bg-white hover:text-brand-navy px-10 py-6 text-xl font-semibold transition-all duration-300 transform hover:scale-105">
                   View Pricing
                   <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-300" />
                 </Button>
