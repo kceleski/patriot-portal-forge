@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 const HomePage = () => {
   const [showWidget, setShowWidget] = useState(false);
   const [isTempLoginOpen, setIsTempLoginOpen] = useState(false);
+  const [pendingPortal, setPendingPortal] = useState<string>('');
   const { user } = useTempAuth();
   const navigate = useNavigate();
 
@@ -32,14 +34,16 @@ const HomePage = () => {
     if (user) {
       navigate(`/dashboard/${userType}`);
     } else {
+      setPendingPortal(userType);
       setIsTempLoginOpen(true);
     }
   };
 
   const handleTempLoginClose = () => {
     setIsTempLoginOpen(false);
-    if (user) {
-      navigate(`/dashboard/${user.userType}`);
+    if (user && pendingPortal) {
+      navigate(`/dashboard/${pendingPortal}`);
+      setPendingPortal('');
     }
   };
 
