@@ -3,17 +3,15 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { TempAuthProvider } from '@/contexts/TempAuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Providers
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
-import { SuperUserProvider } from '@/contexts/SuperUserContext';
 
 // Layouts and Pages
 import PublicLayout from '@/layouts/PublicLayout';
 import DashboardLayout from '@/layouts/DashboardLayout';
-import SuperUserProtectedRoute from '@/components/SuperUserProtectedRoute';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import HomePage from '@/pages/public/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
 import PricingPage from '@/pages/public/PricingPage';
@@ -60,7 +58,7 @@ const FloatingAgentWrapper = () => {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Super User Login */}
+      {/* Super User Login - kept separate for dev access */}
       <Route path="/super-login" element={<SuperUserLogin />} />
 
       {/* Public Routes */}
@@ -69,21 +67,24 @@ function AppRoutes() {
         <Route path="find-care" element={<FindCarePage />} />
         <Route path="facility/:id" element={<FacilityDetail />} />
         <Route path="facilities-map" element={<FacilitiesMap />} />     
+        <Route path="facilities-gallery" element={<FacilitiesGallery />} />
         <Route path="pricing" element={<PricingPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
       </Route>
 
-      {/* Protected Routes - Requires Super User Authentication */}
-      <Route path="/dashboard" element={<SuperUserProtectedRoute />}>
+      {/* Protected Routes - Now using proper authentication */}
+      <Route path="/dashboard" element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           {/* Family */}
           <Route path="family" element={<FamilyDashboard />} />
           <Route path="family/messaging" element={<FamilyMessaging />} />
           <Route path="family/favorites" element={<SavedFavorites />} />
 
-          {/* Agent - Enhanced with new features */}
+          {/* Agent */}
           <Route path="agent" element={<AgentDashboard />} />
+          <Route path="agent/clients" element={<AllClients />} />
+          <Route path="agent/performance" element={<PerformanceDashboard />} />
           <Route path="agent/new-client" element={<NewClient />} />
           <Route path="agent/facility-map" element={<FacilityMapView />} />
           <Route path="agent/contacts" element={<FacilityContactBook />} />
@@ -113,21 +114,17 @@ function AppRoutes() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TempAuthProvider>
-        <AuthProvider>
-          <AccessibilityProvider>
-            <SuperUserProvider>
-              <Router>
-                <div className="min-h-screen bg-brand-off-white">
-                  <AppRoutes />
-                  <FloatingAgentWrapper />
-                  <Toaster />
-                </div>
-              </Router>
-            </SuperUserProvider>
-          </AccessibilityProvider>
-        </AuthProvider>
-      </TempAuthProvider>
+      <AuthProvider>
+        <AccessibilityProvider>
+          <Router>
+            <div className="min-h-screen bg-brand-off-white">
+              <AppRoutes />
+              <FloatingAgentWrapper />
+              <Toaster />
+            </div>
+          </Router>
+        </AccessibilityProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

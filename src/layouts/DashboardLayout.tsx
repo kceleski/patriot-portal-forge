@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavItem {
   icon: React.ComponentType<any>;
@@ -36,19 +37,11 @@ interface NavItem {
 const DashboardLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
 
-  // Determine user type based on the current path
-  const getUserType = () => {
-    const path = location.pathname;
-    if (path.includes('/agent')) return 'agent';
-    if (path.includes('/family')) return 'family';
-    if (path.includes('/healthcare')) return 'healthcare';
-    if (path.includes('/facility')) return 'facility';
-    return 'agent'; // default
-  };
-
-  const userType = getUserType();
+  // Get user type from actual user profile data
+  const userType = profile?.user_type || 'family';
 
   const getNavigationItems = (): NavItem[] => {
     const baseItems = [
@@ -67,12 +60,13 @@ const DashboardLayout = () => {
             isQuickActions: true,
             subItems: [
               { icon: UserPlus, label: 'New Client', href: '/dashboard/agent/new-client' },
-              { icon: FileBarChart, label: 'Generate Report', href: '/dashboard/agent' },
+              { icon: FileBarChart, label: 'Generate Report', href: '/dashboard/agent/performance' },
               { icon: MessageCircle, label: 'Send Email', href: '/dashboard/agent/inbox' },
               { icon: ContactIcon, label: 'Add Contact', href: '/dashboard/agent/contacts' }
             ]
           },
-          { icon: Users, label: 'All Clients', href: '/dashboard/agent' },
+          { icon: Users, label: 'All Clients', href: '/dashboard/agent/clients' },
+          { icon: FileBarChart, label: 'Performance', href: '/dashboard/agent/performance' },
           { icon: Map, label: 'Facility Map', href: '/dashboard/agent/facility-map' },
           { icon: ContactIcon, label: 'Contacts', href: '/dashboard/agent/contacts' },
           { icon: FileText, label: 'Forms', href: '/dashboard/agent/form-builder' },
@@ -109,13 +103,32 @@ const DashboardLayout = () => {
 
   const navigationItems = getNavigationItems();
 
-  const handleLogout = () => {
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const isActive = (href: string) => {
     if (href === '#') return false;
     return location.pathname === href || location.pathname.startsWith(href + '/');
+  };
+
+  const getUserDisplayName = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    }
+    return profile?.email || 'User';
+  };
+
+  const getUserInitials = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
+    }
+    return profile?.email ? profile.email[0].toUpperCase() : 'U';
   };
 
   return (
@@ -197,10 +210,10 @@ const DashboardLayout = () => {
           <div className="flex items-center space-x-3 mb-3">
             <Avatar>
               <AvatarImage src="/placeholder-user.jpg" />
-              <AvatarFallback>JD</AvatarFallback>
+              <AvatarFallback>{getUserInitials()}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">John Doe</p>
+              <p className="text-sm font-medium text-gray-900 truncate">{getUserDisplayName()}</p>
               <p className="text-xs text-gray-500 truncate capitalize">{userType}</p>
             </div>
           </div>

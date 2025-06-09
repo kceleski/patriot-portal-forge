@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
       
-      // Map the database fields to UserProfile interface
+      // Map the database fields to UserProfile interface with correct organization mapping
       const userProfile: UserProfile = {
         id: data.id,
         email: data.email,
@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         subscription_tier: data.tier as 'essentials' | 'elevate' | 'pinnacle',
         first_name: data.first_name,
         last_name: data.last_name,
-        organization: data.phone, // Using phone field as organization for now
+        organization: data.organization, // Fixed: now correctly mapping organization field
         phone: data.phone
       };
       

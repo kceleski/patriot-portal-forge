@@ -5,16 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useApi } from '@/hooks/useApi';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState('');
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, profile } = useAuth();
 
   const { execute: handleSignIn, loading } = useApi(signIn, {
     showSuccessToast: true,
@@ -26,15 +24,18 @@ const LoginPage = () => {
     
     const result = await handleSignIn(email, password);
     if (result !== null) {
-      // Redirect based on user type
-      const redirectMap: Record<string, string> = {
-        family: '/dashboard/family',
-        healthcare: '/dashboard/healthcare',
-        agent: '/dashboard/agent',
-        facility: '/dashboard/facility'
-      };
-      
-      navigate(redirectMap[userType] || '/dashboard');
+      // Wait a moment for the profile to be loaded, then redirect based on actual user type
+      setTimeout(() => {
+        const redirectMap: Record<string, string> = {
+          family: '/dashboard/family',
+          healthcare: '/dashboard/healthcare',
+          agent: '/dashboard/agent',
+          facility: '/dashboard/facility'
+        };
+        
+        const userType = profile?.user_type || 'family';
+        navigate(redirectMap[userType] || '/dashboard/family');
+      }, 100);
     }
   };
 
@@ -53,21 +54,6 @@ const LoginPage = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="userType">Portal Type</Label>
-                  <Select value={userType} onValueChange={setUserType} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your portal" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="family">Family/Client Portal</SelectItem>
-                      <SelectItem value="healthcare">Healthcare Professional Portal</SelectItem>
-                      <SelectItem value="agent">Placement Agent Portal</SelectItem>
-                      <SelectItem value="facility">Facility Portal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div>
                   <Label htmlFor="email">Email Address</Label>
                   <Input
