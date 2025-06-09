@@ -34,7 +34,7 @@ const HomePage = () => {
           <div className="max-w-5xl mx-auto">
             <h1 className="text-6xl font-bold mb-8 leading-tight animate-fade-in font-heading">
               Connecting Families with 
-              <span className="bg-gradient-to-r from-brand-gold to-yellow-300 bg-clip-text text-transparent"> Quality Care Solutions</span>
+              <span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent"> Quality Care Solutions</span>
             </h1>
             <p className="text-2xl mb-12 max-w-4xl mx-auto text-blue-100 leading-relaxed font-light">
               HealthProAssist simplifies the process of finding and managing care services for your loved ones.
