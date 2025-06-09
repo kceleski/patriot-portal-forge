@@ -5,22 +5,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { useSuperUser } from '@/contexts/SuperUserContext';
 import { Building2 } from 'lucide-react';
 
 const SuperUserLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login } = useSuperUser();
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    const success = login(username, password);
-    if (success) {
+    // Simple hardcoded check for demo purposes
+    if (username === 'dev' && password === 'dev123') {
       navigate('/dashboard/agent');
     } else {
       setError('Invalid credentials. Use username: "dev" and password: "dev123"');

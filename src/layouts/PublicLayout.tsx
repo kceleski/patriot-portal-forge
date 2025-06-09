@@ -1,15 +1,12 @@
+
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Building2, Phone, Mail } from 'lucide-react';
-import { useSuperUser } from '@/contexts/SuperUserContext';
-import { useNavigate } from 'react-router-dom';
 
 const PublicLayout = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
-  const { user, logout } = useSuperUser();
 
   return (
     <div className="min-h-screen bg-background-main">
@@ -46,32 +43,21 @@ const PublicLayout = () => {
               </Link>
               
               <div className="flex items-center space-x-3">
-                {user ? (
-                  <div className="flex items-center space-x-3">
-                    <span className="text-brand-navy">Super User: {user.username}</span>
-                    <Button onClick={logout} variant="outline" className="btn-outline focus-enhanced">
-                      Sign Out
-                    </Button>
-                    <Link to={`/dashboard/${user.currentPortal}`}>
-                      <Button className="btn-primary focus-enhanced">
-                        Go to Dashboard
-                      </Button>
-                    </Link>
-                  </div>
-                ) : (
-                  <>
-                    <Link to="/super-login">
-                      <Button variant="outline" className="btn-outline focus-enhanced">
-                        Super User Login
-                      </Button>
-                    </Link>
-                    <Link to="/register">
-                      <Button className="btn-primary focus-enhanced">
-                        Get Started
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                <Link to="/super-login">
+                  <Button variant="outline" className="btn-outline focus-enhanced">
+                    Super User Login
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="outline" className="btn-outline focus-enhanced">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button className="btn-primary focus-enhanced">
+                    Get Started
+                  </Button>
+                </Link>
               </div>
             </div>
 
@@ -146,7 +132,7 @@ const PublicLayout = () => {
               <p>&copy; 2024 HealthProAssist. All rights reserved.</p>
             </div>
           </div>
-        </footer>
+        </div>
       )}
     </div>
   );
