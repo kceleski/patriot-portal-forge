@@ -7,25 +7,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Filter, Search, MapPin } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { ApiService } from '@/services/apiService';
-import { useApi } from '@/hooks/useApi';
-import FeatureGate from '@/components/FeatureGate';
-
-interface Facility {
-  id: string;
-  name: string;
-  facility_type: string;
-  city: string;
-  state: string;
-  address_line1: string;
-  latitude: number;
-  longitude: number;
-  rating: number;
-  price_range_min: number;
-  price_range_max: number;
-  accepts_va_benefits: boolean;
-}
+import { SerperService, SerperMapResult } from '@/services/serperService';
+import { toast } from '@/hooks/use-toast';
 
 declare global {
   interface Window {
@@ -35,34 +18,26 @@ declare global {
 }
 
 const FacilitiesMap = () => {
-  const { hasFeatureAccess } = useAuth();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
-  const [facilities, setFacilities] = useState<Facility[]>([]);
-  const [filteredFacilities, setFilteredFacilities] = useState<Facility[]>([]);
+  const [facilities, setFacilities] = useState<SerperMapResult[]>([]);
+  const [filteredFacilities, setFilteredFacilities] = useState<SerperMapResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(false);
   
   // Filter states
   const [selectedCareTypes, setSelectedCareTypes] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
-  const [vaToggle, setVaToggle] = useState(false);
-
-  const { execute: searchFacilities, loading } = useApi(
-    ApiService.searchFacilities,
-    { showErrorToast: true }
-  );
-
-  const hasAdvancedFilters = hasFeatureAccess('advanced_filters');
+  const [ratingFilter, setRatingFilter] = useState<number>(0);
 
   useEffect(() => {
     loadGoogleMaps();
-    loadFacilities();
   }, []);
 
   useEffect(() => {
     applyFilters();
-  }, [facilities, searchTerm, selectedCareTypes, priceRange, vaToggle]);
+  }, [facilities, searchTerm, selectedCareTypes, ratingFilter]);
 
   useEffect(() => {
     if (mapInstanceRef.current) {
@@ -107,43 +82,64 @@ const FacilitiesMap = () => {
     mapInstanceRef.current = map;
   };
 
-  const loadFacilities = async () => {
+  const handleSearch = async () => {
+    if (!location.trim()) {
+      toast({
+        title: "Location Required",
+        description: "Please enter a location to search for facilities.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
     try {
-      const data = await searchFacilities({});
-      if (data?.facilities) {
-        setFacilities(data.facilities);
+      const careTypeQuery = selectedCareTypes.length > 0 
+        ? selectedCareTypes.join(' OR ') 
+        : 'assisted living OR memory care OR skilled nursing';
+      
+      const query = `${careTypeQuery} facility ${location}`;
+      console.log('Searching maps for:', query);
+      
+      const results = await SerperService.searchMaps(query);
+      console.log('Map search results:', results);
+      
+      setFacilities(results);
+      
+      if (results.length === 0) {
+        toast({
+          title: "No Results",
+          description: "No facilities found for your search criteria. Try adjusting your location.",
+        });
+      } else {
+        toast({
+          title: "Search Complete",
+          description: `Found ${results.length} facilities`,
+        });
       }
     } catch (error) {
-      console.error('Error loading facilities:', error);
+      console.error('Search error:', error);
+      toast({
+        title: "Search Error",
+        description: "There was an error searching for facilities. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const applyFilters = () => {
     let filtered = facilities.filter(facility => {
       // Search term filter
-      if (searchTerm && !facility.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !facility.city.toLowerCase().includes(searchTerm.toLowerCase()) &&
-          !facility.state.toLowerCase().includes(searchTerm.toLowerCase())) {
+      if (searchTerm && !facility.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !facility.address.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
 
-      if (hasAdvancedFilters) {
-        // Care type filter
-        if (selectedCareTypes.length > 0 && 
-            !selectedCareTypes.includes(facility.facility_type)) {
-          return false;
-        }
-
-        // Price range filter
-        if (facility.price_range_min < priceRange[0] || 
-            facility.price_range_max > priceRange[1]) {
-          return false;
-        }
-
-        // VA benefits filter
-        if (vaToggle && !facility.accepts_va_benefits) {
-          return false;
-        }
+      // Rating filter
+      if (ratingFilter > 0 && (!facility.rating || facility.rating < ratingFilter)) {
+        return false;
       }
 
       return true;
@@ -159,13 +155,15 @@ const FacilitiesMap = () => {
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
 
+    if (filteredFacilities.length === 0) return;
+
     // Add new markers
     filteredFacilities.forEach(facility => {
       if (facility.latitude && facility.longitude) {
         const marker = new window.google.maps.Marker({
           position: { lat: facility.latitude, lng: facility.longitude },
           map: mapInstanceRef.current,
-          title: facility.name,
+          title: facility.title,
           icon: {
             url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -180,13 +178,11 @@ const FacilitiesMap = () => {
         const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div class="p-2">
-              <h3 class="font-semibold text-lg">${facility.name}</h3>
-              <p class="text-sm text-gray-600">${facility.address_line1}</p>
-              <p class="text-sm text-gray-600">${facility.city}, ${facility.state}</p>
-              <p class="text-sm mt-2">$${facility.price_range_min} - $${facility.price_range_max}/month</p>
-              <button class="mt-2 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
-                View Details
-              </button>
+              <h3 class="font-semibold text-lg">${facility.title}</h3>
+              <p class="text-sm text-gray-600">${facility.address}</p>
+              ${facility.phoneNumber ? `<p class="text-sm">${facility.phoneNumber}</p>` : ''}
+              ${facility.rating ? `<p class="text-sm">Rating: ${facility.rating}/5 ${facility.reviews ? `(${facility.reviews} reviews)` : ''}</p>` : ''}
+              ${facility.website ? `<a href="${facility.website}" target="_blank" class="text-sm text-blue-600 hover:underline">Visit Website</a>` : ''}
             </div>
           `
         });
@@ -217,16 +213,9 @@ const FacilitiesMap = () => {
     }
   };
 
-  const handlePriceRangeChange = (value: number[]) => {
-    if (value.length === 2) {
-      setPriceRange([value[0], value[1]]);
-    }
-  };
-
   const clearFilters = () => {
     setSelectedCareTypes([]);
-    setPriceRange([0, 10000]);
-    setVaToggle(false);
+    setRatingFilter(0);
     setSearchTerm('');
   };
 
@@ -238,7 +227,7 @@ const FacilitiesMap = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-text-dark-gray">Facilities Map</h1>
@@ -248,103 +237,112 @@ const FacilitiesMap = () => {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex gap-4">
+            <Input
+              placeholder="Enter city, state, or ZIP code..."
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="flex-1"
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            <Button 
+              onClick={handleSearch} 
+              disabled={loading}
+              className="bg-brand-red hover:bg-brand-red/90"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="h-4 w-4 mr-2" />
+                  Search Area
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex gap-6">
         {/* Filters Sidebar */}
-        <FeatureGate 
-          feature="advanced_filters"
-          fallback={
-            <div className="w-80">
-              <Card className="p-4 text-center">
-                <Filter className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600">Advanced filters available with premium plans</p>
-              </Card>
-            </div>
-          }
-        >
-          <div className="w-80 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-lg">
-                  <Filter className="h-5 w-5 mr-2" />
-                  Map Filters
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Search facilities..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+        <div className="w-80 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center text-lg">
+                <Filter className="h-5 w-5 mr-2" />
+                Map Filters
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Filter facilities..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
 
-                {/* Care Types */}
-                <div>
-                  <h4 className="font-semibold mb-3">Care Type</h4>
-                  <div className="space-y-2">
-                    {careTypes.map((careType) => (
-                      <div key={careType} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={careType}
-                          checked={selectedCareTypes.includes(careType)}
-                          onCheckedChange={(checked) => 
-                            handleCareTypeChange(careType, checked as boolean)
-                          }
-                        />
-                        <label htmlFor={careType} className="text-sm">
-                          {careType}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Price Range */}
-                <div>
-                  <h4 className="font-semibold mb-3">Price Range</h4>
-                  <div className="space-y-2">
-                    <Slider
-                      value={priceRange}
-                      onValueChange={handlePriceRangeChange}
-                      max={10000}
-                      step={100}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>${priceRange[0]}</span>
-                      <span>${priceRange[1]}</span>
+              {/* Care Types */}
+              <div>
+                <h4 className="font-semibold mb-3">Care Type</h4>
+                <div className="space-y-2">
+                  {careTypes.map((careType) => (
+                    <div key={careType} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={careType}
+                        checked={selectedCareTypes.includes(careType)}
+                        onCheckedChange={(checked) => 
+                          handleCareTypeChange(careType, checked as boolean)
+                        }
+                      />
+                      <label htmlFor={careType} className="text-sm">
+                        {careType}
+                      </label>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Rating Filter */}
+              <div>
+                <h4 className="font-semibold mb-3">Minimum Rating</h4>
+                <div className="space-y-2">
+                  <Slider
+                    value={[ratingFilter]}
+                    onValueChange={(value) => setRatingFilter(value[0])}
+                    max={5}
+                    step={0.5}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>0</span>
+                    <span>{ratingFilter} stars</span>
+                    <span>5</span>
                   </div>
                 </div>
+              </div>
 
-                {/* VA Benefits */}
-                <div className="flex items-center justify-between">
-                  <label htmlFor="va-toggle" className="text-sm font-medium">
-                    Accepts VA Benefits
-                  </label>
-                  <Switch
-                    id="va-toggle"
-                    checked={vaToggle}
-                    onCheckedChange={setVaToggle}
-                  />
-                </div>
+              <Button variant="outline" onClick={clearFilters} className="w-full">
+                Clear Filters
+              </Button>
 
-                <Button variant="outline" onClick={clearFilters} className="w-full">
-                  Clear Filters
-                </Button>
-
-                {/* Results Summary */}
-                <div className="text-center p-3 bg-secondary-off-white rounded-lg">
-                  <MapPin className="h-5 w-5 mx-auto mb-1 text-primary-red" />
-                  <p className="text-sm font-medium">{filteredFacilities.length} facilities shown</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </FeatureGate>
+              {/* Results Summary */}
+              <div className="text-center p-3 bg-secondary-off-white rounded-lg">
+                <MapPin className="h-5 w-5 mx-auto mb-1 text-primary-red" />
+                <p className="text-sm font-medium">{filteredFacilities.length} facilities shown</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Map */}
         <div className="flex-1">
