@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -73,12 +73,12 @@ export const ReportGeneratorModal = ({ isOpen, onClose }: ReportGeneratorModalPr
                   <Card 
                     key={type.id}
                     className={`cursor-pointer transition-colors ${
-                      reportType === type.id ? 'ring-2 ring-primary-sky' : ''
+                      reportType === type.id ? 'ring-2 ring-brand-sky' : ''
                     }`}
                     onClick={() => setReportType(type.id)}
                   >
                     <CardContent className="p-4 text-center">
-                      <IconComponent className="h-6 w-6 mx-auto mb-2 text-primary-sky" />
+                      <IconComponent className="h-6 w-6 mx-auto mb-2 text-brand-sky" />
                       <p className="text-sm font-medium">{type.label}</p>
                     </CardContent>
                   </Card>
@@ -115,7 +115,7 @@ export const ReportGeneratorModal = ({ isOpen, onClose }: ReportGeneratorModalPr
             <Button 
               onClick={handleGenerateReport}
               disabled={!reportType || generating}
-              className="bg-primary-sky hover:bg-blue-600"
+              className="bg-brand-sky hover:bg-blue-600"
             >
               {generating ? (
                 <>

@@ -1,270 +1,243 @@
 
 import React, { useState } from 'react';
-import {
-  LayoutDashboard,
-  Search,
-  MessageSquare,
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  Home, 
+  Users, 
+  Calendar, 
+  MessageSquare, 
+  Settings, 
+  LogOut, 
   Heart,
+  Building2,
   FileText,
-  Users,
-  Building,
-  Receipt,
-  BarChart3,
-  Database,
-  Calendar,
-  User,
-  MapPin,
-  Mail,
-  Settings,
-  Zap,
+  Stethoscope,
+  Map,
+  UserPlus,
+  FileBarChart,
+  MessageCircle,
+  ContactIcon,
+  ChevronDown,
   ChevronRight
 } from 'lucide-react';
-import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useSuperUser } from '@/contexts/SuperUserContext';
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+interface NavItem {
+  icon: React.ComponentType<any>;
+  label: string;
+  href: string;
+  isQuickActions?: boolean;
+  subItems?: NavItem[];
+}
 
 const DashboardLayout = () => {
-  const { user, switchPortal } = useSuperUser();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
 
-  const handlePortalSwitch = (portal: 'family' | 'healthcare' | 'agent' | 'facility') => {
-    switchPortal(portal);
-    navigate(`/dashboard/${portal}`);
+  // Determine user type based on the current path
+  const getUserType = () => {
+    const path = location.pathname;
+    if (path.includes('/agent')) return 'agent';
+    if (path.includes('/family')) return 'family';
+    if (path.includes('/healthcare')) return 'healthcare';
+    if (path.includes('/facility')) return 'facility';
+    return 'agent'; // default
   };
 
-  const getQuickActionsForPortal = () => {
-    if (!user?.currentPortal) return [];
+  const userType = getUserType();
 
-    const quickActions = {
-      family: [
-        { label: 'Search Facilities', href: '/find-care', icon: Search },
-        { label: 'Schedule Tour', href: '/dashboard/calendar', icon: Calendar },
-        { label: 'Message Advisor', href: '/dashboard/family/messaging', icon: MessageSquare }
-      ],
-      healthcare: [
-        { label: 'New Client Intake', href: '/dashboard/healthcare/intake-form', icon: FileText },
-        { label: 'Generate Invoice', href: '/dashboard/healthcare/invoicing', icon: Receipt },
-        { label: 'Update Client Status', href: '/dashboard/healthcare/clients', icon: Users }
-      ],
-      agent: [
-        { label: 'Schedule Facility Tour', href: '/dashboard/calendar', icon: Calendar },
-        { label: 'Send Follow-up Email', href: '/dashboard/agent/inbox', icon: Mail },
-        { label: 'Update CRM', href: '/dashboard/agent/crm', icon: Database },
-        { label: 'Add New Contact', href: '/dashboard/agent/contacts', icon: Users }
-      ],
-      facility: [
-        { label: 'Update Listing', href: '/dashboard/facility/listings', icon: Building },
-        { label: 'Schedule Webinar', href: '/dashboard/facility/webinars', icon: Calendar },
-        { label: 'View Analytics', href: '/dashboard/facility/analytics', icon: BarChart3 }
-      ]
-    };
-
-    return quickActions[user.currentPortal] || [];
-  };
-
-  const getNavigationItems = () => {
-    if (!user?.currentPortal) return [];
-
+  const getNavigationItems = (): NavItem[] => {
     const baseItems = [
-      { 
-        icon: LayoutDashboard, 
-        label: 'Dashboard', 
-        href: `/dashboard/${user.currentPortal}` 
-      }
-    ];
-
-    const roleSpecificItems = {
-      family: [
-        { icon: Search, label: 'Find Care', href: '/find-care' },
-        { icon: MessageSquare, label: 'Messages', href: '/dashboard/family/messaging' },
-        { icon: Heart, label: 'Saved Favorites', href: '/dashboard/family/favorites' },
-      ],
-      healthcare: [
-        { icon: FileText, label: 'Client Intake', href: '/dashboard/healthcare/intake-form' },
-        { icon: Users, label: 'Client Tracking', href: '/dashboard/healthcare/clients' },
-        { icon: Building, label: 'Facilities Directory', href: '/dashboard/healthcare/facilities' },
-        { icon: Receipt, label: 'Invoicing', href: '/dashboard/healthcare/invoicing' },
-      ],
-      agent: [
-        { icon: MapPin, label: 'Facility Map', href: '/dashboard/agent/facility-map' },
-        { icon: Users, label: 'Contact Book', href: '/dashboard/agent/contacts' },
-        { icon: FileText, label: 'Form Builder', href: '/dashboard/agent/form-builder' },
-        { icon: Mail, label: 'Inbox', href: '/dashboard/agent/inbox' },
-        { icon: BarChart3, label: 'Performance', href: '/dashboard/agent/performance' },
-        { icon: Database, label: 'CRM', href: '/dashboard/agent/crm' },
-      ],
-      facility: [
-        { icon: Building, label: 'Listing Management', href: '/dashboard/facility/listings' },
-        { icon: BarChart3, label: 'Analytics', href: '/dashboard/facility/analytics' },
-        { icon: Users, label: 'Placement Specialists', href: '/dashboard/facility/specialists' },
-        { icon: Calendar, label: 'Events & Webinars', href: '/dashboard/facility/webinars' },
-      ]
-    };
-
-    const sharedItems = [
       { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
-      { icon: User, label: 'Profile & Settings', href: '/dashboard/profile' },
+      { icon: MessageSquare, label: 'Messages', href: '/dashboard/messages' },
+      { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     ];
 
-    const quickActionsItem = {
-      icon: Zap,
-      label: 'Quick Actions',
-      href: '#',
-      isQuickActions: true
-    };
-
-    return [
-      ...baseItems,
-      ...(roleSpecificItems[user.currentPortal] || []),
-      quickActionsItem,
-      ...sharedItems
-    ];
+    switch (userType) {
+      case 'agent':
+        return [
+          { icon: Home, label: 'Dashboard', href: '/dashboard/agent' },
+          { 
+            icon: UserPlus, 
+            label: 'Quick Actions', 
+            href: '#',
+            isQuickActions: true,
+            subItems: [
+              { icon: UserPlus, label: 'New Client', href: '/dashboard/agent/new-client' },
+              { icon: FileBarChart, label: 'Generate Report', href: '/dashboard/agent/reports' },
+              { icon: MessageCircle, label: 'Send Email', href: '/dashboard/agent/inbox' },
+              { icon: ContactIcon, label: 'Add Contact', href: '/dashboard/agent/contacts' }
+            ]
+          },
+          { icon: Users, label: 'All Clients', href: '/dashboard/agent/clients' },
+          { icon: Map, label: 'Facility Map', href: '/dashboard/agent/facility-map' },
+          { icon: ContactIcon, label: 'Contacts', href: '/dashboard/agent/contacts' },
+          { icon: FileText, label: 'Forms', href: '/dashboard/agent/form-builder' },
+          { icon: MessageSquare, label: 'Inbox', href: '/dashboard/agent/inbox' },
+          ...baseItems
+        ];
+      case 'family':
+        return [
+          { icon: Home, label: 'Dashboard', href: '/dashboard/family' },
+          { icon: Heart, label: 'Favorites', href: '/dashboard/family/favorites' },
+          { icon: Map, label: 'Find Care', href: '/dashboard/find-care' },
+          ...baseItems
+        ];
+      case 'healthcare':
+        return [
+          { icon: Home, label: 'Dashboard', href: '/dashboard/healthcare' },
+          { icon: Stethoscope, label: 'Intake Forms', href: '/dashboard/healthcare/intake-form' },
+          { icon: Users, label: 'Referrals', href: '/dashboard/healthcare/referrals' },
+          { icon: Map, label: 'Find Care', href: '/dashboard/find-care' },
+          ...baseItems
+        ];
+      case 'facility':
+        return [
+          { icon: Home, label: 'Dashboard', href: '/dashboard/facility' },
+          { icon: Building2, label: 'Listings', href: '/dashboard/facility/listings' },
+          { icon: Users, label: 'Specialists', href: '/dashboard/facility/specialists' },
+          { icon: FileText, label: 'Analytics', href: '/dashboard/facility/analytics' },
+          ...baseItems
+        ];
+      default:
+        return baseItems;
+    }
   };
 
   const navigationItems = getNavigationItems();
-  const quickActions = getQuickActionsForPortal();
 
-  const QuickActionsDropdown = () => (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <div className="flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-gray-100 transition-colors text-gray-700 cursor-pointer">
-          <Zap className="h-5 w-5" />
-          <span>Quick Actions</span>
-          <ChevronRight className="h-4 w-4 ml-auto" />
-        </div>
-      </HoverCardTrigger>
-      <HoverCardContent side="right" className="w-60 p-2">
-        <div className="space-y-1">
-          {quickActions.map((action) => (
-            <Link
-              key={action.href}
-              to={action.href}
-              className="flex items-center space-x-2 py-2 px-3 rounded-md hover:bg-gray-100 transition-colors text-sm"
-            >
-              <action.icon className="h-4 w-4" />
-              <span>{action.label}</span>
-            </Link>
-          ))}
-        </div>
-      </HoverCardContent>
-    </HoverCard>
-  );
+  const handleLogout = () => {
+    navigate('/');
+  };
+
+  const isActive = (href: string) => {
+    if (href === '#') return false;
+    return location.pathname === href || location.pathname.startsWith(href + '/');
+  };
 
   return (
-    <div className="min-h-screen bg-background-main">
-      {/* Mobile Navigation */}
-      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-        <SheetTrigger asChild>
-          <Button variant="outline" className="md:hidden absolute top-4 left-4 z-50">
-            Menu
-          </Button>
-        </SheetTrigger>
-        <SheetContent className="sm:max-w-xs pt-6">
-          <SheetHeader>
-            <SheetTitle>Dashboard Menu</SheetTitle>
-          </SheetHeader>
-          <Separator className="my-4" />
-          
-          {/* Portal Switcher - Mobile */}
-          <div className="mb-4">
-            <label className="text-sm font-medium mb-2 block">Current Portal</label>
-            <Select value={user?.currentPortal} onValueChange={handlePortalSwitch}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Portal" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="family">Family Portal</SelectItem>
-                <SelectItem value="healthcare">Healthcare Portal</SelectItem>
-                <SelectItem value="agent">Agent Portal</SelectItem>
-                <SelectItem value="facility">Facility Portal</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex flex-col space-y-2">
-            {navigationItems.map((item) => (
-              <Link 
-                key={item.href} 
-                to={item.href} 
-                className="flex items-center space-x-2 py-2 px-4 rounded-md hover:bg-accent hover:text-accent-foreground" 
-                onClick={() => setIsSidebarOpen(false)}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
-        </SheetContent>
-      </Sheet>
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-64 bg-white shadow-lg flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-brand-navy">HealthPro AVA</h1>
+        </div>
 
-      {/* Desktop Navigation */}
-      <nav className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 h-screen fixed top-0 left-0 z-40 shadow-sm">
-        <div className="p-4">
-          <div className="flex items-center justify-center mb-4">
-            <span className="text-lg font-bold text-brand-navy">HealthProAssist</span>
-          </div>
-          
-          {/* Portal Switcher - Desktop */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Current Portal</label>
-            <Select value={user?.currentPortal} onValueChange={handlePortalSwitch}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select Portal" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="family">Family Portal</SelectItem>
-                <SelectItem value="healthcare">Healthcare Portal</SelectItem>
-                <SelectItem value="agent">Agent Portal</SelectItem>
-                <SelectItem value="facility">Facility Portal</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <Separator className="my-2" />
-        
-        <div className="flex flex-col space-y-1 p-2 flex-1">
-          {navigationItems.map((item) => (
-            item.isQuickActions ? (
-              <QuickActionsDropdown key="quick-actions" />
-            ) : (
-              <Link 
-                key={item.href} 
-                to={item.href} 
-                className={`flex items-center space-x-3 py-3 px-4 rounded-md hover:bg-gray-100 transition-colors ${
-                  location.pathname === item.href ? 'bg-brand-sky/10 text-brand-sky border-r-2 border-brand-sky font-medium' : 'text-gray-700'
-                }`}
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-2">
+          {navigationItems.map((item) => {
+            if (item.isQuickActions) {
+              return (
+                <Collapsible 
+                  key={item.label}
+                  open={isQuickActionsOpen}
+                  onOpenChange={setIsQuickActionsOpen}
+                >
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-between text-left font-normal"
+                    >
+                      <div className="flex items-center">
+                        <item.icon className="mr-3 h-5 w-5" />
+                        {item.label}
+                      </div>
+                      {isQuickActionsOpen ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-1 ml-6">
+                    {item.subItems?.map((subItem) => (
+                      <Link
+                        key={subItem.href}
+                        to={subItem.href}
+                        className={cn(
+                          "flex items-center px-3 py-2 text-sm rounded-md transition-colors",
+                          isActive(subItem.href)
+                            ? "bg-brand-sky text-white"
+                            : "text-gray-600 hover:bg-gray-100"
+                        )}
+                      >
+                        <subItem.icon className="mr-3 h-4 w-4" />
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            }
+
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(
+                  "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                  isActive(item.href)
+                    ? "bg-brand-sky text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                )}
               >
-                <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
+                <item.icon className="mr-3 h-5 w-5" />
+                {item.label}
               </Link>
-            )
-          ))}
-        </div>
-        
-        {/* User Info at Bottom */}
+            );
+          })}
+        </nav>
+
+        {/* User Profile */}
         <div className="p-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
-            <p className="font-medium">Super User</p>
-            <p className="text-xs">Full Access Mode</p>
+          <div className="flex items-center space-x-3 mb-3">
+            <Avatar>
+              <AvatarImage src="/placeholder-user.jpg" />
+              <AvatarFallback>JD</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">John Doe</p>
+              <p className="text-xs text-gray-500 truncate capitalize">{userType}</p>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-gray-600 hover:text-gray-900"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
         </div>
-      </nav>
+      </div>
 
       {/* Main Content */}
-      <main className="md:ml-64 p-6">
-        <Outlet />
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-800">
+              {location.pathname.split('/').pop()?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Dashboard'}
+            </h2>
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" size="sm">
+                Help
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };
