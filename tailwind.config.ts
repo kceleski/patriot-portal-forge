@@ -26,17 +26,18 @@ export default {
 				'brand-sky': '#457B9D',
 				'brand-light-blue': '#A8DADC',
 				'brand-off-white': '#F1FAEE',
+                'brand-white': '#FFFFFF'
 
 				
 				// Semantic Colors
-				'text-primary': '#2A2D34',
+				'text-primary': '#1D3557',
 				'text-secondary': '#457B9D',
 				'background-main': '#F1FAEE',
-				'background-card': '#FFFFFF',
+				'background-card': '#A8DADC',
 				'ui-border': '#E5E5E5',
 				'ui-ring': '#457B9D',
 				'success': '#4CAF50',
-				'warning': '#FF9800',
+				'warning': '#E63942',
 
 				// Shadcn theme colors (mapped to our brand)
 				border: 'hsl(var(--border))',
