@@ -29,6 +29,8 @@ import FamilyDashboard from '@/pages/family/FamilyDashboard';
 import FamilyMessaging from '@/pages/family/FamilyMessaging';
 import SavedFavorites from '@/pages/family/SavedFavorites';
 import AgentDashboard from '@/pages/agent/AgentDashboard';
+import AllClients from '@/pages/agent/AllClients';
+import PerformanceDashboard from '@/pages/agent/PerformanceDashboard';
 import HealthcareDashboard from '@/pages/healthcare/HealthcareDashboard';
 import FacilityDashboard from '@/pages/facility/FacilityDashboard';
 
