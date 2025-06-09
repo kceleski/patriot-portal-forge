@@ -1,105 +1,143 @@
 
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, User, Building, Briefcase } from 'lucide-react';
+import { Users, User, Building, Briefcase, ArrowRight, Shield, Zap, Heart, CheckCircle } from 'lucide-react';
+import ElevenLabsWidget from '@/components/ElevenLabsWidget';
 
 const HomePage = () => {
+  const [showWidget, setShowWidget] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      if (scrollPosition > 500) {
+        setShowWidget(true);
+      } else {
+        setShowWidget(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-brand-navy to-brand-sky text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-6 font-heading">
-            Connecting Families with Quality Care Solutions
-          </h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto font-body">
-            HealthProAssist simplifies the process of finding and managing care services for your loved ones.
-            Whether you're a family, healthcare professional, placement agent, or facility, we have the tools you need.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/find-care">
-              <Button size="lg" className="bg-brand-red hover:bg-red-600 text-white px-8 py-4 font-body">
-                Find Care Now
-              </Button>
-            </Link>
-            <Link to="/pricing">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-brand-navy px-8 py-4 font-body">
-                View Pricing
-              </Button>
-            </Link>
+      {/* Enhanced Hero Section */}
+      <section className="gradient-hero text-white py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-navy/90 via-brand-sky/80 to-brand-navy/90"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="max-w-5xl mx-auto animate-fade-in">
+            <h1 className="text-6xl font-bold mb-8 leading-tight font-heading">
+              Connecting Families with 
+              <span className="bg-gradient-to-r from-brand-gold to-yellow-300 bg-clip-text text-transparent"> Quality Care Solutions</span>
+            </h1>
+            <p className="text-2xl mb-12 max-w-4xl mx-auto text-blue-100 leading-relaxed font-light">
+              HealthProAssist simplifies the process of finding and managing care services for your loved ones.
+              Whether you're a family, healthcare professional, placement agent, or facility, we have the innovative tools you need.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Link to="/find-care" className="group">
+                <Button size="lg" className="btn-primary btn-enhanced px-10 py-6 text-xl shadow-xl hover:shadow-2xl focus-enhanced">
+                  Find Care Now
+                  <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-300" />
+                </Button>
+              </Link>
+              <Link to="/pricing" className="group">
+                <Button size="lg" variant="outline" className="btn-outline px-10 py-6 text-xl border-2 border-white text-white hover:bg-white hover:text-brand-navy focus-enhanced">
+                  View Pricing
+                  <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-300" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* User Portals Section */}
-      <section className="py-20">
+      {/* Enhanced User Portals Section */}
+      <section className="py-24 bg-gradient-to-b from-background-main to-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-text-primary mb-4 font-heading">
+          <div className="text-center mb-20 animate-slide-up">
+            <h2 className="text-5xl font-bold text-text-primary mb-6 font-heading">
               Choose Your Portal
             </h2>
-            <p className="text-xl text-gray-600 font-body">
-              Access specialized tools designed for your specific needs
+            <p className="text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Access specialized tools designed for your specific needs with our innovative platform
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="border-2 border-transparent hover:border-brand-sky transition-all duration-300 hover:shadow-lg cursor-pointer bg-white">
-              <CardHeader className="text-center">
-                <Users className="h-12 w-12 text-brand-red mx-auto mb-4" />
-                <CardTitle className="text-text-primary font-heading">Families & Clients</CardTitle>
-                <CardDescription className="font-body text-gray-600">Find and manage care services for your loved ones</CardDescription>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            <Card className="card-interactive shadow-lg animate-scale-in">
+              <CardHeader className="text-center p-8">
+                <div className="bg-brand-red/10 rounded-full p-6 w-20 h-20 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="h-8 w-8 text-brand-red mx-auto" />
+                </div>
+                <CardTitle className="text-contrast-high text-2xl font-bold mb-3 font-heading">Families & Clients</CardTitle>
+                <CardDescription className="text-lg text-gray-600 leading-relaxed">Find and manage care services for your loved ones with ease</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center p-8 pt-0">
                 <Link to="/dashboard/family">
-                  <Button className="w-full bg-brand-red hover:bg-red-600 text-white font-body">
+                  <Button className="btn-primary btn-enhanced w-full text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced">
                     Access Family Portal
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-transparent hover:border-brand-sky transition-all duration-300 hover:shadow-lg cursor-pointer bg-white">
-              <CardHeader className="text-center">
-                <User className="h-12 w-12 text-brand-sky mx-auto mb-4" />
-                <CardTitle className="text-text-primary font-heading">Healthcare Professionals</CardTitle>
-                <CardDescription className="font-body text-gray-600">Manage clients, referrals, and track placements</CardDescription>
+            <Card className="card-interactive shadow-lg animate-scale-in">
+              <CardHeader className="text-center p-8">
+                <div className="bg-brand-sky/10 rounded-full p-6 w-20 h-20 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <User className="h-8 w-8 text-brand-sky mx-auto" />
+                </div>
+                <CardTitle className="text-contrast-high text-2xl font-bold mb-3 font-heading">Healthcare Professionals</CardTitle>
+                <CardDescription className="text-lg text-gray-600 leading-relaxed">Manage clients, referrals, and track placements efficiently</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center p-8 pt-0">
                 <Link to="/dashboard/healthcare">
-                  <Button className="w-full bg-brand-sky hover:bg-blue-600 text-white font-body">
+                  <Button className="btn-secondary btn-enhanced w-full text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced">
                     Access Healthcare Portal
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-transparent hover:border-brand-sky transition-all duration-300 hover:shadow-lg cursor-pointer bg-white">
-              <CardHeader className="text-center">
-                <Briefcase className="h-12 w-12 text-brand-gold mx-auto mb-4" />
-                <CardTitle className="text-text-primary font-heading">Placement Agents</CardTitle>
-                <CardDescription className="font-body text-gray-600">CRM tools, performance tracking, and client management</CardDescription>
+            <Card className="card-interactive shadow-lg animate-scale-in">
+              <CardHeader className="text-center p-8">
+                <div className="bg-brand-gold/10 rounded-full p-6 w-20 h-20 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Briefcase className="h-8 w-8 text-brand-gold mx-auto" />
+                </div>
+                <CardTitle className="text-contrast-high text-2xl font-bold mb-3 font-heading">Placement Agents</CardTitle>
+                <CardDescription className="text-lg text-gray-600 leading-relaxed">CRM tools, performance tracking, and comprehensive client management</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center p-8 pt-0">
                 <Link to="/dashboard/agent">
-                  <Button className="w-full bg-brand-gold hover:bg-yellow-500 text-brand-navy font-body">
+                  <Button className="w-full bg-brand-gold hover:bg-yellow-500 text-brand-navy btn-enhanced text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced">
                     Access Agent Portal
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-transparent hover:border-brand-sky transition-all duration-300 hover:shadow-lg cursor-pointer bg-white">
-              <CardHeader className="text-center">
-                <Building className="h-12 w-12 text-brand-navy mx-auto mb-4" />
-                <CardTitle className="text-text-primary font-heading">Facilities</CardTitle>
-                <CardDescription className="font-body text-gray-600">Manage listings, analytics, and placement specialists</CardDescription>
+            <Card className="card-interactive shadow-lg animate-scale-in">
+              <CardHeader className="text-center p-8">
+                <div className="bg-brand-navy/10 rounded-full p-6 w-20 h-20 mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Building className="h-8 w-8 text-brand-navy mx-auto" />
+                </div>
+                <CardTitle className="text-contrast-high text-2xl font-bold mb-3 font-heading">Facilities</CardTitle>
+                <CardDescription className="text-lg text-gray-600 leading-relaxed">Manage listings, analytics, and placement specialist relationships</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center p-8 pt-0">
                 <Link to="/dashboard/facility">
-                  <Button className="w-full bg-brand-navy hover:bg-blue-900 text-white font-body">
+                  <Button className="w-full bg-brand-navy hover:bg-blue-900 text-white btn-enhanced text-lg py-4 shadow-lg hover:shadow-xl focus-enhanced">
                     Access Facility Portal
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
               </CardContent>
@@ -108,57 +146,100 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="bg-white py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-text-primary mb-4 font-heading">
+      {/* Enhanced Features Section */}
+      <section className="bg-white py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-20 animate-slide-up">
+            <h2 className="text-5xl font-bold text-text-primary mb-6 font-heading">
               Why Choose HealthProAssist?
             </h2>
-            <p className="text-xl text-gray-600 font-body">
-              Comprehensive tools for every step of the care journey
+            <p className="text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Comprehensive tools for every step of the care journey, powered by innovation
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-brand-red/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Users className="h-8 w-8 text-brand-red" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto mb-16">
+            <div className="text-center group animate-scale-in">
+              <div className="bg-gradient-to-br from-brand-red/10 to-brand-red/5 rounded-2xl p-8 w-24 h-24 mx-auto mb-8 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md">
+                <Shield className="h-12 w-12 text-brand-red" />
               </div>
-              <h3 className="text-xl font-semibold text-text-primary mb-2 font-heading">
+              <h3 className="text-3xl font-bold text-contrast-high mb-4 font-heading">
                 Streamlined Communication
               </h3>
-              <p className="text-gray-600 font-body">
-                Secure messaging and real-time updates keep everyone connected
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Secure messaging and real-time updates keep everyone connected with advanced encryption and instant notifications
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="bg-brand-sky/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Building className="h-8 w-8 text-brand-sky" />
+            <div className="text-center group animate-scale-in">
+              <div className="bg-gradient-to-br from-brand-sky/10 to-brand-sky/5 rounded-2xl p-8 w-24 h-24 mx-auto mb-8 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md">
+                <Building className="h-12 w-12 text-brand-sky" />
               </div>
-              <h3 className="text-xl font-semibold text-text-primary mb-2 font-heading">
+              <h3 className="text-3xl font-bold text-contrast-high mb-4 font-heading">
                 Comprehensive Directory
               </h3>
-              <p className="text-gray-600 font-body">
-                Access to verified facilities and care providers
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Access to verified facilities and care providers with detailed profiles, reviews, and real-time availability
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="bg-brand-gold/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <Briefcase className="h-8 w-8 text-brand-gold" />
+            <div className="text-center group animate-scale-in">
+              <div className="bg-gradient-to-br from-brand-gold/10 to-brand-gold/5 rounded-2xl p-8 w-24 h-24 mx-auto mb-8 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md">
+                <Zap className="h-12 w-12 text-brand-gold" />
               </div>
-              <h3 className="text-xl font-semibold text-text-primary mb-2 font-heading">
+              <h3 className="text-3xl font-bold text-contrast-high mb-4 font-heading">
                 Professional Tools
               </h3>
-              <p className="text-gray-600 font-body">
-                Advanced CRM, analytics, and management capabilities
+              <p className="text-lg text-gray-600 leading-relaxed">
+                Advanced CRM, analytics, and management capabilities designed for healthcare professionals
               </p>
+            </div>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
+                <span className="text-2xl font-bold text-brand-navy">500+</span>
+              </div>
+              <p className="text-sm text-gray-600">Verified Facilities</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
+                <span className="text-2xl font-bold text-brand-navy">1000+</span>
+              </div>
+              <p className="text-sm text-gray-600">Successful Placements</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
+                <span className="text-2xl font-bold text-brand-navy">24/7</span>
+              </div>
+              <p className="text-sm text-gray-600">Support Available</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
+                <span className="text-2xl font-bold text-brand-navy">99.9%</span>
+              </div>
+              <p className="text-sm text-gray-600">Uptime Guarantee</p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ElevenLabs Widget - Show on scroll */}
+      <div 
+        className={`fixed inset-0 z-50 transition-opacity duration-300 ${
+          showWidget ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ display: showWidget ? 'block' : 'none' }}
+      >
+        <ElevenLabsWidget variant="fullscreen" />
+      </div>
     </div>
   );
 };

@@ -1,64 +1,31 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&display=swap");
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Open+Sans:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 355 100% 61%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 197 37% 24%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 197 37% 24%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --background: 241 250 238;
+    --foreground: 42 45 52;
+    --card: 255 255 255;
+    --card-foreground: 42 45 52;
+    --popover: 255 255 255;
+    --popover-foreground: 42 45 52;
+    --primary: 29 53 87;
+    --primary-foreground: 241 250 238;
+    --secondary: 69 123 157;
+    --secondary-foreground: 255 255 255;
+    --muted: 229 229 229;
+    --muted-foreground: 107 114 128;
+    --accent: 168 218 220;
+    --accent-foreground: 29 53 87;
+    --destructive: 230 57 70;
+    --destructive-foreground: 255 255 255;
+    --border: 229 229 229;
+    --input: 229 229 229;
+    --ring: 69 123 157;
     --radius: 0.75rem;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
   }
 }
 
@@ -66,78 +33,203 @@
   * {
     @apply border-border;
   }
-  
   body {
-    @apply bg-background text-foreground font-body;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: #2A2D34;
+    @apply bg-background text-foreground;
+    font-family: 'Open Sans', sans-serif;
   }
-  
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-bold text-text-primary leading-tight;
-  }
-  
-  h1 { @apply text-h1; }
-  h2 { @apply text-h2; }
-  h3 { @apply text-h3; }
-  h4 { @apply text-h4; }
-  h5 { @apply text-h5; }
-  h6 { @apply text-h6; }
-  
-  p {
-    @apply text-body text-text-primary leading-relaxed;
+    font-family: 'Montserrat', sans-serif;
   }
 }
 
-@layer components {
-  .healthpro-card {
-    @apply bg-background-card rounded-xl shadow-md p-6 transition-all duration-200;
-  }
-  
-  .healthpro-card:hover {
-    @apply shadow-lg;
-  }
-  
-  .healthpro-btn-primary {
-    @apply bg-brand-red text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:bg-red-600 disabled:opacity-50;
-  }
-  
-  .healthpro-btn-secondary {
-    @apply bg-brand-sky text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 hover:bg-blue-600 disabled:opacity-50;
-  }
-  
-  .card-interactive {
-    @apply transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer;
-  }
-  
+/* Enhanced Brand Colors with Better Contrast */
+@layer utilities {
   .gradient-hero {
-    background: linear-gradient(135deg, #1D3557 0%, #457B9D 100%);
+    background: linear-gradient(135deg, #1D3557 0%, #457B9D 50%, #1D3557 100%);
+  }
+  
+  .gradient-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  }
+  
+  .text-brand-primary {
+    color: #1D3557;
+  }
+  
+  .text-brand-secondary {
+    color: #457B9D;
+  }
+  
+  .bg-brand-primary {
+    background-color: #1D3557;
+  }
+  
+  .bg-brand-secondary {
+    background-color: #457B9D;
+  }
+  
+  .border-brand-primary {
+    border-color: #1D3557;
+  }
+  
+  .border-brand-secondary {
+    border-color: #457B9D;
   }
 }
 
+/* Enhanced Component Styles */
 @layer components {
-  /* ... keep existing @layer components ... */
-
-  /* Add these new styles for the Senior Portal Theme */
-  .senior-heading {
-    @apply text-3xl font-bold text-gray-800;
+  .card-interactive {
+    @apply transition-all duration-300 ease-in-out;
+    @apply hover:shadow-xl hover:scale-[1.02];
+    @apply border-2 border-transparent;
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 4px 20px rgba(29, 53, 87, 0.08);
   }
-
-  .senior-text {
-    @apply text-lg text-gray-600 leading-relaxed;
+  
+  .card-interactive:hover {
+    @apply border-brand-sky;
+    box-shadow: 0 12px 40px rgba(29, 53, 87, 0.15);
   }
-
-  .senior-card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200;
+  
+  .btn-primary {
+    @apply bg-brand-red hover:bg-red-600 text-white font-semibold;
+    @apply shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply border-2 border-transparent hover:border-red-700;
+    background: linear-gradient(135deg, #E63946 0%, #dc2626 100%);
   }
-
-  .senior-button {
-    @apply font-semibold py-3 px-6 rounded-lg transition-all duration-200 disabled:opacity-50;
+  
+  .btn-secondary {
+    @apply bg-brand-sky hover:bg-blue-600 text-white font-semibold;
+    @apply shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply border-2 border-transparent hover:border-blue-700;
+    background: linear-gradient(135deg, #457B9D 0%, #2563eb 100%);
   }
-
-  .text-senior-base {
-    @apply text-base text-gray-800;
+  
+  .btn-outline {
+    @apply border-2 border-brand-navy text-brand-navy font-semibold;
+    @apply hover:bg-brand-navy hover:text-white transition-all duration-300;
+    @apply shadow-md hover:shadow-lg;
   }
+  
+  .navbar-enhanced {
+    @apply bg-white/95 backdrop-blur-md shadow-lg;
+    @apply border-b border-gray-200/50;
+    box-shadow: 0 4px 20px rgba(29, 53, 87, 0.08);
+  }
+  
+  .logo-enhanced {
+    @apply rounded-lg shadow-md;
+    filter: drop-shadow(0 2px 8px rgba(29, 53, 87, 0.15));
+  }
+  
+  /* Enhanced Button States */
+  .btn-enhanced {
+    @apply relative overflow-hidden transform transition-all duration-300;
+    @apply hover:scale-105 active:scale-95;
+  }
+  
+  .btn-enhanced::before {
+    content: '';
+    @apply absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300;
+  }
+  
+  .btn-enhanced:hover::before {
+    @apply opacity-100;
+  }
+}
+
+/* Accessibility Improvements */
+@layer components {
+  .focus-enhanced:focus {
+    @apply outline-none ring-4 ring-brand-sky/30 ring-offset-2;
+  }
+  
+  .text-contrast-high {
+    color: #1D3557;
+    font-weight: 600;
+  }
+  
+  .bg-contrast-high {
+    background-color: #ffffff;
+    color: #1D3557;
+  }
+}
+
+/* Animation Enhancements */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Senior-Friendly Accessibility Classes */
+.senior-text {
+  @apply text-lg text-gray-700 leading-relaxed;
+}
+
+.senior-heading {
+  @apply text-3xl font-bold text-text-primary mb-4;
+}
+
+.senior-card {
+  @apply bg-white border-2 border-gray-200 rounded-xl shadow-lg p-6;
+}
+
+.senior-button {
+  @apply px-8 py-4 text-lg font-semibold rounded-lg transition-all duration-300;
+  @apply shadow-md hover:shadow-lg transform hover:scale-105;
+}
+
+.text-senior-base {
+  @apply text-base;
+}
+
+.senior-500 {
+  background-color: #457B9D;
+}
+
+.senior-600 {
+  background-color: #3a6b85;
 }
