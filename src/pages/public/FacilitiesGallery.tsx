@@ -85,8 +85,6 @@ const FacilitiesGallery = () => {
   };
 
   const loadFilterData = async () => {
-    // Load care types and amenities for filters
-    // This would typically come from your API
     setCareTypes([
       { id: '1', care_type_id: 'assisted-living', description: 'Assisted Living' },
       { id: '2', care_type_id: 'memory-care', description: 'Memory Care' },
@@ -102,7 +100,6 @@ const FacilitiesGallery = () => {
 
   const applyFilters = () => {
     let filtered = facilities.filter(facility => {
-      // Search term filter
       if (searchTerm && !facility.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
           !facility.city.toLowerCase().includes(searchTerm.toLowerCase()) &&
           !facility.state.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -110,19 +107,16 @@ const FacilitiesGallery = () => {
       }
 
       if (hasAdvancedFilters) {
-        // Care type filter
         if (selectedCareTypes.length > 0 && 
             !selectedCareTypes.includes(facility.facility_type)) {
           return false;
         }
 
-        // Price range filter
         if (facility.price_range_min < priceRange[0] || 
             facility.price_range_max > priceRange[1]) {
           return false;
         }
 
-        // VA benefits filter
         if (vaToggle && !facility.accepts_va_benefits) {
           return false;
         }
@@ -170,11 +164,11 @@ const FacilitiesGallery = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-brand-off-white min-h-screen p-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-text-dark-gray">Facilities Directory</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-brand-navy">Facilities Directory</h1>
+          <p className="text-gray-700 mt-2">
             Explore {filteredFacilities.length} care facilities
           </p>
         </div>
@@ -183,6 +177,7 @@ const FacilitiesGallery = () => {
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('grid')}
+            className={viewMode === 'grid' ? 'bg-brand-sky text-white' : 'border-brand-sky text-brand-sky hover:bg-brand-sky hover:text-white'}
           >
             <Grid2X2 className="h-4 w-4" />
           </Button>
@@ -190,6 +185,7 @@ const FacilitiesGallery = () => {
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('list')}
+            className={viewMode === 'list' ? 'bg-brand-sky text-white' : 'border-brand-sky text-brand-sky hover:bg-brand-sky hover:text-white'}
           >
             <List className="h-4 w-4" />
           </Button>
@@ -202,7 +198,7 @@ const FacilitiesGallery = () => {
           feature="advanced_filters"
           fallback={
             <div className="w-80">
-              <Card className="p-4 text-center">
+              <Card className="p-4 text-center bg-white border-gray-200">
                 <Filter className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm text-gray-600">Advanced filters available with premium plans</p>
               </Card>
@@ -210,9 +206,9 @@ const FacilitiesGallery = () => {
           }
         >
           <div className="w-80 space-y-4">
-            <Card>
+            <Card className="bg-white border-gray-200">
               <CardHeader>
-                <CardTitle className="flex items-center text-lg">
+                <CardTitle className="flex items-center text-lg text-brand-navy">
                   <Filter className="h-5 w-5 mr-2" />
                   Filters
                 </CardTitle>
@@ -220,7 +216,7 @@ const FacilitiesGallery = () => {
               <CardContent className="space-y-6">
                 {/* Care Types */}
                 <div>
-                  <h4 className="font-semibold mb-3">Care Type</h4>
+                  <h4 className="font-semibold mb-3 text-brand-navy">Care Type</h4>
                   <div className="space-y-2">
                     {careTypes.map((careType) => (
                       <div key={careType.id} className="flex items-center space-x-2">
@@ -231,7 +227,7 @@ const FacilitiesGallery = () => {
                             handleCareTypeChange(careType.care_type_id, checked as boolean)
                           }
                         />
-                        <label htmlFor={careType.id} className="text-sm">
+                        <label htmlFor={careType.id} className="text-sm text-gray-700">
                           {careType.description}
                         </label>
                       </div>
@@ -241,7 +237,7 @@ const FacilitiesGallery = () => {
 
                 {/* Price Range */}
                 <div>
-                  <h4 className="font-semibold mb-3">Price Range</h4>
+                  <h4 className="font-semibold mb-3 text-brand-navy">Price Range</h4>
                   <div className="space-y-2">
                     <Slider
                       value={priceRange}
@@ -259,7 +255,7 @@ const FacilitiesGallery = () => {
 
                 {/* Amenities */}
                 <div>
-                  <h4 className="font-semibold mb-3">Amenities</h4>
+                  <h4 className="font-semibold mb-3 text-brand-navy">Amenities</h4>
                   <div className="space-y-2">
                     {amenities.map((amenity) => (
                       <div key={amenity.id} className="flex items-center space-x-2">
@@ -270,7 +266,7 @@ const FacilitiesGallery = () => {
                             handleAmenityChange(amenity.id, checked as boolean)
                           }
                         />
-                        <label htmlFor={amenity.id} className="text-sm">
+                        <label htmlFor={amenity.id} className="text-sm text-gray-700">
                           {amenity.name}
                         </label>
                       </div>
@@ -280,7 +276,7 @@ const FacilitiesGallery = () => {
 
                 {/* VA Benefits */}
                 <div className="flex items-center justify-between">
-                  <label htmlFor="va-toggle" className="text-sm font-medium">
+                  <label htmlFor="va-toggle" className="text-sm font-medium text-brand-navy">
                     Accepts VA Benefits
                   </label>
                   <Switch
@@ -290,7 +286,11 @@ const FacilitiesGallery = () => {
                   />
                 </div>
 
-                <Button variant="outline" onClick={clearFilters} className="w-full">
+                <Button 
+                  variant="outline" 
+                  onClick={clearFilters} 
+                  className="w-full border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white"
+                >
                   Clear Filters
                 </Button>
               </CardContent>
@@ -307,14 +307,14 @@ const FacilitiesGallery = () => {
               placeholder="Search facilities by name or location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-white border-gray-300 text-gray-900"
             />
           </div>
 
           {/* Loading State */}
           {loading && (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-red mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-red mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading facilities...</p>
             </div>
           )}
@@ -328,12 +328,12 @@ const FacilitiesGallery = () => {
               {filteredFacilities.map((facility) => (
                 <Card 
                   key={facility.id} 
-                  className={`bg-secondary-off-white hover:shadow-lg transition-shadow ${
-                    facility.is_featured ? 'border-2 border-accent-gold' : ''
+                  className={`bg-white hover:shadow-lg transition-shadow border-gray-200 ${
+                    facility.is_featured ? 'border-2 border-brand-gold' : ''
                   }`}
                 >
                   {facility.is_featured && (
-                    <div className="bg-accent-gold text-text-dark-gray text-xs font-bold px-2 py-1 rounded-t-lg text-center">
+                    <div className="bg-brand-gold text-brand-navy text-xs font-bold px-2 py-1 rounded-t-lg text-center">
                       Featured Facility
                     </div>
                   )}
@@ -351,32 +351,32 @@ const FacilitiesGallery = () => {
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle className="text-lg">{facility.name}</CardTitle>
-                            <CardDescription className="flex items-center text-sm">
+                            <CardTitle className="text-lg text-brand-navy">{facility.name}</CardTitle>
+                            <CardDescription className="flex items-center text-sm text-gray-600">
                               <MapPin className="h-4 w-4 mr-1" />
                               {facility.city}, {facility.state}
                             </CardDescription>
                           </div>
                           <div className="flex items-center">
                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                            <span className="text-sm font-medium">{facility.rating}</span>
+                            <span className="text-sm font-medium text-gray-700">{facility.rating}</span>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
-                          <Badge variant="outline" className="text-primary-sky border-primary-sky">
+                          <Badge variant="outline" className="text-brand-sky border-brand-sky">
                             {facility.facility_type}
                           </Badge>
                           {facility.accepts_va_benefits && (
-                            <Badge variant="secondary">VA Benefits Accepted</Badge>
+                            <Badge className="bg-green-100 text-green-800 border-green-200">VA Benefits Accepted</Badge>
                           )}
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-gray-700 font-medium">
                             ${facility.price_range_min} - ${facility.price_range_max}/month
                           </div>
                         </div>
                         <div className="mt-4">
-                          <Button className="w-full bg-primary-sky hover:bg-blue-600">
+                          <Button className="w-full bg-brand-sky hover:bg-blue-600 text-white">
                             View Details
                           </Button>
                         </div>

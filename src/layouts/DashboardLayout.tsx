@@ -83,7 +83,7 @@ const DashboardLayout = () => {
               <img 
                 src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
                 alt="HealthProAssist" 
-                className="h-10 w-auto"
+                className="h-10 w-auto rounded-lg shadow-md"
               />
               <h1 className="text-xl font-bold text-white font-heading">HealthProAssist</h1>
             </div>
@@ -100,10 +100,10 @@ const DashboardLayout = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-all duration-200 group ${
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
                     isActive
-                      ? 'bg-brand-sky text-white shadow-md'
-                      : 'text-brand-light-blue hover:bg-brand-sky/20 hover:text-white'
+                      ? 'bg-brand-sky text-white shadow-md border border-brand-light-blue/30'
+                      : 'text-brand-light-blue hover:bg-brand-sky/20 hover:text-white hover:shadow-sm'
                   }`}
                 >
                   <item.icon className="h-5 w-5" />
@@ -115,16 +115,16 @@ const DashboardLayout = () => {
 
           <div className="mt-auto">
             <div className="border-t border-brand-sky/30 pt-4">
-               <div className="bg-brand-sky/10 rounded-lg p-3 mb-4 text-center">
+               <div className="bg-brand-sky/10 rounded-lg p-3 mb-4 text-center border border-brand-sky/20">
                   <p className="text-sm font-semibold text-white">{profile?.first_name} {profile?.last_name}</p>
-                  <Badge variant="secondary" className="mt-2 bg-brand-gold text-brand-navy">
+                  <Badge variant="secondary" className="mt-2 bg-brand-gold text-brand-navy font-medium">
                     {profile?.subscription_tier} Tier
                   </Badge>
               </div>
               <Button
                 variant="ghost"
                 onClick={handleSignOut}
-                className="w-full justify-center text-brand-light-blue hover:bg-brand-red/80 hover:text-white transition-all duration-200 py-2.5"
+                className="w-full justify-center text-brand-light-blue hover:bg-brand-red/80 hover:text-white transition-all duration-200 py-3 border border-transparent hover:border-red-400/30"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out

@@ -1452,6 +1452,66 @@ export type Database = {
           },
         ]
       }
+      medical_supply_companies: {
+        Row: {
+          acceptsassignement: boolean | null
+          businessname: string | null
+          is_contracted_for_cba: boolean | null
+          latitude: number | null
+          longitude: number | null
+          practiceaddress1: string | null
+          practiceaddress2: string | null
+          practicecity: string | null
+          practicename: string | null
+          practicestate: string | null
+          practicezip9code: number | null
+          provider_id: number
+          providertypelist: string | null
+          specialitieslist: string | null
+          supplieslist: string | null
+          telephonenumber: number | null
+          uuid: string
+        }
+        Insert: {
+          acceptsassignement?: boolean | null
+          businessname?: string | null
+          is_contracted_for_cba?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          practiceaddress1?: string | null
+          practiceaddress2?: string | null
+          practicecity?: string | null
+          practicename?: string | null
+          practicestate?: string | null
+          practicezip9code?: number | null
+          provider_id: number
+          providertypelist?: string | null
+          specialitieslist?: string | null
+          supplieslist?: string | null
+          telephonenumber?: number | null
+          uuid?: string
+        }
+        Update: {
+          acceptsassignement?: boolean | null
+          businessname?: string | null
+          is_contracted_for_cba?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          practiceaddress1?: string | null
+          practiceaddress2?: string | null
+          practicecity?: string | null
+          practicename?: string | null
+          practicestate?: string | null
+          practicezip9code?: number | null
+          provider_id?: number
+          providertypelist?: string | null
+          specialitieslist?: string | null
+          supplieslist?: string | null
+          telephonenumber?: number | null
+          uuid?: string
+        }
+        Relationships: []
+      }
       merged_facilities: {
         Row: {
           accepts_medicaid: boolean | null
