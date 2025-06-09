@@ -15,7 +15,7 @@ import { SuperUserProvider } from '@/contexts/SuperUserContext';
 import PublicLayout from '@/layouts/PublicLayout';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import SuperUserProtectedRoute from '@/components/SuperUserProtectedRoute';
-import HomePage from '@/pages/public/HomePage';
+import HomePage from '@/pages/HomePage';
 import FindCarePage from '@/pages/FindCarePage';
 import PricingPage from '@/pages/public/PricingPage';
 import LoginPage from '@/pages/public/LoginPage';
