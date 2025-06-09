@@ -2,10 +2,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { TempAuthProvider } from '@/contexts/TempAuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Providers
-import { AuthProvider } from '@/contexts/AuthContext';
+
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
 import { SuperUserProvider } from '@/contexts/SuperUserContext';
 
