@@ -53,8 +53,7 @@ const DashboardLayout = () => {
   const getNavigationItems = (): NavItem[] => {
     const baseItems = [
       { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
-      { icon: MessageSquare, label: 'Messages', href: '/dashboard/messages' },
-      { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+      { icon: MessageSquare, label: 'Messages', href: '/dashboard/family/messaging' },
     ];
 
     switch (userType) {
@@ -68,12 +67,12 @@ const DashboardLayout = () => {
             isQuickActions: true,
             subItems: [
               { icon: UserPlus, label: 'New Client', href: '/dashboard/agent/new-client' },
-              { icon: FileBarChart, label: 'Generate Report', href: '/dashboard/agent/reports' },
+              { icon: FileBarChart, label: 'Generate Report', href: '/dashboard/agent' },
               { icon: MessageCircle, label: 'Send Email', href: '/dashboard/agent/inbox' },
               { icon: ContactIcon, label: 'Add Contact', href: '/dashboard/agent/contacts' }
             ]
           },
-          { icon: Users, label: 'All Clients', href: '/dashboard/agent/clients' },
+          { icon: Users, label: 'All Clients', href: '/dashboard/agent' },
           { icon: Map, label: 'Facility Map', href: '/dashboard/agent/facility-map' },
           { icon: ContactIcon, label: 'Contacts', href: '/dashboard/agent/contacts' },
           { icon: FileText, label: 'Forms', href: '/dashboard/agent/form-builder' },
@@ -91,16 +90,16 @@ const DashboardLayout = () => {
         return [
           { icon: Home, label: 'Dashboard', href: '/dashboard/healthcare' },
           { icon: Stethoscope, label: 'Intake Forms', href: '/dashboard/healthcare/intake-form' },
-          { icon: Users, label: 'Referrals', href: '/dashboard/healthcare/referrals' },
+          { icon: Users, label: 'Referrals', href: '/dashboard/healthcare' },
           { icon: Map, label: 'Find Care', href: '/dashboard/find-care' },
           ...baseItems
         ];
       case 'facility':
         return [
           { icon: Home, label: 'Dashboard', href: '/dashboard/facility' },
-          { icon: Building2, label: 'Listings', href: '/dashboard/facility/listings' },
-          { icon: Users, label: 'Specialists', href: '/dashboard/facility/specialists' },
-          { icon: FileText, label: 'Analytics', href: '/dashboard/facility/analytics' },
+          { icon: Building2, label: 'Listings', href: '/dashboard/facility' },
+          { icon: Users, label: 'Specialists', href: '/dashboard/facility' },
+          { icon: FileText, label: 'Analytics', href: '/dashboard/facility' },
           ...baseItems
         ];
       default:

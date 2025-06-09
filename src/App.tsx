@@ -44,6 +44,7 @@ import FacilityMapView from '@/pages/agent/FacilityMapView';
 import FacilityContactBook from '@/pages/agent/FacilityContactBook';
 import DocumentFormBuilder from '@/pages/agent/DocumentFormBuilder';
 import InboxMessaging from '@/pages/agent/InboxMessaging';
+import NewClient from '@/pages/agent/NewClient';
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ function AppRoutes() {
 
           {/* Agent - Enhanced with new features */}
           <Route path="agent" element={<AgentDashboard />} />
+          <Route path="agent/new-client" element={<NewClient />} />
           <Route path="agent/facility-map" element={<FacilityMapView />} />
           <Route path="agent/contacts" element={<FacilityContactBook />} />
           <Route path="agent/form-builder" element={<DocumentFormBuilder />} />
