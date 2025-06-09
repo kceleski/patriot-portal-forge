@@ -7,7 +7,6 @@ import { TempAuthProvider } from '@/contexts/TempAuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Providers
-
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext';
 import { SuperUserProvider } from '@/contexts/SuperUserContext';
 
@@ -110,19 +109,21 @@ function AppRoutes() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <AccessibilityProvider>
-          <SuperUserProvider>
-            <Router>
-              <div className="min-h-screen bg-brand-off-white">
-                <AppRoutes />
-                <FloatingAgentWrapper />
-                <Toaster />
-              </div>
-            </Router>
-          </SuperUserProvider>
-        </AccessibilityProvider>
-      </AuthProvider>
+      <TempAuthProvider>
+        <AuthProvider>
+          <AccessibilityProvider>
+            <SuperUserProvider>
+              <Router>
+                <div className="min-h-screen bg-brand-off-white">
+                  <AppRoutes />
+                  <FloatingAgentWrapper />
+                  <Toaster />
+                </div>
+              </Router>
+            </SuperUserProvider>
+          </AccessibilityProvider>
+        </AuthProvider>
+      </TempAuthProvider>
     </QueryClientProvider>
   );
 }

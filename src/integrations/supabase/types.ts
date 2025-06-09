@@ -2761,6 +2761,7 @@ export type Database = {
           last_login: string | null
           last_name: string | null
           mfa_enabled: boolean | null
+          organization: string | null
           password_hash: string | null
           phone: string | null
           profile_image_url: string | null
@@ -2779,6 +2780,7 @@ export type Database = {
           last_login?: string | null
           last_name?: string | null
           mfa_enabled?: boolean | null
+          organization?: string | null
           password_hash?: string | null
           phone?: string | null
           profile_image_url?: string | null
@@ -2797,6 +2799,7 @@ export type Database = {
           last_login?: string | null
           last_name?: string | null
           mfa_enabled?: boolean | null
+          organization?: string | null
           password_hash?: string | null
           phone?: string | null
           profile_image_url?: string | null
