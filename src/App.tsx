@@ -94,6 +94,7 @@ function AppRoutes() {
           {/* Shared */}
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="profile" element={<UserProfile />} />
+          <Route path="find-care" element={<FindCarePage />} />
         </Route>
       </Route>
 
