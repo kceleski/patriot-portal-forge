@@ -36,6 +36,7 @@ import { CalendarPage } from '@/pages/Calendar';
 import { ClientIntakeForm } from '@/pages/healthcare/ClientIntakeForm';
 import UserProfile from '@/pages/UserProfile';
 import ElevenLabsAgent from '@/components/ElevenLabsAgent';
+import FacilitiesGallery from '@/pages/public/FacilitiesGallery';
 
 // Import agent pages
 import FacilityMapView from '@/pages/agent/FacilityMapView';
