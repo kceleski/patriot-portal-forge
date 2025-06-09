@@ -18,8 +18,9 @@ serve(async (req) => {
       throw new Error("Text is required");
     }
 
-    const elevenLabsApiKey = Deno.env.get("ELEVENLABS_API_KEY");
-    const voiceId = voice_id || Deno.env.get("ELEVENLABS_VOICE_ID") || "21m00Tcm4TlvDq8ikWAM";
+    // Use the provided API key
+    const elevenLabsApiKey = "sk_4f9ba112c8c894379c417771434613e8f0f1ab3b28aea81a";
+    const voiceId = voice_id || "21m00Tcm4TlvDq8ikWAM";
 
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: "POST",

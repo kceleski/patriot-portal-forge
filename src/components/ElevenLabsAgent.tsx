@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useConversation } from '@elevenlabs/react';
 import { Button } from '@/components/ui/button';
@@ -32,9 +31,9 @@ const ElevenLabsAgent = () => {
       // Request microphone access
       await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      // Start the conversation using your agent ID
+      // Start the conversation using your updated agent ID
       await conversation.startSession({
-        agentId: "agent_01jx5am7c9f2m9vnp81ygyvvvt"
+        agentId: "R9M1zBEUj8fTGAij61wb"
       });
     } catch (error) {
       console.error("Failed to start conversation:", error);

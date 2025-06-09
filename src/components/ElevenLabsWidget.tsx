@@ -32,7 +32,7 @@ const ElevenLabsWidget: React.FC<ElevenLabsWidgetProps> = ({ variant }) => {
   if (variant === 'fullscreen') {
     return (
       <elevenlabs-convai 
-        agent-id="agent_01jx5am7c9f2m9vnp81ygyvvvt" 
+        agent-id="R9M1zBEUj8fTGAij61wb" 
         variant="expanded"
       />
     );
@@ -40,7 +40,7 @@ const ElevenLabsWidget: React.FC<ElevenLabsWidgetProps> = ({ variant }) => {
 
   return (
     <elevenlabs-convai 
-      agent-id="agent_01jx5am7c9f2m9vnp81ygyvvvt"
+      agent-id="R9M1zBEUj8fTGAij61wb"
     />
   );
 };
