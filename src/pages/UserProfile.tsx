@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
@@ -12,7 +11,7 @@ import { useApi } from '@/hooks/useApi';
 import { User, Settings, Bell, Shield, Edit3, Save, X, Phone, Mail } from 'lucide-react';
 
 const UserProfile: React.FC = () => {
-  const { profile, updateProfile } = useAuth();
+  const { profile, updateUserProfile } = useAuth();
   const { settings, updateSettings } = useAccessibility();
   const [isEditing, setIsEditing] = useState(false);
   
@@ -22,7 +21,7 @@ const UserProfile: React.FC = () => {
     organization: ''
   });
 
-  const { execute: handleUpdateProfile, loading } = useApi(updateProfile, {
+  const { execute: handleUpdateProfile, loading } = useApi(updateUserProfile, {
       showSuccessToast: true,
       successMessage: "Your profile has been updated!"
   });

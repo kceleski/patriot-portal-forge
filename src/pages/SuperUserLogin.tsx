@@ -21,7 +21,7 @@ const SuperUserLogin = () => {
     if (username === 'dev' && password === 'dev123') {
       navigate('/dashboard/agent');
     } else {
-      setError('Invalid credentials. Use username: "dev" and password: "dev123"');
+      setError('Invalid credentials');
     }
   };
 
@@ -83,14 +83,6 @@ const SuperUserLogin = () => {
                   Login as Super User
                 </Button>
               </form>
-
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
-                <p className="text-sm text-blue-800">
-                  <strong>Developer Credentials:</strong><br />
-                  Username: dev<br />
-                  Password: dev123
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>
