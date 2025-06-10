@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserProfile(session.user.id);
+        buildUserProfile(session.user);
       } else {
         setLoading(false);
       }
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        await fetchUserProfile(session.user.id);
+        buildUserProfile(session.user);
       } else {
         setProfile(null);
         setLoading(false);
@@ -70,33 +70,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
+  const buildUserProfile = (user: User) => {
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      // Build profile from user metadata and email
+      const userData = user.user_metadata || {};
+      const email = user.email || '';
+      
+      // Check if user is organization admin based on metadata or email
+      const isOrgAdmin = userData.organization && 
+        (userData.organization.toLowerCase().includes('admin') || 
+         userData.organization.toLowerCase().includes('director') ||
+         userData.organization.toLowerCase().includes('manager') ||
+         email.toLowerCase().includes('admin'));
 
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return;
-      }
+      const userProfile: UserProfile = {
+        id: user.id,
+        email: email,
+        first_name: userData.first_name || '',
+        last_name: userData.last_name || '',
+        user_type: userData.user_type || 'family',
+        organization: userData.organization || '',
+        phone: userData.phone || '',
+        subscription_tier: userData.subscription_tier || 'basic',
+        avatar_url: userData.avatar_url || '',
+        organization_admin: isOrgAdmin
+      };
 
-      if (data) {
-        // Check if user is organization admin based on organization name pattern
-        const isOrgAdmin = data.organization && 
-          (data.organization.toLowerCase().includes('admin') || 
-           data.organization.toLowerCase().includes('director') ||
-           data.organization.toLowerCase().includes('manager'));
-
-        setProfile({
-          ...data,
-          organization_admin: isOrgAdmin
-        });
-      }
+      setProfile(userProfile);
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error building user profile:', error);
     } finally {
       setLoading(false);
     }
@@ -136,21 +138,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { user: null, error };
       }
 
-      // Create user profile
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            ...userData
-          });
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-        }
-      }
-
       return { user: data.user, error: null };
     } catch (error) {
       toast.error('An unexpected error occurred');
@@ -173,10 +160,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update(updates)
-        .eq('id', user.id);
+      // Update the user metadata in auth
+      const { error } = await supabase.auth.updateUser({
+        data: updates
+      });
 
       if (error) {
         toast.error('Failed to update profile');
