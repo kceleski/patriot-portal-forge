@@ -49,7 +49,7 @@ const LoginPage = () => {
                 Welcome Back
               </CardTitle>
               <CardDescription>
-                Sign in to access your CareConnect portal
+                Sign in to access your HealthProAssist portal
               </CardDescription>
             </CardHeader>
             <CardContent>
