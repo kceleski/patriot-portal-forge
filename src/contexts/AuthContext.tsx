@@ -12,6 +12,7 @@ interface UserProfile {
   last_name?: string;
   organization?: string;
   phone?: string;
+  organization_admin?: boolean;
 }
 
 interface AuthContextType {
@@ -103,7 +104,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           first_name: authUser.user_metadata?.first_name || '',
           last_name: authUser.user_metadata?.last_name || '',
           organization: authUser.user_metadata?.organization || '',
-          phone: authUser.user_metadata?.phone || ''
+          phone: authUser.user_metadata?.phone || '',
+          organization_admin: authUser.user_metadata?.organization_admin || false
         };
 
         const { data: createdProfile, error: createError } = await supabase
@@ -134,7 +136,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           first_name: existingProfile.first_name,
           last_name: existingProfile.last_name,
           organization: existingProfile.organization,
-          phone: existingProfile.phone
+          phone: existingProfile.phone,
+          organization_admin: existingProfile.organization_admin
         };
         
         console.log('Setting user profile:', userProfile);
@@ -234,7 +237,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           organization: updates.organization,
           phone: updates.phone,
           role: updates.user_type,
-          tier: updates.subscription_tier
+          tier: updates.subscription_tier,
+          organization_admin: updates.organization_admin
         })
         .eq('id', user.id);
 
@@ -316,3 +320,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 export default AuthProvider;
+
+}

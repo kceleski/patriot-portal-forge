@@ -25,7 +25,9 @@ import {
   Video,
   Building,
   UserCheck,
-  Briefcase
+  Briefcase,
+  ShieldCheck,
+  Crown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -37,6 +39,7 @@ interface NavItem {
   href: string;
   isQuickActions?: boolean;
   subItems?: NavItem[];
+  adminOnly?: boolean;
 }
 
 const DashboardLayout = () => {
@@ -47,7 +50,10 @@ const DashboardLayout = () => {
 
   // Get user type from actual user profile data
   const userType = profile?.user_type || 'family';
-  const isAdmin = profile?.user_type === 'admin';
+  const isSuperAdmin = profile?.user_type === 'admin';
+  const isOrgAdmin = profile?.organization_admin === true; // This will need to be added to profile
+  const isProfessional = userType === 'healthcare' || userType === 'agent';
+  const isPlacementAgent = userType === 'agent';
 
   const getNavigationItems = (): NavItem[] => {
     const baseItems = [
@@ -55,98 +61,104 @@ const DashboardLayout = () => {
       { icon: MessageSquare, label: 'Messages', href: '/dashboard/messaging' },
     ];
 
-    // Admin gets access to everything
-    if (isAdmin) {
+    // Super Admin gets access to everything
+    if (isSuperAdmin) {
       return [
-        { icon: Shield, label: 'Admin Dashboard', href: '/dashboard/admin' },
-        { icon: Users, label: 'All Users', href: '/dashboard/admin/users' },
-        { icon: Building2, label: 'All Facilities', href: '/dashboard/admin/facilities' },
-        { icon: FileBarChart, label: 'Analytics', href: '/dashboard/admin/analytics' },
-        { icon: CreditCard, label: 'Payments', href: '/dashboard/admin/payments' },
+        { icon: Crown, label: 'Super Admin', href: '/dashboard/super-admin' },
+        { icon: Users, label: 'All Users', href: '/dashboard/super-admin/users' },
+        { icon: Building2, label: 'All Facilities', href: '/dashboard/super-admin/facilities' },
+        { icon: ShieldCheck, label: 'All Organizations', href: '/dashboard/super-admin/organizations' },
+        { icon: FileBarChart, label: 'Global Analytics', href: '/dashboard/super-admin/analytics' },
+        { icon: CreditCard, label: 'All Payments', href: '/dashboard/super-admin/payments' },
         ...baseItems
       ];
     }
 
-    switch (userType) {
-      case 'agent':
-        return [
-          { icon: Home, label: 'Dashboard', href: '/dashboard/agent' },
-          { 
-            icon: UserPlus, 
-            label: 'Quick Actions', 
-            href: '#',
-            isQuickActions: true,
-            subItems: [
-              { icon: UserPlus, label: 'New Client', href: '/dashboard/agent/new-client' },
-              { icon: FileBarChart, label: 'Generate Report', href: '/dashboard/agent/performance' },
-              { icon: MessageCircle, label: 'Send Email', href: '/dashboard/agent/inbox' },
-              { icon: ContactIcon, label: 'Add Contact', href: '/dashboard/agent/contacts' }
-            ]
-          },
-          { icon: Users, label: 'All Clients', href: '/dashboard/agent/clients' },
-          { icon: FileBarChart, label: 'Performance', href: '/dashboard/agent/performance' },
-          { icon: Map, label: 'Facility Map', href: '/dashboard/agent/facility-map' },
-          { icon: ContactIcon, label: 'Contacts', href: '/dashboard/agent/contacts' },
-          { icon: FileText, label: 'Forms', href: '/dashboard/agent/form-builder' },
-          { icon: MessageSquare, label: 'Inbox', href: '/dashboard/agent/inbox' },
-          { icon: CreditCard, label: 'Invoicing', href: '/dashboard/agent/invoicing' },
-          { icon: Briefcase, label: 'Contracts', href: '/dashboard/agent/contracts' },
-          ...baseItems
-        ];
-      
-      case 'healthcare':
-        return [
-          { icon: Home, label: 'Dashboard', href: '/dashboard/healthcare' },
-          { 
-            icon: UserPlus, 
-            label: 'Quick Actions', 
-            href: '#',
-            isQuickActions: true,
-            subItems: [
-              { icon: UserPlus, label: 'New Client', href: '/dashboard/healthcare/new-client' },
-              { icon: Stethoscope, label: 'New Intake', href: '/dashboard/healthcare/intake-form' },
-              { icon: FileBarChart, label: 'Generate Report', href: '/dashboard/healthcare/reports' },
-              { icon: MessageCircle, label: 'Send Referral', href: '/dashboard/healthcare/referrals' }
-            ]
-          },
-          { icon: Users, label: 'All Clients', href: '/dashboard/healthcare/clients' },
-          { icon: Stethoscope, label: 'Intake Forms', href: '/dashboard/healthcare/intake-form' },
-          { icon: FileText, label: 'Referrals', href: '/dashboard/healthcare/referrals' },
-          { icon: FileBarChart, label: 'Reports', href: '/dashboard/healthcare/reports' },
-          { icon: Map, label: 'Facility Directory', href: '/dashboard/healthcare/facilities' },
-          { icon: ContactIcon, label: 'Contacts', href: '/dashboard/healthcare/contacts' },
-          { icon: MessageSquare, label: 'Inbox', href: '/dashboard/healthcare/inbox' },
-          { icon: CreditCard, label: 'Invoicing', href: '/dashboard/healthcare/invoicing' },
-          { icon: Briefcase, label: 'Contracts', href: '/dashboard/healthcare/contracts' },
-          ...baseItems
-        ];
+    // Unified Professional Portal (Healthcare & Agent)
+    if (isProfessional) {
+      const professionalItems = [
+        { icon: Home, label: 'Dashboard', href: `/dashboard/${userType}` },
+        { 
+          icon: UserPlus, 
+          label: 'Quick Actions', 
+          href: '#',
+          isQuickActions: true,
+          subItems: [
+            { icon: UserPlus, label: 'New Client', href: `/dashboard/${userType}/new-client` },
+            { icon: Stethoscope, label: 'New Intake', href: `/dashboard/${userType}/intake-form` },
+            { icon: FileBarChart, label: 'Generate Report', href: `/dashboard/${userType}/reports` },
+            { icon: MessageCircle, label: 'Send Communication', href: `/dashboard/${userType}/inbox` }
+          ]
+        },
+        { icon: Users, label: 'All Clients', href: `/dashboard/${userType}/clients` },
+        { icon: Stethoscope, label: 'Intake Forms', href: `/dashboard/${userType}/intake-form` },
+        { icon: FileText, label: 'Referrals', href: `/dashboard/${userType}/referrals` },
+        { icon: FileBarChart, label: 'Reports & Analytics', href: `/dashboard/${userType}/reports` },
+        { icon: Map, label: 'Facility Directory', href: `/dashboard/${userType}/facilities` },
+        { icon: ContactIcon, label: 'Contacts', href: `/dashboard/${userType}/contacts` },
+        { icon: MessageSquare, label: 'Inbox', href: `/dashboard/${userType}/inbox` },
+      ];
 
-      case 'facility':
-        return [
-          { icon: Home, label: 'Dashboard', href: '/dashboard/facility' },
-          { icon: Building, label: 'Listing Management', href: '/dashboard/facility/listings' },
-          { icon: Users, label: 'Employees', href: '/dashboard/facility/employees' },
-          { icon: UserCheck, label: 'Residents', href: '/dashboard/facility/residents' },
-          { icon: CreditCard, label: 'Payments', href: '/dashboard/facility/payments' },
-          { icon: Briefcase, label: 'Contracts', href: '/dashboard/facility/contracts' },
-          { icon: FileText, label: 'Intake Documents', href: '/dashboard/facility/intake-documents' },
-          { icon: Video, label: 'Webinars', href: '/dashboard/facility/webinars' },
-          { icon: FileBarChart, label: 'Analytics', href: '/dashboard/facility/analytics' },
-          { icon: MessageSquare, label: 'Inbox', href: '/dashboard/facility/inbox' },
-          ...baseItems
-        ];
+      // Add payments/contracts for placement agents only
+      if (isPlacementAgent) {
+        professionalItems.push(
+          { icon: CreditCard, label: 'Payments & Commissions', href: '/dashboard/agent/payments' },
+          { icon: Briefcase, label: 'Contracts', href: '/dashboard/agent/contracts' }
+        );
+      }
 
-      case 'family':
-        return [
-          { icon: Home, label: 'Dashboard', href: '/dashboard/family' },
-          { icon: Heart, label: 'Favorites', href: '/dashboard/family/favorites' },
-          { icon: Map, label: 'Find Care', href: '/dashboard/find-care' },
-          ...baseItems
-        ];
+      // Add org admin section if user is org admin
+      if (isOrgAdmin) {
+        professionalItems.unshift({
+          icon: Shield,
+          label: 'Organization Admin',
+          href: `/dashboard/${userType}/org-admin`,
+          adminOnly: true
+        });
+      }
 
-      default:
-        return baseItems;
+      return [...professionalItems, ...baseItems];
     }
+
+    // Facility Portal
+    if (userType === 'facility') {
+      const facilityItems = [
+        { icon: Home, label: 'Dashboard', href: '/dashboard/facility' },
+        { icon: Building, label: 'Listing Management', href: '/dashboard/facility/listings' },
+        { icon: Users, label: 'Employee Management', href: '/dashboard/facility/employees' },
+        { icon: UserCheck, label: 'Residents', href: '/dashboard/facility/residents' },
+        { icon: CreditCard, label: 'Payments & Billing', href: '/dashboard/facility/payments' },
+        { icon: Briefcase, label: 'Contracts', href: '/dashboard/facility/contracts' },
+        { icon: FileText, label: 'Intake Documents', href: '/dashboard/facility/intake-documents' },
+        { icon: Video, label: 'Webinars', href: '/dashboard/facility/webinars' },
+        { icon: FileBarChart, label: 'Analytics', href: '/dashboard/facility/analytics' },
+        { icon: MessageSquare, label: 'Inbox', href: '/dashboard/facility/inbox' },
+      ];
+
+      // Add org admin section if user is org admin
+      if (isOrgAdmin) {
+        facilityItems.unshift({
+          icon: Shield,
+          label: 'Organization Admin',
+          href: '/dashboard/facility/org-admin',
+          adminOnly: true
+        });
+      }
+
+      return [...facilityItems, ...baseItems];
+    }
+
+    // Family Portal (unchanged)
+    if (userType === 'family') {
+      return [
+        { icon: Home, label: 'Dashboard', href: '/dashboard/family' },
+        { icon: Heart, label: 'Favorites', href: '/dashboard/family/favorites' },
+        { icon: Map, label: 'Find Care', href: '/dashboard/find-care' },
+        ...baseItems
+      ];
+    }
+
+    return baseItems;
   };
 
   const navigationItems = getNavigationItems();
@@ -179,6 +191,12 @@ const DashboardLayout = () => {
     return profile?.email ? profile.email[0].toUpperCase() : 'U';
   };
 
+  const getUserRole = () => {
+    if (isSuperAdmin) return 'Super Admin';
+    if (isOrgAdmin) return `${userType} Admin`.replace(/^\w/, c => c.toUpperCase());
+    return userType.charAt(0).toUpperCase() + userType.slice(1);
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -186,8 +204,11 @@ const DashboardLayout = () => {
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-brand-navy">HealthPro AVA</h1>
-          {isAdmin && (
-            <span className="text-xs text-red-600 font-semibold">ADMIN ACCESS</span>
+          {isSuperAdmin && (
+            <span className="text-xs text-red-600 font-semibold">SUPER ADMIN</span>
+          )}
+          {isOrgAdmin && !isSuperAdmin && (
+            <span className="text-xs text-blue-600 font-semibold">ORG ADMIN</span>
           )}
         </div>
 
@@ -246,11 +267,13 @@ const DashboardLayout = () => {
                   "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                   isActive(item.href)
                     ? "bg-brand-sky text-white"
-                    : "text-gray-600 hover:bg-gray-100"
+                    : "text-gray-600 hover:bg-gray-100",
+                  item.adminOnly && "border-l-4 border-orange-500"
                 )}
               >
                 <item.icon className="mr-3 h-5 w-5" />
                 {item.label}
+                {item.adminOnly && <Shield className="ml-auto h-4 w-4 text-orange-500" />}
               </Link>
             );
           })}
@@ -265,9 +288,12 @@ const DashboardLayout = () => {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">{getUserDisplayName()}</p>
-              <p className="text-xs text-gray-500 truncate capitalize">
-                {isAdmin ? 'Admin' : userType}
+              <p className="text-xs text-gray-500 truncate">
+                {getUserRole()}
               </p>
+              {profile?.organization && (
+                <p className="text-xs text-gray-400 truncate">{profile.organization}</p>
+              )}
             </div>
           </div>
           <Button
@@ -294,10 +320,16 @@ const DashboardLayout = () => {
               <Button variant="outline" size="sm">
                 Help
               </Button>
-              {isAdmin && (
+              {isSuperAdmin && (
                 <Button variant="outline" size="sm" className="text-red-600 border-red-200">
+                  <Crown className="h-4 w-4 mr-2" />
+                  Super Admin
+                </Button>
+              )}
+              {isOrgAdmin && !isSuperAdmin && (
+                <Button variant="outline" size="sm" className="text-blue-600 border-blue-200">
                   <Shield className="h-4 w-4 mr-2" />
-                  Admin Mode
+                  Org Admin
                 </Button>
               )}
             </div>

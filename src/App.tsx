@@ -34,6 +34,9 @@ import PerformanceDashboard from '@/pages/agent/PerformanceDashboard';
 import HealthcareDashboard from '@/pages/healthcare/HealthcareDashboard';
 import FacilityDashboard from '@/pages/facility/FacilityDashboard';
 
+// Admin Pages
+import SuperAdminDashboard from '@/pages/admin/SuperAdminDashboard';
+
 // Shared
 import { CalendarPage } from '@/pages/Calendar';
 import { ClientIntakeForm } from '@/pages/healthcare/ClientIntakeForm';
@@ -48,10 +51,15 @@ import DocumentFormBuilder from '@/pages/agent/DocumentFormBuilder';
 import InboxMessaging from '@/pages/agent/InboxMessaging';
 import NewClient from '@/pages/agent/NewClient';
 
-// Import new facility pages
+// Import facility pages
 import ListingManagement from '@/pages/facility/ListingManagement';
 import EmployeeManagement from '@/pages/facility/EmployeeManagement';
 import FacilityPayments from '@/pages/facility/FacilityPayments';
+
+// Import shared components
+import UniversalCRM from '@/components/shared/UniversalCRM';
+import UniversalInvoicing from '@/components/shared/UniversalInvoicing';
+import OrganizationAdmin from '@/components/shared/OrganizationAdmin';
 
 // Add the import at the top
 import PresentationMockData from '@/components/presentation/PresentationMockData';
@@ -95,35 +103,63 @@ function AppRoutes() {
       {/* Protected Routes - Now using proper authentication */}
       <Route path="/dashboard" element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
-          {/* Family */}
+          {/* Super Admin Routes */}
+          <Route path="super-admin" element={<SuperAdminDashboard />} />
+          <Route path="super-admin/users" element={<div>Super Admin Users Management</div>} />
+          <Route path="super-admin/facilities" element={<div>Super Admin Facilities Management</div>} />
+          <Route path="super-admin/organizations" element={<div>Super Admin Organizations Management</div>} />
+          <Route path="super-admin/analytics" element={<div>Super Admin Analytics</div>} />
+          <Route path="super-admin/payments" element={<div>Super Admin Payments</div>} />
+
+          {/* Family Routes */}
           <Route path="family" element={<FamilyDashboard />} />
           <Route path="family/messaging" element={<FamilyMessaging />} />
           <Route path="family/favorites" element={<SavedFavorites />} />
 
-          {/* Agent */}
+          {/* Agent Routes (Professional Portal) */}
           <Route path="agent" element={<AgentDashboard />} />
           <Route path="agent/clients" element={<AllClients />} />
-          <Route path="agent/performance" element={<PerformanceDashboard />} />
           <Route path="agent/new-client" element={<NewClient />} />
-          <Route path="agent/facility-map" element={<FacilityMapView />} />
+          <Route path="agent/intake-form" element={<ClientIntakeForm />} />
+          <Route path="agent/referrals" element={<div>Agent Referrals</div>} />
+          <Route path="agent/reports" element={<PerformanceDashboard />} />
+          <Route path="agent/facilities" element={<FacilityMapView />} />
           <Route path="agent/contacts" element={<FacilityContactBook />} />
-          <Route path="agent/form-builder" element={<DocumentFormBuilder />} />
           <Route path="agent/inbox" element={<InboxMessaging />} />
+          <Route path="agent/payments" element={<UniversalInvoicing userType="agent" title="Payments & Commissions" />} />
+          <Route path="agent/contracts" element={<div>Agent Contracts</div>} />
+          <Route path="agent/org-admin" element={<OrganizationAdmin userType="agent" organizationName="Sample Agency" />} />
 
-          {/* Healthcare */}
+          {/* Healthcare Routes (Professional Portal) */}
           <Route path="healthcare" element={<HealthcareDashboard />} />
+          <Route path="healthcare/clients" element={<AllClients />} />
+          <Route path="healthcare/new-client" element={<NewClient />} />
           <Route path="healthcare/intake-form" element={<ClientIntakeForm />} />
+          <Route path="healthcare/referrals" element={<div>Healthcare Referrals</div>} />
+          <Route path="healthcare/reports" element={<PerformanceDashboard />} />
+          <Route path="healthcare/facilities" element={<FacilityMapView />} />
+          <Route path="healthcare/contacts" element={<FacilityContactBook />} />
+          <Route path="healthcare/inbox" element={<InboxMessaging />} />
+          <Route path="healthcare/org-admin" element={<OrganizationAdmin userType="healthcare" organizationName="Sample Health System" />} />
 
-          {/* Facility */}
+          {/* Facility Routes */}
           <Route path="facility" element={<FacilityDashboard />} />
           <Route path="facility/listings" element={<ListingManagement />} />
           <Route path="facility/employees" element={<EmployeeManagement />} />
+          <Route path="facility/residents" element={<div>Resident Management</div>} />
           <Route path="facility/payments" element={<FacilityPayments />} />
+          <Route path="facility/contracts" element={<div>Facility Contracts</div>} />
+          <Route path="facility/intake-documents" element={<div>Intake Documents</div>} />
+          <Route path="facility/webinars" element={<div>Webinar Management</div>} />
+          <Route path="facility/analytics" element={<div>Facility Analytics</div>} />
+          <Route path="facility/inbox" element={<InboxMessaging />} />
+          <Route path="facility/org-admin" element={<OrganizationAdmin userType="facility" organizationName="Sample Facility Group" />} />
 
-          {/* Shared */}
+          {/* Shared Routes */}
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="profile" element={<UserProfile />} />
           <Route path="find-care" element={<FindCarePage />} />
+          <Route path="messaging" element={<div>Universal Messaging</div>} />
         </Route>
       </Route>
 
