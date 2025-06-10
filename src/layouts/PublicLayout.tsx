@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Building2, Phone, Mail } from 'lucide-react';
+import { Phone, Mail } from 'lucide-react';
 import MobileNavigation from '@/components/mobile/MobileNavigation';
 
 const PublicLayout = () => {
@@ -15,8 +14,12 @@ const PublicLayout = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
-              <div className="logo-enhanced bg-brand-navy p-1.5 sm:p-2 rounded-lg">
-                <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+              <div className="logo-enhanced p-1.5 sm:p-2 rounded-lg">
+                <img 
+                  src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
+                  alt="HealthProAssist Logo" 
+                  className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+                />
               </div>
               <span className="text-lg sm:text-2xl font-bold text-brand-navy font-heading">
                 HealthProAssist
@@ -91,7 +94,11 @@ const PublicLayout = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               <div className="sm:col-span-2 lg:col-span-1">
                 <div className="flex items-center space-x-3 mb-4">
-                  <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-brand-gold" />
+                  <img 
+                    src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
+                    alt="HealthProAssist Logo" 
+                    className="h-6 w-6 sm:h-8 sm:w-8 object-contain"
+                  />
                   <span className="text-lg sm:text-xl font-bold font-heading">HealthProAssist</span>
                 </div>
                 <p className="text-blue-200 leading-relaxed text-sm sm:text-base">

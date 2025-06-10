@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Building2, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 interface MobileNavigationProps {
   isAuthenticated?: boolean;
@@ -37,8 +37,12 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isAuthenticated = f
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-3">
-                <div className="bg-brand-navy p-2 rounded-lg">
-                  <Building2 className="h-6 w-6 text-white" />
+                <div className="p-2 rounded-lg">
+                  <img 
+                    src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
+                    alt="HealthProAssist Logo" 
+                    className="h-6 w-6 object-contain"
+                  />
                 </div>
                 <span className="text-lg font-bold text-brand-navy font-heading">
                   HealthProAssist
