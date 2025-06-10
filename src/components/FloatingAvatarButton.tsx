@@ -5,7 +5,7 @@ import AvatarDisplay from './AvatarDisplay';
 
 interface FloatingAvatarButtonProps {
   onClick: () => void;
-  status: 'connected' | 'disconnected' | 'connecting';
+  status: 'connected' | 'disconnected' | 'connecting' | 'disconnecting';
   isSpeaking?: boolean;
 }
 
@@ -33,6 +33,9 @@ const FloatingAvatarButton: React.FC<FloatingAvatarButtonProps> = ({
         )}
         {status === 'connecting' && (
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-white animate-pulse shadow-lg"></div>
+        )}
+        {status === 'disconnecting' && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full border-2 border-white animate-pulse shadow-lg"></div>
         )}
       </Button>
       
