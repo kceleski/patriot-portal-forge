@@ -106,7 +106,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           last_name: authUser.user_metadata?.last_name || '',
           organization: authUser.user_metadata?.organization || '',
           phone: authUser.user_metadata?.phone || '',
-          organization_admin: authUser.user_metadata?.organization_admin || false
+          // Note: organization_admin field doesn't exist in DB yet, so we'll default to false
+          // organization_admin: authUser.user_metadata?.organization_admin || false
         };
 
         const { data: createdProfile, error: createError } = await supabase
@@ -138,7 +139,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           last_name: existingProfile.last_name,
           organization: existingProfile.organization,
           phone: existingProfile.phone,
-          organization_admin: existingProfile.organization_admin
+          // For now, determine org admin status based on having an organization
+          // This will need to be updated when we add the organization_admin field to the database
+          organization_admin: existingProfile.organization_admin || (!!existingProfile.organization && existingProfile.organization !== '')
         };
         
         console.log('Setting user profile:', userProfile);
@@ -239,7 +242,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           phone: updates.phone,
           role: updates.user_type,
           tier: updates.subscription_tier,
-          organization_admin: updates.organization_admin
+          // Note: organization_admin field doesn't exist in DB yet
+          // organization_admin: updates.organization_admin
         })
         .eq('id', user.id);
 

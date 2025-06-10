@@ -51,7 +51,9 @@ const DashboardLayout = () => {
   // Get user type from actual user profile data
   const userType = profile?.user_type || 'family';
   const isSuperAdmin = profile?.user_type === 'admin';
-  const isOrgAdmin = profile?.organization_admin === true; // This will need to be added to profile
+  // For now, we'll determine org admin status based on organization field being present
+  // This will need to be updated when we add the organization_admin field to the database
+  const isOrgAdmin = !!profile?.organization && profile?.organization !== '';
   const isProfessional = userType === 'healthcare' || userType === 'agent';
   const isPlacementAgent = userType === 'agent';
 
