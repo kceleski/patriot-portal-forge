@@ -28,8 +28,9 @@ class MapService {
       }
 
       const script = document.createElement('script');
-      // Using a placeholder API key - this should be replaced with actual key
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBKj9W5QjzJhwj9hUj9X3K2L1M4n5P6R7Q&libraries=places`;
+      // Use environment variable or fallback to placeholder
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBKj9W5QjzJhwj9hUj9X3K2L1M4n5P6R7Q';
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
       script.defer = true;
 

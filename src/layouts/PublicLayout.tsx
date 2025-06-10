@@ -38,6 +38,18 @@ const PublicLayout = () => {
                 Facilities Map
               </Link>
               <Link 
+                to="/subscribed-providers" 
+                className="text-brand-navy hover:text-brand-sky font-medium transition-colors duration-300 focus-enhanced"
+              >
+                Directory
+              </Link>
+              <Link 
+                to="/resources" 
+                className="text-brand-navy hover:text-brand-sky font-medium transition-colors duration-300 focus-enhanced"
+              >
+                Resources
+              </Link>
+              <Link 
                 to="/pricing" 
                 className="text-brand-navy hover:text-brand-sky font-medium transition-colors duration-300 focus-enhanced"
               >
@@ -92,6 +104,8 @@ const PublicLayout = () => {
                 <ul className="space-y-2 text-blue-200 text-sm sm:text-base">
                   <li><Link to="/find-care" className="hover:text-white transition-colors">Find Care</Link></li>
                   <li><Link to="/facilities-map" className="hover:text-white transition-colors">Facility Directory</Link></li>
+                  <li><Link to="/subscribed-providers" className="hover:text-white transition-colors">Premium Providers</Link></li>
+                  <li><Link to="/resources" className="hover:text-white transition-colors">Resources</Link></li>
                   <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing Plans</Link></li>
                 </ul>
               </div>

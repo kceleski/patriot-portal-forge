@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -20,6 +21,8 @@ import SuperUserLogin from '@/pages/SuperUserLogin';
 import NotFound from '@/pages/NotFound';
 import FacilitiesMap from '@/pages/FacilitiesMap';
 import FacilityDetail from '@/pages/FacilityDetail';
+import ResourcesPage from '@/pages/public/ResourcesPage';
+import SubscribedProvidersDirectory from '@/pages/SubscribedProvidersDirectory';
 
 // Dashboards
 import FamilyDashboard from '@/pages/family/FamilyDashboard';
@@ -77,6 +80,8 @@ function AppRoutes() {
         <Route path="facility/:id" element={<FacilityDetail />} />
         <Route path="facilities-map" element={<FacilitiesMap />} />     
         <Route path="facilities-gallery" element={<FacilitiesGallery />} />
+        <Route path="subscribed-providers" element={<SubscribedProvidersDirectory />} />
+        <Route path="resources" element={<ResourcesPage />} />
         <Route path="pricing" element={<PricingPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
