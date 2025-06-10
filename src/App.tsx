@@ -48,6 +48,11 @@ import DocumentFormBuilder from '@/pages/agent/DocumentFormBuilder';
 import InboxMessaging from '@/pages/agent/InboxMessaging';
 import NewClient from '@/pages/agent/NewClient';
 
+// Import new facility pages
+import ListingManagement from '@/pages/facility/ListingManagement';
+import EmployeeManagement from '@/pages/facility/EmployeeManagement';
+import FacilityPayments from '@/pages/facility/FacilityPayments';
+
 // Add the import at the top
 import PresentationMockData from '@/components/presentation/PresentationMockData';
 
@@ -111,6 +116,9 @@ function AppRoutes() {
 
           {/* Facility */}
           <Route path="facility" element={<FacilityDashboard />} />
+          <Route path="facility/listings" element={<ListingManagement />} />
+          <Route path="facility/employees" element={<EmployeeManagement />} />
+          <Route path="facility/payments" element={<FacilityPayments />} />
 
           {/* Shared */}
           <Route path="calendar" element={<CalendarPage />} />
