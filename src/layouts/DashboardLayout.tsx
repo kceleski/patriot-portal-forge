@@ -27,7 +27,9 @@ import {
   UserCheck,
   Briefcase,
   ShieldCheck,
-  Crown
+  Crown,
+  Database,
+  TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -39,7 +41,7 @@ interface NavItem {
   href: string;
   isQuickActions?: boolean;
   subItems?: NavItem[];
-  adminOnly?: boolean; // Corrected: Added adminOnly property
+  adminOnly?: boolean;
 }
 
 const DashboardLayout = () => {
@@ -50,6 +52,7 @@ const DashboardLayout = () => {
 
   // Get user type from actual user profile data
   const userType = profile?.user_type || 'family';
+  const isSuperUser = userType === 'admin' || profile?.email === 'dev' || (profile?.first_name === 'Super' && profile?.last_name === 'User');
   const isSuperAdmin = profile?.user_type === 'admin';
   // Use the profile's organization_admin flag, which is derived in AuthContext
   const isOrgAdmin = profile?.organization_admin || false;
@@ -61,6 +64,21 @@ const DashboardLayout = () => {
       { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
       { icon: MessageSquare, label: 'Messages', href: '/dashboard/messaging' },
     ];
+
+    // Super User gets complete system control
+    if (isSuperUser) {
+      return [
+        { icon: Crown, label: 'Super User Dashboard', href: '/dashboard/superuser' },
+        { icon: Users, label: 'User Management', href: '/dashboard/superuser/users' },
+        { icon: Building2, label: 'Facility Management', href: '/dashboard/superuser/facilities' },
+        { icon: ShieldCheck, label: 'Organization Management', href: '/dashboard/superuser/organizations' },
+        { icon: TrendingUp, label: 'System Analytics', href: '/dashboard/superuser/analytics' },
+        { icon: CreditCard, label: 'Payment Management', href: '/dashboard/superuser/payments' },
+        { icon: Database, label: 'Database Admin', href: '/dashboard/superuser/database' },
+        { icon: Shield, label: 'Security Controls', href: '/dashboard/superuser/security' },
+        ...baseItems
+      ];
+    }
 
     // Super Admin gets access to everything
     if (isSuperAdmin) {
@@ -77,7 +95,7 @@ const DashboardLayout = () => {
 
     // Unified Professional Portal (Healthcare & Agent)
     if (isProfessional) {
-      const professionalItems: NavItem[] = [ // Added type annotation for clarity
+      const professionalItems: NavItem[] = [
         { icon: Home, label: 'Dashboard', href: `/dashboard/${userType}` },
         {
           icon: UserPlus,
@@ -123,7 +141,7 @@ const DashboardLayout = () => {
 
     // Facility Portal
     if (userType === 'facility') {
-      const facilityItems: NavItem[] = [ // Added type annotation for clarity
+      const facilityItems: NavItem[] = [
         { icon: Home, label: 'Dashboard', href: '/dashboard/facility' },
         { icon: Building, label: 'Listing Management', href: '/dashboard/facility/listings' },
         { icon: Users, label: 'Employee Management', href: '/dashboard/facility/employees' },
@@ -154,7 +172,7 @@ const DashboardLayout = () => {
       return [
         { icon: Home, label: 'Dashboard', href: '/dashboard/family' },
         { icon: Heart, label: 'Favorites', href: '/dashboard/family/favorites' },
-        { icon: Map, label: 'Find Care', href: '/find-care' }, // Corrected path to be more intuitive
+        { icon: Map, label: 'Find Care', href: '/find-care' },
         ...baseItems
       ];
     }
@@ -193,6 +211,7 @@ const DashboardLayout = () => {
   };
 
   const getUserRole = () => {
+    if (isSuperUser) return 'Super User';
     if (isSuperAdmin) return 'Super Admin';
     // Use the reliable `isOrgAdmin` flag
     if (isOrgAdmin) return `${userType.charAt(0).toUpperCase() + userType.slice(1)} Admin`;
@@ -206,10 +225,13 @@ const DashboardLayout = () => {
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-brand-navy">HealthPro AVA</h1>
+          {isSuperUser && (
+            <span className="text-xs text-red-600 font-semibold">SUPER USER</span>
+          )}
           {isSuperAdmin && (
             <span className="text-xs text-red-600 font-semibold">SUPER ADMIN</span>
           )}
-          {isOrgAdmin && !isSuperAdmin && (
+          {isOrgAdmin && !isSuperAdmin && !isSuperUser && (
             <span className="text-xs text-blue-600 font-semibold">ORG ADMIN</span>
           )}
         </div>
@@ -270,12 +292,14 @@ const DashboardLayout = () => {
                   isActive(item.href)
                     ? "bg-brand-sky text-white"
                     : "text-gray-600 hover:bg-gray-100",
-                  item.adminOnly && "border-l-4 border-orange-500 bg-orange-50 hover:bg-orange-100" // Enhanced styling for admin items
+                  item.adminOnly && "border-l-4 border-orange-500 bg-orange-50 hover:bg-orange-100",
+                  isSuperUser && item.href.includes('superuser') && "border-l-4 border-red-500 bg-red-50 hover:bg-red-100"
                 )}
               >
                 <item.icon className="mr-3 h-5 w-5" />
                 {item.label}
                 {item.adminOnly && <Shield className="ml-auto h-4 w-4 text-orange-500" />}
+                {isSuperUser && item.href.includes('superuser') && <Crown className="ml-auto h-4 w-4 text-red-500" />}
               </Link>
             );
           })}
@@ -285,7 +309,7 @@ const DashboardLayout = () => {
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 mb-3">
             <Avatar>
-              <AvatarImage src={profile?.avatar_url || "/placeholder-user.jpg"} /> {/* Assuming avatar_url might exist */}
+              <AvatarImage src={profile?.avatar_url || "/placeholder-user.jpg"} />
               <AvatarFallback>{getUserInitials()}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">

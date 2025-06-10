@@ -19,6 +19,15 @@ const SuperUserLogin = () => {
     
     // Simple hardcoded check for demo purposes
     if (username === 'dev' && password === 'dev123') {
+      // Set user profile in localStorage for super user authentication
+      const superUserProfile = {
+        id: 'super-user-id',
+        email: 'dev',
+        first_name: 'Super',
+        last_name: 'User',
+        user_type: 'admin'
+      };
+      localStorage.setItem('superuser-profile', JSON.stringify(superUserProfile));
       navigate('/dashboard/superuser');
     } else {
       setError('Invalid credentials');
