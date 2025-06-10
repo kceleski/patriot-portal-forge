@@ -47,7 +47,7 @@ const DashboardLayout = () => {
 
   // Get user type from actual user profile data
   const userType = profile?.user_type || 'family';
-  const isAdmin = profile?.role === 'admin' || profile?.user_type === 'admin';
+  const isAdmin = profile?.user_type === 'admin';
 
   const getNavigationItems = (): NavItem[] => {
     const baseItems = [

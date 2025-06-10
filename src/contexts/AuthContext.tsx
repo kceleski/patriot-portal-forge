@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 interface UserProfile {
   id: string;
   email: string;
-  user_type: 'family' | 'healthcare' | 'agent' | 'facility';
+  user_type: 'family' | 'healthcare' | 'agent' | 'facility' | 'admin';
   subscription_tier: 'essentials' | 'elevate' | 'pinnacle';
   first_name?: string;
   last_name?: string;
@@ -130,7 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userProfile: UserProfile = {
           id: existingProfile.id,
           email: existingProfile.email,
-          user_type: existingProfile.role as 'family' | 'healthcare' | 'agent' | 'facility',
+          user_type: existingProfile.role as 'family' | 'healthcare' | 'agent' | 'facility' | 'admin',
           subscription_tier: existingProfile.tier as 'essentials' | 'elevate' | 'pinnacle',
           first_name: existingProfile.first_name,
           last_name: existingProfile.last_name,
@@ -285,6 +284,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         pinnacle: ['all_features', 'advanced_filters'],
         elevate: ['most_features', 'advanced_filters'],
         essentials: ['basic_features']
+      },
+      admin: {
+        pinnacle: ['all_features', 'admin_access', 'user_management'],
+        elevate: ['all_features', 'admin_access', 'user_management'],
+        essentials: ['all_features', 'admin_access', 'user_management']
       }
     };
 
@@ -310,3 +314,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;
