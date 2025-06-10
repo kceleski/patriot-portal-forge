@@ -86,9 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) {
-        // This handles cases where profile doesn't exist yet after signup
         if (error.code === 'PGRST116') {
-          console.warn('Profile not found, might be created shortly.');
+          console.warn('Profile not found, might be created shortly after signup confirmation.');
           return;
         }
         throw error;
@@ -99,16 +98,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userProfile: UserProfile = {
           id: data.id,
           email: data.email,
-          user_type: data.role,
-          subscription_tier: data.tier,
+          // Corrected: Assert the type to match the interface
+          user_type: data.role as UserProfile['user_type'],
+          subscription_tier: data.tier as UserProfile['subscription_tier'],
           first_name: data.first_name,
           last_name: data.last_name,
           organization: data.organization,
           phone: data.phone,
-          avatar_url: data.avatar_url,
-          // Corrected: Safely determine admin status without assuming DB field exists
+          // Corrected: Removed access to non-existent 'avatar_url' property on 'data'
           organization_admin: !!data.organization && data.organization !== '',
         };
+        // You may want to get avatar_url from user.user_metadata if it exists
+        if (user?.user_metadata?.avatar_url) {
+            userProfile.avatar_url = user.user_metadata.avatar_url;
+        }
         setProfile(userProfile);
       }
     } catch (error) {
@@ -156,7 +159,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
     
-    // After sign-up, create the profile in the 'users' table
     if (data.user) {
         const { error: profileError } = await supabase.from('users').insert({
             id: data.user.id,
@@ -195,7 +197,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) throw new Error('No user logged in');
 
     try {
-      // Map frontend-friendly names to backend column names
       const dbUpdates = {
           first_name: updates.first_name,
           last_name: updates.last_name,
@@ -204,7 +205,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: updates.user_type,
           tier: updates.subscription_tier,
           avatar_url: updates.avatar_url
-          // Do not include organization_admin as it's not a DB column
       };
 
       const { error } = await supabase
@@ -214,7 +214,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
 
-      // Update local state optimistically
       setProfile(prev => prev ? { ...prev, ...updates } : null);
       
       toast({ title: "Success", description: "Profile updated successfully!" });
