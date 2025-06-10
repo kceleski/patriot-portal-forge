@@ -1,321 +1,230 @@
-import React, { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  Home,
-  Users,
-  Calendar,
-  MessageSquare,
-  Settings,
-  LogOut,
-  Heart,
-  Building2,
-  FileText,
-  Stethoscope,
-  Map,
-  UserPlus,
-  FileBarChart,
-  MessageCircle,
-  ContactIcon,
-  ChevronDown,
-  ChevronRight,
-  Shield,
-  CreditCard,
-  Video,
-  Building,
-  UserCheck,
-  Briefcase,
-  ShieldCheck,
-  Crown
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useAuth } from '@/contexts/AuthContext';
 
-interface NavItem {
-  icon: React.ComponentType<any>;
-  label: string;
-  href: string;
-  isQuickActions?: boolean;
-  subItems?: NavItem[];
-  adminOnly?: boolean; // Corrected: Added adminOnly property
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'react-hot-toast';
+
+interface UserProfile {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  user_type: 'family' | 'healthcare' | 'agent' | 'facility' | 'admin';
+  organization?: string;
+  phone?: string;
+  subscription_tier?: string;
+  avatar_url?: string;
+  organization_admin?: boolean;
 }
 
-const DashboardLayout = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { profile, signOut } = useAuth();
-  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+interface AuthContextType {
+  user: User | null;
+  profile: UserProfile | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ user: User | null; error: any }>;
+  signUp: (email: string, password: string, userData: any) => Promise<{ user: User | null; error: any }>;
+  signOut: () => Promise<void>;
+  updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  hasFeatureAccess: (feature: string) => boolean;
+}
 
-  const userType = profile?.user_type || 'family';
-  const isSuperAdmin = profile?.user_type === 'admin';
-  const isOrgAdmin = profile?.organization_admin || false;
-  const isProfessional = userType === 'healthcare' || userType === 'agent';
-  const isPlacementAgent = userType === 'agent';
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-  const getNavigationItems = (): NavItem[] => {
-    const baseItems = [
-      { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
-      { icon: MessageSquare, label: 'Messages', href: '/dashboard/messaging' },
-    ];
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
-    if (isSuperAdmin) {
-      return [
-        { icon: Crown, label: 'Super Admin', href: '/dashboard/super-admin' },
-        { icon: Users, label: 'All Users', href: '/dashboard/super-admin/users' },
-        { icon: Building2, label: 'All Facilities', href: '/dashboard/super-admin/facilities' },
-        { icon: ShieldCheck, label: 'All Organizations', href: '/dashboard/super-admin/organizations' },
-        { icon: FileBarChart, label: 'Global Analytics', href: '/dashboard/super-admin/analytics' },
-        { icon: CreditCard, label: 'All Payments', href: '/dashboard/super-admin/payments' },
-        ...baseItems
-      ];
-    }
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    if (isProfessional) {
-      const professionalItems: NavItem[] = [
-        { icon: Home, label: 'Dashboard', href: `/dashboard/${userType}` },
-        {
-          icon: UserPlus,
-          label: 'Quick Actions',
-          href: '#',
-          isQuickActions: true,
-          subItems: [
-            { icon: UserPlus, label: 'New Client', href: `/dashboard/${userType}/new-client` },
-            { icon: Stethoscope, label: 'New Intake', href: `/dashboard/${userType}/intake-form` },
-            { icon: FileBarChart, label: 'Generate Report', href: `/dashboard/${userType}/reports` },
-            { icon: MessageCircle, label: 'Send Communication', href: `/dashboard/${userType}/inbox` }
-          ]
-        },
-        { icon: Users, label: 'All Clients', href: `/dashboard/${userType}/clients` },
-        { icon: Stethoscope, label: 'Intake Forms', href: `/dashboard/${userType}/intake-form` },
-        { icon: FileText, label: 'Referrals', href: `/dashboard/${userType}/referrals` },
-        { icon: FileBarChart, label: 'Reports & Analytics', href: `/dashboard/${userType}/reports` },
-        { icon: Map, label: 'Facility Directory', href: `/dashboard/${userType}/facilities` },
-        { icon: ContactIcon, label: 'Contacts', href: `/dashboard/${userType}/contacts` },
-        { icon: MessageSquare, label: 'Inbox', href: `/dashboard/${userType}/inbox` },
-      ];
-
-      if (isPlacementAgent) {
-        professionalItems.push(
-          { icon: CreditCard, label: 'Payments & Commissions', href: '/dashboard/agent/payments' },
-          { icon: Briefcase, label: 'Contracts', href: '/dashboard/agent/contracts' }
-        );
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setLoading(false);
       }
+    });
 
-      if (isOrgAdmin) {
-        professionalItems.unshift({
-          icon: Shield,
-          label: 'Organization Admin',
-          href: `/dashboard/${userType}/org-admin`,
-          adminOnly: true
-        });
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchUserProfile(session.user.id);
+      } else {
+        setProfile(null);
+        setLoading(false);
       }
+    });
 
-      return [...professionalItems, ...baseItems];
-    }
+    return () => subscription.unsubscribe();
+  }, []);
 
-    if (userType === 'facility') {
-      const facilityItems: NavItem[] = [
-        { icon: Home, label: 'Dashboard', href: '/dashboard/facility' },
-        { icon: Building, label: 'Listing Management', href: '/dashboard/facility/listings' },
-        { icon: Users, label: 'Employee Management', href: '/dashboard/facility/employees' },
-        { icon: UserCheck, label: 'Residents', href: '/dashboard/facility/residents' },
-        { icon: CreditCard, label: 'Payments & Billing', href: '/dashboard/facility/payments' },
-        { icon: Briefcase, label: 'Contracts', href: '/dashboard/facility/contracts' },
-        { icon: FileText, label: 'Intake Documents', href: '/dashboard/facility/intake-documents' },
-        { icon: Video, label: 'Webinars', href: '/dashboard/facility/webinars' },
-        { icon: FileBarChart, label: 'Analytics', href: '/dashboard/facility/analytics' },
-        { icon: MessageSquare, label: 'Inbox', href: '/dashboard/facility/inbox' },
-      ];
-
-      if (isOrgAdmin) {
-        facilityItems.unshift({
-          icon: Shield,
-          label: 'Organization Admin',
-          href: '/dashboard/facility/org-admin',
-          adminOnly: true
-        });
-      }
-
-      return [...facilityItems, ...baseItems];
-    }
-
-    if (userType === 'family') {
-      return [
-        { icon: Home, label: 'Dashboard', href: '/dashboard/family' },
-        { icon: Heart, label: 'Favorites', href: '/dashboard/family/favorites' },
-        { icon: Map, label: 'Find Care', href: '/find-care' },
-        ...baseItems
-      ];
-    }
-
-    return baseItems;
-  };
-
-  const navigationItems = getNavigationItems();
-
-  const handleLogout = async () => {
+  const fetchUserProfile = async (userId: string) => {
     try {
-      await signOut();
-      navigate('/');
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (data) {
+        // Check if user is organization admin based on organization name pattern
+        const isOrgAdmin = data.organization && 
+          (data.organization.toLowerCase().includes('admin') || 
+           data.organization.toLowerCase().includes('director') ||
+           data.organization.toLowerCase().includes('manager'));
+
+        setProfile({
+          ...data,
+          organization_admin: isOrgAdmin
+        });
+      }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const isActive = (href: string) => {
-    if (href === '#') return false;
-    return location.pathname === href || location.pathname.startsWith(`${href}/`);
-  };
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-  const getUserDisplayName = () => {
-    if (profile?.first_name && profile?.last_name) {
-      return `${profile.first_name} ${profile.last_name}`;
+      if (error) {
+        toast.error(error.message);
+        return { user: null, error };
+      }
+
+      return { user: data.user, error: null };
+    } catch (error) {
+      toast.error('An unexpected error occurred');
+      return { user: null, error };
     }
-    return profile?.email || 'User';
   };
 
-  const getUserInitials = () => {
-    if (profile?.first_name && profile?.last_name) {
-      return `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase();
+  const signUp = async (email: string, password: string, userData: any) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: userData
+        }
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return { user: null, error };
+      }
+
+      // Create user profile
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: data.user.id,
+            email: data.user.email,
+            ...userData
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+      }
+
+      return { user: data.user, error: null };
+    } catch (error) {
+      toast.error('An unexpected error occurred');
+      return { user: null, error };
     }
-    return profile?.email ? profile.email[0].toUpperCase() : 'U';
   };
 
-  const getUserRole = () => {
-    if (isSuperAdmin) return 'Super Admin';
-    if (isOrgAdmin) return `${userType.charAt(0).toUpperCase() + userType.slice(1)} Admin`;
-    return userType.charAt(0).toUpperCase() + userType.slice(1);
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Error signing out');
+    }
+  };
+
+  const updateUserProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .eq('id', user.id);
+
+      if (error) {
+        toast.error('Failed to update profile');
+        throw error;
+      }
+
+      // Update local profile state
+      setProfile(prev => prev ? { ...prev, ...updates } : null);
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+
+  const hasFeatureAccess = (feature: string): boolean => {
+    if (!profile) return false;
+
+    const tier = profile.subscription_tier?.toLowerCase();
+    const userType = profile.user_type;
+
+    // Feature access logic based on user type and subscription tier
+    switch (feature) {
+      case 'video_calls':
+        return userType === 'healthcare' && (tier === 'elevate' || tier === 'pinnacle');
+      case 'advanced_analytics':
+        return tier === 'pinnacle';
+      case 'unlimited_clients':
+        return tier === 'elevate' || tier === 'pinnacle';
+      default:
+        return true; // Basic features available to all
+    }
+  };
+
+  const value: AuthContextType = {
+    user,
+    profile,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    updateUserProfile,
+    hasFeatureAccess,
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <div className="w-64 bg-white shadow-lg flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-brand-navy">HealthPro AVA</h1>
-          {isSuperAdmin && (
-            <span className="text-xs text-red-600 font-semibold">SUPER ADMIN</span>
-          )}
-          {isOrgAdmin && !isSuperAdmin && (
-            <span className="text-xs text-blue-600 font-semibold">ORG ADMIN</span>
-          )}
-        </div>
-
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {navigationItems.map((item) => {
-            if (item.isQuickActions) {
-              return (
-                <Collapsible
-                  key={item.label}
-                  open={isQuickActionsOpen}
-                  onOpenChange={setIsQuickActionsOpen}
-                >
-                  <CollapsibleTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-between text-left font-normal"
-                    >
-                      <div className="flex items-center">
-                        <item.icon className="mr-3 h-5 w-5" />
-                        {item.label}
-                      </div>
-                      {isQuickActionsOpen ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-1 ml-6 pt-1">
-                    {item.subItems?.map((subItem) => (
-                      <Link
-                        key={subItem.href}
-                        to={subItem.href}
-                        className={cn(
-                          "flex items-center px-3 py-2 text-sm rounded-md transition-colors",
-                          isActive(subItem.href)
-                            ? "bg-brand-sky text-white"
-                            : "text-gray-600 hover:bg-gray-100"
-                        )}
-                      >
-                        <subItem.icon className="mr-3 h-4 w-4" />
-                        {subItem.label}
-                      </Link>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              );
-            }
-
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                  isActive(item.href)
-                    ? "bg-brand-sky text-white"
-                    : "text-gray-600 hover:bg-gray-100",
-                  item.adminOnly && "border-l-4 border-orange-500 bg-orange-50 hover:bg-orange-100"
-                )}
-              >
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.label}
-                {item.adminOnly && <Shield className="ml-auto h-4 w-4 text-orange-500" />}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3 mb-3">
-            <Avatar>
-              <AvatarImage src={profile?.avatar_url || "/placeholder-user.jpg"} />
-              <AvatarFallback>{getUserInitials()}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{getUserDisplayName()}</p>
-              <p className="text-xs text-gray-500 truncate">
-                {getUserRole()}
-              </p>
-              {profile?.organization && (
-                <p className="text-xs text-gray-400 truncate">{profile.organization}</p>
-              )}
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-gray-600 hover:text-gray-900"
-            onClick={handleLogout}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-800">
-              {navigationItems.find(item => isActive(item.href))?.label || 'Dashboard'}
-            </h2>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                Help
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
-        </main>
-      </div>
-    </div>
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
   );
 };
-
-export default DashboardLayout;
