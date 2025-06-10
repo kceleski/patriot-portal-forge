@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -63,6 +62,7 @@ import OrganizationAdmin from '@/components/shared/OrganizationAdmin';
 
 // Add the import at the top
 import PresentationMockData from '@/components/presentation/PresentationMockData';
+import SuperUserDashboard from '@/pages/admin/SuperAdminDashboard';
 
 const queryClient = new QueryClient();
 
@@ -103,6 +103,14 @@ function AppRoutes() {
       {/* Protected Routes - Now using proper authentication */}
       <Route path="/dashboard" element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
+          {/* Super User Routes */}
+          <Route path="superuser" element={<SuperUserDashboard />} />
+          <Route path="superuser/users" element={<div>Super User - Users Management</div>} />
+          <Route path="superuser/facilities" element={<div>Super User - Facilities Management</div>} />
+          <Route path="superuser/organizations" element={<div>Super User - Organizations Management</div>} />
+          <Route path="superuser/analytics" element={<div>Super User - Analytics</div>} />
+          <Route path="superuser/payments" element={<div>Super User - Payments</div>} />
+
           {/* Super Admin Routes */}
           <Route path="super-admin" element={<SuperAdminDashboard />} />
           <Route path="super-admin/users" element={<div>Super Admin Users Management</div>} />

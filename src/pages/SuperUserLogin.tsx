@@ -19,7 +19,7 @@ const SuperUserLogin = () => {
     
     // Simple hardcoded check for demo purposes
     if (username === 'dev' && password === 'dev123') {
-      navigate('/dashboard/agent');
+      navigate('/dashboard/superuser');
     } else {
       setError('Invalid credentials');
     }
