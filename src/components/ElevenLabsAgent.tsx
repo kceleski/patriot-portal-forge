@@ -1,26 +1,139 @@
+
 import React, { useState } from 'react';
 import { useConversation } from '@elevenlabs/react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare, X, Mic, MicOff, Volume2, VolumeX, Phone } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ElevenLabsAgent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [isVolumeEnabled, setIsVolumeEnabled] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+
+  // Client tools that can manipulate the DOM and app state
+  const clientTools = {
+    // Navigation tools
+    navigateToPage: (parameters: { page: string }) => {
+      console.log('Navigating to:', parameters.page);
+      navigate(parameters.page);
+      toast.success(`Navigated to ${parameters.page}`);
+      return `Successfully navigated to ${parameters.page}`;
+    },
+
+    // Search functionality
+    performSearch: (parameters: { query: string, location?: string }) => {
+      console.log('Performing search:', parameters);
+      navigate(`/find-care?q=${encodeURIComponent(parameters.query)}&location=${encodeURIComponent(parameters.location || '')}`);
+      toast.success(`Searching for ${parameters.query}`);
+      return `Search initiated for ${parameters.query}`;
+    },
+
+    // DOM manipulation
+    showToastMessage: (parameters: { message: string, type?: 'success' | 'error' | 'info' }) => {
+      const { message, type = 'info' } = parameters;
+      if (type === 'success') toast.success(message);
+      else if (type === 'error') toast.error(message);
+      else toast(message);
+      return `Toast message displayed: ${message}`;
+    },
+
+    // Form completion assistance
+    fillFormField: (parameters: { fieldId: string, value: string }) => {
+      const element = document.getElementById(parameters.fieldId) as HTMLInputElement;
+      if (element) {
+        element.value = parameters.value;
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        return `Filled field ${parameters.fieldId} with ${parameters.value}`;
+      }
+      return `Field ${parameters.fieldId} not found`;
+    },
+
+    // Scroll to section
+    scrollToSection: (parameters: { sectionId: string }) => {
+      const element = document.getElementById(parameters.sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        return `Scrolled to section ${parameters.sectionId}`;
+      }
+      return `Section ${parameters.sectionId} not found`;
+    },
+
+    // Click button or element
+    clickElement: (parameters: { selector: string }) => {
+      const element = document.querySelector(parameters.selector) as HTMLElement;
+      if (element) {
+        element.click();
+        return `Clicked element ${parameters.selector}`;
+      }
+      return `Element ${parameters.selector} not found`;
+    },
+
+    // Get current page info
+    getCurrentPageInfo: () => {
+      return {
+        currentPath: location.pathname,
+        currentSearch: location.search,
+        userLoggedIn: !!user,
+        userType: user?.user_metadata?.user_type || 'guest'
+      };
+    },
+
+    // Open modal or drawer
+    openModal: (parameters: { modalType: string, data?: any }) => {
+      console.log('Opening modal:', parameters);
+      // This would trigger your modal state management
+      toast.success(`Opening ${parameters.modalType} modal`);
+      return `Opened ${parameters.modalType} modal`;
+    }
+  };
 
   const conversation = useConversation({
     onConnect: () => {
       console.log("AVA Agent connected");
+      toast.success("AVA Assistant connected");
     },
     onMessage: (message) => {
       console.log("Message received:", message);
     },
     onError: (error) => {
       console.error("Conversation error:", error);
+      toast.error("Connection error occurred");
     },
     onDisconnect: () => {
       console.log("AVA Agent disconnected");
+      toast("AVA Assistant disconnected");
+    },
+    clientTools,
+    overrides: {
+      agent: {
+        prompt: {
+          prompt: `You are AVA, a helpful healthcare assistant for HealthProAssist. You can help users navigate the website, search for care facilities, fill out forms, and provide information about healthcare services. 
+          
+          Current context:
+          - Current page: ${location.pathname}
+          - User logged in: ${!!user}
+          - User type: ${user?.user_metadata?.user_type || 'guest'}
+          
+          You have access to tools that can:
+          - Navigate to different pages
+          - Perform searches
+          - Fill form fields
+          - Show notifications
+          - Scroll to sections
+          - Click elements
+          - Open modals
+          
+          Be helpful, conversational, and guide users through their healthcare journey.`
+        },
+        firstMessage: "Hi! I'm AVA, your healthcare assistant. I can help you navigate the site, search for care facilities, or answer questions about our services. What can I help you with today?",
+        language: "en"
+      }
     }
   });
 
@@ -28,15 +141,13 @@ const ElevenLabsAgent = () => {
 
   const startConversation = async () => {
     try {
-      // Request microphone access
       await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // Start the conversation using your updated agent ID
       await conversation.startSession({
         agentId: "R9M1zBEUj8fTGAij61wb"
       });
     } catch (error) {
       console.error("Failed to start conversation:", error);
+      toast.error("Failed to start conversation. Please check microphone permissions.");
     }
   };
 
@@ -67,9 +178,12 @@ const ElevenLabsAgent = () => {
         <div className="fixed bottom-6 right-6 z-50">
           <Button
             onClick={() => setIsOpen(true)}
-            className="w-16 h-16 rounded-full bg-brand-red hover:bg-red-600 shadow-lg"
+            className="w-16 h-16 rounded-full bg-brand-red hover:bg-red-600 shadow-lg relative"
           >
             <MessageSquare className="h-6 w-6 text-white" />
+            {status === 'connected' && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+            )}
           </Button>
           
           {/* AVA Badge */}
@@ -122,16 +236,20 @@ const ElevenLabsAgent = () => {
                 Voice AI Assistant
               </h4>
               <p className="text-sm text-gray-600 mb-4">
-                Click the microphone to start a voice conversation with AVA
+                I can help you navigate, search for care, and complete forms using voice commands
               </p>
             </div>
 
             {/* Microphone Status Indicator */}
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
-              status === 'connected' ? 'bg-green-100' : 'bg-gray-100'
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ${
+              status === 'connected' ? 
+                (isSpeaking ? 'bg-red-100 animate-pulse' : 'bg-green-100') : 
+                'bg-gray-100'
             }`}>
               {status === 'connected' ? (
-                <Mic className={`h-8 w-8 ${isSpeaking ? 'text-red-500' : 'text-green-600'}`} />
+                <Mic className={`h-8 w-8 transition-colors duration-300 ${
+                  isSpeaking ? 'text-red-500' : 'text-green-600'
+                }`} />
               ) : (
                 <MicOff className="h-8 w-8 text-gray-400" />
               )}
@@ -141,10 +259,15 @@ const ElevenLabsAgent = () => {
             <div className="text-center">
               <p className="text-sm font-medium text-gray-700">
                 {status === 'connected' ? 
-                  (isSpeaking ? 'AVA is speaking...' : 'Listening...') : 
+                  (isSpeaking ? 'AVA is speaking...' : 'Listening for commands...') : 
                   'Ready to connect'
                 }
               </p>
+              {status === 'connected' && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Try: "Navigate to find care" or "Search for memory care"
+                </p>
+              )}
             </div>
 
             {/* Volume Control */}
@@ -173,7 +296,7 @@ const ElevenLabsAgent = () => {
                   className="flex-1 bg-brand-sky hover:bg-blue-600"
                 >
                   <Phone className="h-4 w-4 mr-2" />
-                  Start Conversation
+                  Start Voice Chat
                 </Button>
               ) : (
                 <Button
@@ -182,7 +305,7 @@ const ElevenLabsAgent = () => {
                   className="flex-1"
                 >
                   <Phone className="h-4 w-4 mr-2" />
-                  End Conversation
+                  End Chat
                 </Button>
               )}
             </div>
