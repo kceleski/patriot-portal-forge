@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { useConversation } from '@elevenlabs/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, X, Mic, MicOff, Volume2, VolumeX, Phone } from 'lucide-react';
+import { X, Volume2, VolumeX, Phone } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import AvatarDisplay from './AvatarDisplay';
+import FloatingAvatarButton from './FloatingAvatarButton';
 
 const ElevenLabsAgent = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,20 +74,20 @@ const ElevenLabsAgent = () => {
       return `Element ${parameters.selector} not found`;
     },
 
-    // Get current page info
-    getCurrentPageInfo: () => {
-      return {
+    // Get current page info - fixed to return string
+    getCurrentPageInfo: (parameters: any) => {
+      const pageInfo = {
         currentPath: location.pathname,
         currentSearch: location.search,
         userLoggedIn: !!user,
         userType: user?.user_metadata?.user_type || 'guest'
       };
+      return `Current page info: ${JSON.stringify(pageInfo)}`;
     },
 
     // Open modal or drawer
     openModal: (parameters: { modalType: string, data?: any }) => {
       console.log('Opening modal:', parameters);
-      // This would trigger your modal state management
       toast.success(`Opening ${parameters.modalType} modal`);
       return `Opened ${parameters.modalType} modal`;
     }
@@ -175,37 +175,31 @@ const ElevenLabsAgent = () => {
     <>
       {/* Floating AVA Button */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50">
-          <Button
-            onClick={() => setIsOpen(true)}
-            className="w-16 h-16 rounded-full bg-brand-red hover:bg-red-600 shadow-lg relative"
-          >
-            <MessageSquare className="h-6 w-6 text-white" />
-            {status === 'connected' && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-            )}
-          </Button>
-          
-          {/* AVA Badge */}
-          <div className="absolute -top-2 -left-2 bg-brand-gold text-brand-navy text-xs font-bold px-2 py-1 rounded-full">
-            AVA
-          </div>
-        </div>
+        <FloatingAvatarButton 
+          onClick={() => setIsOpen(true)}
+          status={status}
+          isSpeaking={isSpeaking}
+        />
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 flex flex-col">
+        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 flex flex-col backdrop-blur-sm">
           {/* Header */}
-          <div className="bg-brand-navy text-white p-4 rounded-t-2xl flex items-center justify-between">
+          <div className="bg-gradient-to-r from-brand-navy to-blue-700 text-white p-4 rounded-t-2xl flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-brand-gold rounded-full flex items-center justify-center">
-                <span className="text-brand-navy font-bold text-sm">AVA</span>
-              </div>
+              <AvatarDisplay 
+                status={status} 
+                isSpeaking={isSpeaking} 
+                size="small"
+              />
               <div>
                 <h3 className="font-semibold">AVA Assistant</h3>
                 <p className="text-xs opacity-75">
-                  Status: {status} {isSpeaking ? '(Speaking...)' : ''}
+                  {status === 'connected' 
+                    ? (isSpeaking ? 'Speaking...' : 'Listening...') 
+                    : 'Ready to connect'
+                  }
                 </p>
               </div>
             </div>
@@ -240,20 +234,12 @@ const ElevenLabsAgent = () => {
               </p>
             </div>
 
-            {/* Microphone Status Indicator */}
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 ${
-              status === 'connected' ? 
-                (isSpeaking ? 'bg-red-100 animate-pulse' : 'bg-green-100') : 
-                'bg-gray-100'
-            }`}>
-              {status === 'connected' ? (
-                <Mic className={`h-8 w-8 transition-colors duration-300 ${
-                  isSpeaking ? 'text-red-500' : 'text-green-600'
-                }`} />
-              ) : (
-                <MicOff className="h-8 w-8 text-gray-400" />
-              )}
-            </div>
+            {/* Large animated avatar */}
+            <AvatarDisplay 
+              status={status} 
+              isSpeaking={isSpeaking} 
+              size="large"
+            />
 
             {/* Status Text */}
             <div className="text-center">
@@ -281,7 +267,7 @@ const ElevenLabsAgent = () => {
                   step="0.1"
                   value={volume}
                   onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                  className="w-full"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
             )}
@@ -293,7 +279,7 @@ const ElevenLabsAgent = () => {
               {status !== 'connected' ? (
                 <Button
                   onClick={startConversation}
-                  className="flex-1 bg-brand-sky hover:bg-blue-600"
+                  className="flex-1 bg-gradient-to-r from-brand-sky to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg"
                 >
                   <Phone className="h-4 w-4 mr-2" />
                   Start Voice Chat
@@ -301,8 +287,7 @@ const ElevenLabsAgent = () => {
               ) : (
                 <Button
                   onClick={endConversation}
-                  variant="destructive"
-                  className="flex-1"
+                  className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg"
                 >
                   <Phone className="h-4 w-4 mr-2" />
                   End Chat
