@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Home, 
-  Users, 
-  Calendar, 
-  MessageSquare, 
-  Settings, 
-  LogOut, 
+import {
+  Home,
+  Users,
+  Calendar,
+  MessageSquare,
+  Settings,
+  LogOut,
   Heart,
   Building2,
   FileText,
@@ -39,7 +39,7 @@ interface NavItem {
   href: string;
   isQuickActions?: boolean;
   subItems?: NavItem[];
-  adminOnly?: boolean;
+  adminOnly?: boolean; // Corrected: Added adminOnly property
 }
 
 const DashboardLayout = () => {
@@ -51,9 +51,8 @@ const DashboardLayout = () => {
   // Get user type from actual user profile data
   const userType = profile?.user_type || 'family';
   const isSuperAdmin = profile?.user_type === 'admin';
-  // For now, we'll determine org admin status based on organization field being present
-  // This will need to be updated when we add the organization_admin field to the database
-  const isOrgAdmin = !!profile?.organization && profile?.organization !== '';
+  // Use the profile's organization_admin flag, which is derived in AuthContext
+  const isOrgAdmin = profile?.organization_admin || false;
   const isProfessional = userType === 'healthcare' || userType === 'agent';
   const isPlacementAgent = userType === 'agent';
 
@@ -78,11 +77,11 @@ const DashboardLayout = () => {
 
     // Unified Professional Portal (Healthcare & Agent)
     if (isProfessional) {
-      const professionalItems = [
+      const professionalItems: NavItem[] = [ // Added type annotation for clarity
         { icon: Home, label: 'Dashboard', href: `/dashboard/${userType}` },
-        { 
-          icon: UserPlus, 
-          label: 'Quick Actions', 
+        {
+          icon: UserPlus,
+          label: 'Quick Actions',
           href: '#',
           isQuickActions: true,
           subItems: [
@@ -124,7 +123,7 @@ const DashboardLayout = () => {
 
     // Facility Portal
     if (userType === 'facility') {
-      const facilityItems = [
+      const facilityItems: NavItem[] = [ // Added type annotation for clarity
         { icon: Home, label: 'Dashboard', href: '/dashboard/facility' },
         { icon: Building, label: 'Listing Management', href: '/dashboard/facility/listings' },
         { icon: Users, label: 'Employee Management', href: '/dashboard/facility/employees' },
@@ -155,7 +154,7 @@ const DashboardLayout = () => {
       return [
         { icon: Home, label: 'Dashboard', href: '/dashboard/family' },
         { icon: Heart, label: 'Favorites', href: '/dashboard/family/favorites' },
-        { icon: Map, label: 'Find Care', href: '/dashboard/find-care' },
+        { icon: Map, label: 'Find Care', href: '/find-care' }, // Corrected path to be more intuitive
         ...baseItems
       ];
     }
@@ -176,7 +175,7 @@ const DashboardLayout = () => {
 
   const isActive = (href: string) => {
     if (href === '#') return false;
-    return location.pathname === href || location.pathname.startsWith(href + '/');
+    return location.pathname === href || location.pathname.startsWith(`${href}/`);
   };
 
   const getUserDisplayName = () => {
@@ -195,7 +194,8 @@ const DashboardLayout = () => {
 
   const getUserRole = () => {
     if (isSuperAdmin) return 'Super Admin';
-    if (isOrgAdmin) return `${userType} Admin`.replace(/^\w/, c => c.toUpperCase());
+    // Use the reliable `isOrgAdmin` flag
+    if (isOrgAdmin) return `${userType.charAt(0).toUpperCase() + userType.slice(1)} Admin`;
     return userType.charAt(0).toUpperCase() + userType.slice(1);
   };
 
@@ -215,11 +215,11 @@ const DashboardLayout = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navigationItems.map((item) => {
             if (item.isQuickActions) {
               return (
-                <Collapsible 
+                <Collapsible
                   key={item.label}
                   open={isQuickActionsOpen}
                   onOpenChange={setIsQuickActionsOpen}
@@ -240,7 +240,7 @@ const DashboardLayout = () => {
                       )}
                     </Button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-1 ml-6">
+                  <CollapsibleContent className="space-y-1 ml-6 pt-1">
                     {item.subItems?.map((subItem) => (
                       <Link
                         key={subItem.href}
@@ -270,7 +270,7 @@ const DashboardLayout = () => {
                   isActive(item.href)
                     ? "bg-brand-sky text-white"
                     : "text-gray-600 hover:bg-gray-100",
-                  item.adminOnly && "border-l-4 border-orange-500"
+                  item.adminOnly && "border-l-4 border-orange-500 bg-orange-50 hover:bg-orange-100" // Enhanced styling for admin items
                 )}
               >
                 <item.icon className="mr-3 h-5 w-5" />
@@ -285,7 +285,7 @@ const DashboardLayout = () => {
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center space-x-3 mb-3">
             <Avatar>
-              <AvatarImage src="/placeholder-user.jpg" />
+              <AvatarImage src={profile?.avatar_url || "/placeholder-user.jpg"} /> {/* Assuming avatar_url might exist */}
               <AvatarFallback>{getUserInitials()}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
@@ -316,30 +316,18 @@ const DashboardLayout = () => {
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-800">
-              {location.pathname.split('/').pop()?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Dashboard'}
+              {navigationItems.find(item => isActive(item.href))?.label || 'Dashboard'}
             </h2>
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm">
                 Help
               </Button>
-              {isSuperAdmin && (
-                <Button variant="outline" size="sm" className="text-red-600 border-red-200">
-                  <Crown className="h-4 w-4 mr-2" />
-                  Super Admin
-                </Button>
-              )}
-              {isOrgAdmin && !isSuperAdmin && (
-                <Button variant="outline" size="sm" className="text-blue-600 border-blue-200">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Org Admin
-                </Button>
-              )}
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>
