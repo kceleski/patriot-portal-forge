@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +18,10 @@ const FindCarePage = () => {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState({
+    rating: [] as number[],
+    amenities: [] as string[]
+  });
   const { user } = useAuth();
 
   const handleSearch = async () => {
@@ -66,6 +69,83 @@ const FindCarePage = () => {
     }
   };
 
+  const handleViewDetails = (facility: SerperPlaceResult) => {
+    toast({
+      title: "Opening Details",
+      description: `Loading detailed information for ${facility.title}`,
+    });
+    // Here you would navigate to facility detail page
+    console.log('Viewing details for:', facility);
+  };
+
+  const handleContactFacility = (facility: SerperPlaceResult) => {
+    if (facility.phoneNumber) {
+      // Open phone dialer
+      window.location.href = `tel:${facility.phoneNumber}`;
+    } else {
+      toast({
+        title: "Contact Information",
+        description: "Phone number not available. Please visit their website for contact details.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRatingFilter = (rating: number, checked: boolean) => {
+    const newRatings = checked 
+      ? [...selectedFilters.rating, rating]
+      : selectedFilters.rating.filter(r => r !== rating);
+    
+    setSelectedFilters({ ...selectedFilters, rating: newRatings });
+    toast({
+      title: "Filter Applied",
+      description: `${checked ? 'Added' : 'Removed'} ${rating}+ star filter`,
+    });
+  };
+
+  const handleAmenityFilter = (amenity: string, checked: boolean) => {
+    const newAmenities = checked 
+      ? [...selectedFilters.amenities, amenity]
+      : selectedFilters.amenities.filter(a => a !== amenity);
+    
+    setSelectedFilters({ ...selectedFilters, amenities: newAmenities });
+    toast({
+      title: "Filter Applied", 
+      description: `${checked ? 'Added' : 'Removed'} ${amenity} filter`,
+    });
+  };
+
+  const appliedFilters = facilities.filter(facility => {
+    if (selectedFilters.rating.length > 0 && facility.rating) {
+      const meetsRating = selectedFilters.rating.some(rating => facility.rating! >= rating);
+      if (!meetsRating) return false;
+    }
+    return true;
+  });
+
+  const handleSortChange = (sortValue: string) => {
+    let sortedFacilities = [...facilities];
+    
+    switch (sortValue) {
+      case 'rating':
+        sortedFacilities.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'distance':
+        // Mock distance sort - in real app would use actual coordinates
+        sortedFacilities.sort(() => Math.random() - 0.5);
+        break;
+      case 'name':
+        sortedFacilities.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+    }
+    
+    setFacilities(sortedFacilities);
+    toast({
+      title: "Results Sorted",
+      description: `Facilities sorted by ${sortValue}`,
+    });
+  };
+
   const formatPhoneNumber = (phone?: string) => {
     if (!phone) return 'Not available';
     return phone;
@@ -83,7 +163,11 @@ const FindCarePage = () => {
         <div className="space-y-2">
           {[5, 4, 3].map((rating) => (
             <label key={rating} className="flex items-center">
-              <input type="checkbox" className="mr-2" />
+              <input 
+                type="checkbox" 
+                className="mr-2" 
+                onChange={(e) => handleRatingFilter(rating, e.target.checked)}
+              />
               <div className="flex items-center">
                 {Array.from({ length: rating }).map((_, i) => (
                   <Star key={i} className="h-4 w-4 fill-brand-gold text-brand-gold" />
@@ -100,7 +184,11 @@ const FindCarePage = () => {
         <div className="space-y-2">
           {['24/7 Nursing', 'Memory Care', 'Dining Services', 'Transportation', 'Activities'].map((amenity) => (
             <label key={amenity} className="flex items-center">
-              <input type="checkbox" className="mr-2" />
+              <input 
+                type="checkbox" 
+                className="mr-2" 
+                onChange={(e) => handleAmenityFilter(amenity, e.target.checked)}
+              />
               <span className="text-sm text-text-primary">{amenity}</span>
             </label>
           ))}
@@ -208,7 +296,7 @@ const FindCarePage = () => {
             <div className="lg:col-span-3 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-primary">
-                  {facilities.length} Facilities Found
+                  {appliedFilters.length} Facilities Found
                 </h2>
                 <div className="flex items-center gap-3">
                   {/* Mobile Filters Button */}
@@ -229,7 +317,7 @@ const FindCarePage = () => {
                     </Sheet>
                   </div>
                   
-                  <Select defaultValue="rating">
+                  <Select defaultValue="rating" onValueChange={handleSortChange}>
                     <SelectTrigger className="w-40 sm:w-48 bg-white border-ui-border text-text-primary">
                       <SelectValue />
                     </SelectTrigger>
@@ -242,12 +330,12 @@ const FindCarePage = () => {
                 </div>
               </div>
 
-              {facilities.length === 0 && !loading ? (
+              {appliedFilters.length === 0 && !loading ? (
                 <Card className="bg-background-card border-ui-border p-6 sm:p-8 text-center">
                   <p className="text-text-secondary">No facilities found. Try adjusting your search criteria.</p>
                 </Card>
               ) : (
-                facilities.map((facility, index) => (
+                appliedFilters.map((facility, index) => (
                   <Card key={index} className="hover:shadow-lg transition-shadow bg-background-card border-ui-border">
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
@@ -304,10 +392,17 @@ const FindCarePage = () => {
                           </div>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
-                          <Button variant="outline" className="border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white">
+                          <Button 
+                            variant="outline" 
+                            className="border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white"
+                            onClick={() => handleViewDetails(facility)}
+                          >
                             View Details
                           </Button>
-                          <Button className="bg-brand-red hover:bg-brand-red/90 text-white">
+                          <Button 
+                            className="bg-brand-red hover:bg-brand-red/90 text-white"
+                            onClick={() => handleContactFacility(facility)}
+                          >
                             Contact Facility
                           </Button>
                         </div>
