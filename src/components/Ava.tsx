@@ -25,7 +25,7 @@ const Ava = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hello! I'm AVA, your AI Care Assistant. How can I help you today?",
+      text: "Hello! I'm Ava with Health Pro Assist. How can I help you today?",
       sender: 'ava',
       timestamp: new Date().toLocaleTimeString()
     }
