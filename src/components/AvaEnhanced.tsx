@@ -18,7 +18,7 @@ const AvaEnhanced = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hello! I'm AVA, your AI Care Assistant. I can help you search for facilities using voice commands. Try saying 'Show me memory care facilities in Phoenix that accept VA benefits'!",
+      text: "Hello! I'm Ava, with Health ProvAssist. I can help you search for facilities using voice commands. Try saying 'Show me memory care facilities in Phoenix that accept VA benefits'!",
       sender: 'ava',
       timestamp: new Date().toLocaleTimeString()
     }
