@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useConversation } from '@elevenlabs/react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -32,16 +31,16 @@ const ElevenLabsAgent = () => {
 
   // Enhanced client tools that can manipulate the DOM and app state
   const clientTools = {
-    // Navigation tools
-    navigateToPage: (parameters: { page: string }) => {
-      console.log('🚀 Navigating to:', parameters.page);
+    // Navigation tools - updated to match ElevenLabs parameter name
+    navigateToPage: (parameters: { page_name: string }) => {
+      console.log('🚀 Navigating to:', parameters.page_name);
       try {
-        navigate(parameters.page);
-        voiceCommandService.showSuccess(`Navigated to ${parameters.page}`);
-        return `Successfully navigated to ${parameters.page}`;
+        navigate(parameters.page_name);
+        voiceCommandService.showSuccess(`Navigated to ${parameters.page_name}`);
+        return `Successfully navigated to ${parameters.page_name}`;
       } catch (error) {
-        voiceCommandService.showError(`Failed to navigate to ${parameters.page}`);
-        return `Failed to navigate to ${parameters.page}`;
+        voiceCommandService.showError(`Failed to navigate to ${parameters.page_name}`);
+        return `Failed to navigate to ${parameters.page_name}`;
       }
     },
 
@@ -221,7 +220,7 @@ WORKFLOW EXAMPLES:
 - "Find memory care in Phoenix" → performSearch({query: "memory care", location: "Phoenix"})
 - "Click the login button" → clickElement({text: "login"})
 - "Fill my name as John Smith" → fillFormField({label: "name", value: "John Smith"})
-- "Go to my dashboard" → navigateToPage("/dashboard")
+- "Go to my dashboard" → navigateToPage({page_name: "/dashboard"})
 
 Always use your tools to actually perform actions, don't just describe what you would do. Be helpful, conversational, and proactive in using your capabilities to assist users with their healthcare journey.`
         },
