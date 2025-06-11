@@ -2919,6 +2919,10 @@ export type Database = {
           confirmation_message: string
         }[]
       }
+      parse_google_maps_results: {
+        Args: { raw_results: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       appointment_type: "consultation" | "tour" | "follow_up"
