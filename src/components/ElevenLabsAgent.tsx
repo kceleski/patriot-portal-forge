@@ -7,12 +7,18 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TranscriptEntry {
   timestamp: string;
   type: 'user' | 'agent' | 'tool' | 'system';
   content: string;
   toolName?: string;
+}
+
+interface ElevenLabsConfig {
+  agentId: string;
+  hasApiKey: boolean;
 }
 
 const ElevenLabsAgent = () => {
@@ -23,11 +29,46 @@ const ElevenLabsAgent = () => {
   const [showTranscript, setShowTranscript] = useState(false);
   const [lastToolUsed, setLastToolUsed] = useState<string>('');
   const [isConnected, setIsConnected] = useState(false);
+  const [config, setConfig] = useState<ElevenLabsConfig | null>(null);
+  const [configLoading, setConfigLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   // Auto-minimize after DOM manipulation tools
   const domManipulationTools = ['navigateToPage', 'clickElement', 'fillFormField', 'performSearch', 'scrollToSection'];
+
+  // Load ElevenLabs configuration securely
+  const loadConfig = async () => {
+    setConfigLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('elevenlabs-config');
+      
+      if (error) {
+        console.error('Failed to load ElevenLabs config:', error);
+        toast({
+          title: 'Configuration Error',
+          description: 'Failed to load ElevenLabs configuration',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      setConfig(data);
+    } catch (error) {
+      console.error('Error loading config:', error);
+      toast({
+        title: 'Configuration Error',
+        description: 'Failed to load ElevenLabs configuration',
+        variant: 'destructive'
+      });
+    } finally {
+      setConfigLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
 
   useEffect(() => {
     if (lastToolUsed && domManipulationTools.includes(lastToolUsed)) {
@@ -211,7 +252,7 @@ const ElevenLabsAgent = () => {
 
   const handleStartConversation = async () => {
     try {
-      if (!process.env.REACT_APP_ELEVENLABS_AGENT_ID) {
+      if (!config?.agentId) {
         toast({
           title: 'Configuration Error',
           description: 'ElevenLabs Agent ID not configured',
@@ -220,8 +261,17 @@ const ElevenLabsAgent = () => {
         return;
       }
 
+      if (!config.hasApiKey) {
+        toast({
+          title: 'Configuration Error',
+          description: 'ElevenLabs API key not configured',
+          variant: 'destructive'
+        });
+        return;
+      }
+
       await conversation.startSession({
-        agentId: process.env.REACT_APP_ELEVENLABS_AGENT_ID
+        agentId: config.agentId
       });
     } catch (error) {
       console.error('Failed to start conversation:', error);
@@ -241,12 +291,16 @@ const ElevenLabsAgent = () => {
     }
   };
 
+  if (configLoading) {
+    return null; // Don't show anything while loading config
+  }
+
   if (!isVisible) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
         <Button
           onClick={() => setIsVisible(true)}
-          className="rounded-full w-16 h-16 bg-brand-red hover:bg-brand-red/90 shadow-lg"
+          className="rounded-full w-16 h-16 bg-red-600 hover:bg-red-700 shadow-lg"
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
@@ -257,7 +311,7 @@ const ElevenLabsAgent = () => {
   if (isMinimized) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
-        <Card className="p-4 bg-white shadow-lg border-brand-red border-2">
+        <Card className="p-4 bg-white shadow-lg border-red-600 border-2">
           <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
             <span className="text-sm font-medium">{isConnected ? 'Agent Ready' : 'Agent Offline'}</span>
@@ -283,7 +337,7 @@ const ElevenLabsAgent = () => {
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="bg-brand-red text-white p-4 flex items-center justify-between">
+        <div className="bg-red-600 text-white p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <MessageCircle className="h-6 w-6" />
             <span className="font-semibold">AI Assistant</span>
@@ -337,7 +391,12 @@ const ElevenLabsAgent = () => {
 
         {/* Conversation Controls */}
         <div className="p-4 flex flex-col items-center gap-4">
-          {!isConnected ? (
+          {!config ? (
+            <div className="text-center">
+              <p className="text-red-600 font-medium">Configuration Error</p>
+              <p className="text-sm text-gray-600">Failed to load ElevenLabs configuration</p>
+            </div>
+          ) : !isConnected ? (
             <Button onClick={handleStartConversation} className="w-full">
               Start Conversation
             </Button>

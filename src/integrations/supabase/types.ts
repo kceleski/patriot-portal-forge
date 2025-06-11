@@ -651,54 +651,6 @@ export type Database = {
         }
         Relationships: []
       }
-      enriched_facility_data: {
-        Row: {
-          Accommodations: string | null
-          Address: string | null
-          Amenities: string | null
-          "Care Type": string | null
-          City: string | null
-          "Image URL": string | null
-          MapView: string | null
-          "Medical Services": string | null
-          Phone: string | null
-          "Provider Name": string | null
-          State: string | null
-          Website: string | null
-          Zip: number | null
-        }
-        Insert: {
-          Accommodations?: string | null
-          Address?: string | null
-          Amenities?: string | null
-          "Care Type"?: string | null
-          City?: string | null
-          "Image URL"?: string | null
-          MapView?: string | null
-          "Medical Services"?: string | null
-          Phone?: string | null
-          "Provider Name"?: string | null
-          State?: string | null
-          Website?: string | null
-          Zip?: number | null
-        }
-        Update: {
-          Accommodations?: string | null
-          Address?: string | null
-          Amenities?: string | null
-          "Care Type"?: string | null
-          City?: string | null
-          "Image URL"?: string | null
-          MapView?: string | null
-          "Medical Services"?: string | null
-          Phone?: string | null
-          "Provider Name"?: string | null
-          State?: string | null
-          Website?: string | null
-          Zip?: number | null
-        }
-        Relationships: []
-      }
       facility: {
         Row: {
           accepts_medicaid: boolean | null
