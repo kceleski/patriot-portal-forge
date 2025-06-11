@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,9 +10,9 @@ import { ReportGeneratorModal } from '@/components/agent/ReportGeneratorModal';
 import { useNavigate } from 'react-router-dom';
 
 const AgentDashboard = () => {
-  const [showReportModal, setShowReportModal] = useState('active');
-  const [showQuickAddModal, setShowQuickAddModal] = useState('active');
-  const [showTaskModal, setShowTaskModal] = useState('active');
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const navigate = useNavigate();

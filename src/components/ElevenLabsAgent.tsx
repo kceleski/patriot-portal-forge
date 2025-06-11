@@ -50,263 +50,136 @@ const ElevenLabsAgent = () => {
 
   const clientTools = {
     // Navigation
-    navigateToPage: {
-      description: 'Navigate to a specific page in the application',
-      parameters: {
-        type: 'object',
-        properties: {
-          page_name: {
-            type: 'string',
-            description: 'The page to navigate to'
-          }
-        },
-        required: ['page_name']
-      },
-      handler: ({ page_name }: { page_name: string }) => {
-        console.log('Navigation requested to:', page_name);
-        addToTranscript('tool', `Navigating to: ${page_name}`, 'navigateToPage');
-        setLastToolUsed('navigateToPage');
-        
-        const pageRoutes: Record<string, string> = {
-          'home': '/',
-          'facilities': '/facilities-gallery',
-          'find-care': '/find-care',
-          'pricing': '/pricing',
-          'login': '/login',
-          'register': '/register',
-          'dashboard': '/dashboard',
-          'gallery': '/facilities-gallery',
-          'facilities-gallery': '/facilities-gallery',
-          'facilities-directory': '/facilities-directory',
-          'resources': '/resources'
-        };
+    navigateToPage: ({ page_name }: { page_name: string }) => {
+      console.log('Navigation requested to:', page_name);
+      addToTranscript('tool', `Navigating to: ${page_name}`, 'navigateToPage');
+      setLastToolUsed('navigateToPage');
+      
+      const pageRoutes: Record<string, string> = {
+        'home': '/',
+        'facilities': '/facilities-gallery',
+        'find-care': '/find-care',
+        'pricing': '/pricing',
+        'login': '/login',
+        'register': '/register',
+        'dashboard': '/dashboard',
+        'gallery': '/facilities-gallery',
+        'facilities-gallery': '/facilities-gallery',
+        'facilities-directory': '/facilities-directory',
+        'resources': '/resources'
+      };
 
-        const route = pageRoutes[page_name.toLowerCase()] || `/${page_name}`;
-        navigate(route);
-        
-        toast({
-          title: 'Navigation',
-          description: `Navigating to ${page_name}...`
-        });
+      const route = pageRoutes[page_name.toLowerCase()] || `/${page_name}`;
+      navigate(route);
+      
+      toast({
+        title: 'Navigation',
+        description: `Navigating to ${page_name}...`
+      });
 
-        return `Successfully navigating to ${page_name}`;
-      }
+      return `Successfully navigating to ${page_name}`;
     },
 
     // Search functionality
-    performSearch: {
-      description: 'Perform a search operation',
-      parameters: {
-        type: 'object',
-        properties: {
-          query: {
-            type: 'string',
-            description: 'The search query'
-          },
-          filters: {
-            type: 'object',
-            description: 'Optional search filters'
-          }
-        },
-        required: ['query']
-      },
-      handler: ({ query, filters }: { query: string; filters?: any }) => {
-        console.log('Search requested:', query, filters);
-        addToTranscript('tool', `Searching for: ${query}`, 'performSearch');
-        setLastToolUsed('performSearch');
-        
-        toast({
-          title: 'Search',
-          description: `Searching for "${query}"...`
-        });
+    performSearch: ({ query, filters }: { query: string; filters?: any }) => {
+      console.log('Search requested:', query, filters);
+      addToTranscript('tool', `Searching for: ${query}`, 'performSearch');
+      setLastToolUsed('performSearch');
+      
+      toast({
+        title: 'Search',
+        description: `Searching for "${query}"...`
+      });
 
-        return `Search initiated for: ${query}`;
-      }
+      return `Search initiated for: ${query}`;
     },
 
     // DOM interaction
-    clickElement: {
-      description: 'Click on a specific element',
-      parameters: {
-        type: 'object',
-        properties: {
-          selector: {
-            type: 'string',
-            description: 'CSS selector for the element to click'
-          },
-          elementText: {
-            type: 'string',
-            description: 'Text content of the element (optional)'
-          }
-        },
-        required: ['selector']
-      },
-      handler: ({ selector, elementText }: { selector: string; elementText?: string }) => {
-        console.log('Click requested on:', selector, elementText);
-        addToTranscript('tool', `Clicking element: ${elementText || selector}`, 'clickElement');
-        setLastToolUsed('clickElement');
-        
-        const element = document.querySelector(selector) as HTMLElement;
-        if (element) {
-          element.click();
-          toast({
-            title: 'Element Clicked',
-            description: `Clicked on ${elementText || selector}`
-          });
-          return `Successfully clicked on ${elementText || selector}`;
-        }
-        return `Element not found: ${selector}`;
+    clickElement: ({ selector, elementText }: { selector: string; elementText?: string }) => {
+      console.log('Click requested on:', selector, elementText);
+      addToTranscript('tool', `Clicking element: ${elementText || selector}`, 'clickElement');
+      setLastToolUsed('clickElement');
+      
+      const element = document.querySelector(selector) as HTMLElement;
+      if (element) {
+        element.click();
+        toast({
+          title: 'Element Clicked',
+          description: `Clicked on ${elementText || selector}`
+        });
+        return `Successfully clicked on ${elementText || selector}`;
       }
+      return `Element not found: ${selector}`;
     },
 
-    fillFormField: {
-      description: 'Fill a form field with a value',
-      parameters: {
-        type: 'object',
-        properties: {
-          selector: {
-            type: 'string',
-            description: 'CSS selector for the form field'
-          },
-          value: {
-            type: 'string',
-            description: 'Value to fill in the field'
-          }
-        },
-        required: ['selector', 'value']
-      },
-      handler: ({ selector, value }: { selector: string; value: string }) => {
-        console.log('Fill field requested:', selector, value);
-        addToTranscript('tool', `Filling field ${selector} with: ${value}`, 'fillFormField');
-        setLastToolUsed('fillFormField');
-        
-        const element = document.querySelector(selector) as HTMLInputElement;
-        if (element) {
-          element.value = value;
-          element.dispatchEvent(new Event('input', { bubbles: true }));
-          element.dispatchEvent(new Event('change', { bubbles: true }));
-          toast({
-            title: 'Field Filled',
-            description: `Filled ${selector} with "${value}"`
-          });
-          return `Successfully filled field with ${value}`;
-        }
-        return `Field not found: ${selector}`;
+    fillFormField: ({ selector, value }: { selector: string; value: string }) => {
+      console.log('Fill field requested:', selector, value);
+      addToTranscript('tool', `Filling field ${selector} with: ${value}`, 'fillFormField');
+      setLastToolUsed('fillFormField');
+      
+      const element = document.querySelector(selector) as HTMLInputElement;
+      if (element) {
+        element.value = value;
+        element.dispatchEvent(new Event('input', { bubbles: true }));
+        element.dispatchEvent(new Event('change', { bubbles: true }));
+        toast({
+          title: 'Field Filled',
+          description: `Filled ${selector} with "${value}"`
+        });
+        return `Successfully filled field with ${value}`;
       }
+      return `Field not found: ${selector}`;
     },
 
-    scrollToSection: {
-      description: 'Scroll to a specific section of the page',
-      parameters: {
-        type: 'object',
-        properties: {
-          sectionId: {
-            type: 'string',
-            description: 'ID of the section to scroll to'
-          }
-        },
-        required: ['sectionId']
-      },
-      handler: ({ sectionId }: { sectionId: string }) => {
-        console.log('Scroll requested to:', sectionId);
-        addToTranscript('tool', `Scrolling to section: ${sectionId}`, 'scrollToSection');
-        setLastToolUsed('scrollToSection');
-        
-        const element = document.getElementById(sectionId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-          return `Scrolled to section: ${sectionId}`;
-        }
-        return `Section not found: ${sectionId}`;
+    scrollToSection: ({ sectionId }: { sectionId: string }) => {
+      console.log('Scroll requested to:', sectionId);
+      addToTranscript('tool', `Scrolling to section: ${sectionId}`, 'scrollToSection');
+      setLastToolUsed('scrollToSection');
+      
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        return `Scrolled to section: ${sectionId}`;
       }
+      return `Section not found: ${sectionId}`;
     },
 
     // Information tools
-    getCurrentPageInfo: {
-      description: 'Get information about the current page',
-      parameters: {
-        type: 'object',
-        properties: {}
-      },
-      handler: () => {
-        const pageInfo = {
-          url: window.location.href,
-          title: document.title,
-          path: window.location.pathname
-        };
-        addToTranscript('tool', `Getting page info: ${pageInfo.title}`, 'getCurrentPageInfo');
-        return `Current page: ${pageInfo.title} at ${pageInfo.path}`;
-      }
+    getCurrentPageInfo: () => {
+      const pageInfo = {
+        url: window.location.href,
+        title: document.title,
+        path: window.location.pathname
+      };
+      addToTranscript('tool', `Getting page info: ${pageInfo.title}`, 'getCurrentPageInfo');
+      return `Current page: ${pageInfo.title} at ${pageInfo.path}`;
     },
 
-    getPageElements: {
-      description: 'Get list of interactive elements on the page',
-      parameters: {
-        type: 'object',
-        properties: {
-          elementType: {
-            type: 'string',
-            description: 'Type of elements to find (buttons, links, inputs, etc.)'
-          }
-        }
-      },
-      handler: ({ elementType }: { elementType?: string }) => {
-        const selector = elementType ? elementType : 'button, a, input, select, textarea';
-        const elements = document.querySelectorAll(selector);
-        const elementList = Array.from(elements).slice(0, 10).map((el, idx) => 
-          `${idx + 1}. ${el.tagName.toLowerCase()}${el.textContent ? ': ' + el.textContent.trim().substring(0, 50) : ''}`
-        );
-        addToTranscript('tool', `Found ${elements.length} elements of type: ${elementType || 'interactive'}`, 'getPageElements');
-        return `Found ${elements.length} elements:\n${elementList.join('\n')}`;
-      }
+    getPageElements: ({ elementType }: { elementType?: string }) => {
+      const selector = elementType ? elementType : 'button, a, input, select, textarea';
+      const elements = document.querySelectorAll(selector);
+      const elementList = Array.from(elements).slice(0, 10).map((el, idx) => 
+        `${idx + 1}. ${el.tagName.toLowerCase()}${el.textContent ? ': ' + el.textContent.trim().substring(0, 50) : ''}`
+      );
+      addToTranscript('tool', `Found ${elements.length} elements of type: ${elementType || 'interactive'}`, 'getPageElements');
+      return `Found ${elements.length} elements:\n${elementList.join('\n')}`;
     },
 
-    showNotification: {
-      description: 'Show a notification to the user',
-      parameters: {
-        type: 'object',
-        properties: {
-          message: {
-            type: 'string',
-            description: 'Message to show'
-          },
-          type: {
-            type: 'string',
-            enum: ['success', 'error', 'info', 'warning'],
-            description: 'Type of notification'
-          }
-        },
-        required: ['message']
-      },
-      handler: ({ message, type = 'info' }: { message: string; type?: string }) => {
-        addToTranscript('tool', `Showing notification: ${message}`, 'showNotification');
-        toast({
-          title: type.charAt(0).toUpperCase() + type.slice(1),
-          description: message,
-          variant: type === 'error' ? 'destructive' : 'default'
-        });
-        return `Notification shown: ${message}`;
-      }
+    showNotification: ({ message, type = 'info' }: { message: string; type?: string }) => {
+      addToTranscript('tool', `Showing notification: ${message}`, 'showNotification');
+      toast({
+        title: type.charAt(0).toUpperCase() + type.slice(1),
+        description: message,
+        variant: type === 'error' ? 'destructive' : 'default'
+      });
+      return `Notification shown: ${message}`;
     },
 
-    searchOnPage: {
-      description: 'Search for text on the current page',
-      parameters: {
-        type: 'object',
-        properties: {
-          searchTerm: {
-            type: 'string',
-            description: 'Text to search for on the page'
-          }
-        },
-        required: ['searchTerm']
-      },
-      handler: ({ searchTerm }: { searchTerm: string }) => {
-        addToTranscript('tool', `Searching page for: ${searchTerm}`, 'searchOnPage');
-        const bodyText = document.body.innerText.toLowerCase();
-        const found = bodyText.includes(searchTerm.toLowerCase());
-        return found ? `Found "${searchTerm}" on the page` : `"${searchTerm}" not found on the page`;
-      }
+    searchOnPage: ({ searchTerm }: { searchTerm: string }) => {
+      addToTranscript('tool', `Searching page for: ${searchTerm}`, 'searchOnPage');
+      const bodyText = document.body.innerText.toLowerCase();
+      const found = bodyText.includes(searchTerm.toLowerCase());
+      return found ? `Found "${searchTerm}" on the page` : `"${searchTerm}" not found on the page`;
     }
   };
 
