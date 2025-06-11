@@ -129,18 +129,18 @@ const PublicLayout = () => {
                 <div className="space-y-3 text-blue-200 text-sm sm:text-base">
                   <div className="flex items-center space-x-2">
                     <Phone className="h-4 w-4 flex-shrink-0" />
-                    <span>(555) 123-4567</span>
+                    <span>(623) 300-2065</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Mail className="h-4 w-4 flex-shrink-0" />
-                    <span className="break-all">support@healthproassist.com</span>
+                    <span className="break-all">contact@healthproassist.com</span>
                   </div>
                 </div>
               </div>
             </div>
             
             <div className="border-t border-blue-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center text-blue-200 text-sm sm:text-base">
-              <p>&copy; 2024 HealthProAssist. All rights reserved.</p>
+              <p>&copy; 2025 HealthProAssist. All rights reserved.</p>
             </div>
           </div>
         </footer>
