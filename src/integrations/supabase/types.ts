@@ -2899,6 +2899,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      insert_serperapi_raw_result: {
+        Args: {
+          user_search_request_id: string
+          raw_json_data: Json
+          parsing_status?: string
+          error_message?: string
+        }
+        Returns: string
+      }
       insert_user_interaction: {
         Args: {
           user_intent_summary: Json

@@ -41,7 +41,22 @@ const ElevenLabsAgent = () => {
   const loadConfig = async () => {
     setConfigLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('elevenlabs-config');
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session) {
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to use the AI assistant',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('elevenlabs-config', {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`
+        }
+      });
       
       if (error) {
         console.error('Failed to load ElevenLabs config:', error);
