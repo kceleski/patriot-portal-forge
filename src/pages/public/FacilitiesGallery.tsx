@@ -12,7 +12,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ApiService } from '@/services/apiService';
 import { useApi } from '@/hooks/useApi';
 import FeatureGate from '@/components/FeatureGate';
-import { toast } from '@/hooks/use-toast';
+import FacilityDetailsModal from '@/components/facility/FacilityDetailsModal';
+import ElevenLabsWidget from '@/components/ElevenLabsWidget';
 
 interface Facility {
   id: string;
@@ -26,6 +27,12 @@ interface Facility {
   is_featured: boolean;
   accepts_va_benefits: boolean;
   facility_images: Array<{ url: string; is_primary: boolean }>;
+  address?: string;
+  phone?: string;
+  website?: string;
+  description?: string;
+  capacity?: number;
+  current_availability?: number;
 }
 
 interface CareType {
@@ -48,6 +55,8 @@ const FacilitiesGallery = () => {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Filter states
   const [selectedCareTypes, setSelectedCareTypes] = useState<string[]>([]);
@@ -161,6 +170,16 @@ const FacilitiesGallery = () => {
     setPriceRange([0, 10000]);
     setVaToggle(false);
     setSearchTerm('');
+  };
+
+  const handleFacilityClick = (facility: Facility) => {
+    setSelectedFacility(facility);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedFacility(null);
   };
 
   return (
@@ -328,9 +347,10 @@ const FacilitiesGallery = () => {
               {filteredFacilities.map((facility) => (
                 <Card 
                   key={facility.id} 
-                  className={`bg-white hover:shadow-lg transition-shadow border-gray-200 ${
+                  className={`bg-white hover:shadow-lg transition-shadow border-gray-200 cursor-pointer ${
                     facility.is_featured ? 'border-2 border-brand-gold' : ''
                   }`}
+                  onClick={() => handleFacilityClick(facility)}
                 >
                   {facility.is_featured && (
                     <div className="bg-brand-gold text-brand-navy text-xs font-bold px-2 py-1 rounded-t-lg text-center">
@@ -376,7 +396,13 @@ const FacilitiesGallery = () => {
                           </div>
                         </div>
                         <div className="mt-4">
-                          <Button className="w-full bg-brand-sky hover:bg-blue-600 text-white">
+                          <Button 
+                            className="w-full bg-brand-sky hover:bg-blue-600 text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFacilityClick(facility);
+                            }}
+                          >
                             View Details
                           </Button>
                         </div>
@@ -398,6 +424,16 @@ const FacilitiesGallery = () => {
           )}
         </div>
       </div>
+
+      {/* Facility Details Modal */}
+      <FacilityDetailsModal
+        facility={selectedFacility}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
+
+      {/* Floating Voice Assistant */}
+      <ElevenLabsWidget variant="floating" />
     </div>
   );
 };
