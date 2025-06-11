@@ -11,11 +11,11 @@ import { ReportGeneratorModal } from '@/components/agent/ReportGeneratorModal';
 import { useNavigate } from 'react-router-dom';
 
 const AgentDashboard = () => {
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
-  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState('active');
+  const [showQuickAddModal, setShowQuickAddModal] = useState('active');
+  const [showTaskModal, setShowTaskModal] = useState('active');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('');
   const navigate = useNavigate();
 
   const recentActivity = [
