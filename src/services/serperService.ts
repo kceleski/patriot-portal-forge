@@ -21,10 +21,33 @@ export interface SerperPlaceResult extends SerperMapResult {
 }
 
 export class SerperService {
-  static async searchMaps(query: string): Promise<SerperMapResult[]> {
+  private static async saveToWebhook(rawData: any, userSearchRequestId?: string): Promise<void> {
+    try {
+      const webhookData = {
+        raw_json_data: rawData,
+        user_search_request_id: userSearchRequestId || null,
+        parsing_status: 'new'
+      };
+
+      await fetch('https://fktcmikrsgutyicluegr.supabase.co/functions/v1/serpapi-webhook-listener', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(webhookData)
+      });
+    } catch (error) {
+      console.error('Error calling webhook:', error);
+    }
+  }
+
+  static async searchMaps(query: string, userSearchRequestId?: string): Promise<SerperMapResult[]> {
     try {
       const response = await fetch(`https://google.serper.dev/maps?q=${encodeURIComponent(query)}&apiKey=${SERPER_API_KEY}`);
       const data = await response.json();
+      
+      // Save raw results via webhook
+      await this.saveToWebhook(data, userSearchRequestId);
       
       return data.places?.map((place: any) => ({
         title: place.title,
@@ -44,10 +67,13 @@ export class SerperService {
     }
   }
 
-  static async searchPlaces(query: string): Promise<SerperPlaceResult[]> {
+  static async searchPlaces(query: string, userSearchRequestId?: string): Promise<SerperPlaceResult[]> {
     try {
       const response = await fetch(`https://google.serper.dev/places?q=${encodeURIComponent(query)}&apiKey=${SERPER_API_KEY}`);
       const data = await response.json();
+      
+      // Save raw results via webhook
+      await this.saveToWebhook(data, userSearchRequestId);
       
       return data.places?.map((place: any) => ({
         title: place.title,
@@ -70,10 +96,14 @@ export class SerperService {
     }
   }
 
-  static async getReviews(cid: string): Promise<any[]> {
+  static async getReviews(cid: string, userSearchRequestId?: string): Promise<any[]> {
     try {
       const response = await fetch(`https://google.serper.dev/reviews?cid=${cid}&apiKey=${SERPER_API_KEY}`);
       const data = await response.json();
+      
+      // Save raw results via webhook
+      await this.saveToWebhook(data, userSearchRequestId);
+      
       return data.reviews || [];
     } catch (error) {
       console.error('Error getting reviews:', error);
@@ -81,7 +111,7 @@ export class SerperService {
     }
   }
 
-  static async searchImages(query: string): Promise<any[]> {
+  static async searchImages(query: string, userSearchRequestId?: string): Promise<any[]> {
     try {
       const response = await fetch('https://google.serper.dev/images', {
         method: 'POST',
@@ -92,6 +122,10 @@ export class SerperService {
         body: JSON.stringify({ q: query })
       });
       const data = await response.json();
+      
+      // Save raw results via webhook
+      await this.saveToWebhook(data, userSearchRequestId);
+      
       return data.images || [];
     } catch (error) {
       console.error('Error searching images:', error);
