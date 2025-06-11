@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useConversation } from '@elevenlabs/react';
 import { MessageCircle, Minimize2, Maximize2, Volume2, VolumeX, Settings } from 'lucide-react';
@@ -316,8 +315,10 @@ const ElevenLabsAgent = () => {
 
       const { signed_url } = await response.json();
       
+      // Use the correct parameter name for startSession
       await conversation.startSession({
-        url: signed_url
+        agentId: config.agentId,
+        signedUrl: signed_url
       });
       
       addToTranscript('system', 'Starting conversation...');
