@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -94,6 +95,7 @@ function AppRoutes() {
         <Route path="facility/:id" element={<FacilityDetail />} />
         <Route path="facilities-map" element={<FacilitiesMap />} />     
         <Route path="facilities-gallery" element={<FacilitiesGallery />} />
+        <Route path="facilities-directory" element={<FacilitiesDirectory />} />
         <Route path="subscribed-providers" element={<SubscribedProvidersDirectory />} />
         <Route path="resources" element={<ResourcesPage />} />
         <Route path="pricing" element={<PricingPage />} />
@@ -197,5 +199,3 @@ function App() {
 }
 
 export default App;
-
-</initial_code>
