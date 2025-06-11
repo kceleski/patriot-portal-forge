@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useConversation } from '@elevenlabs/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { X, Volume2, VolumeX, Phone, Settings } from 'lucide-react';
+import { X, Volume2, VolumeX, Phone, Settings, MessageCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +17,8 @@ const ElevenLabsAgent = () => {
   const [isVolumeEnabled, setIsVolumeEnabled] = useState(true);
   const [selectedVoice, setSelectedVoice] = useState('9BWtsMINqrJLrRacOk9x'); // Default to Aria
   const [showSettings, setShowSettings] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
+  const [transcript, setTranscript] = useState<Array<{ type: string; text: string; timestamp: Date }>>([]);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -29,11 +32,17 @@ const ElevenLabsAgent = () => {
     { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger', description: 'Authoritative and clear' }
   ];
 
+  // Function to add message to transcript
+  const addToTranscript = (type: string, text: string) => {
+    setTranscript(prev => [...prev, { type, text, timestamp: new Date() }]);
+  };
+
   // Enhanced client tools that can manipulate the DOM and app state
   const clientTools = {
     // Navigation tools - updated to match ElevenLabs parameter name
     navigateToPage: (parameters: { page_name: string }) => {
       console.log('🚀 Navigating to:', parameters.page_name);
+      addToTranscript('tool', `Navigation: ${parameters.page_name}`);
       try {
         navigate(parameters.page_name);
         voiceCommandService.showSuccess(`Navigated to ${parameters.page_name}`);
@@ -47,6 +56,7 @@ const ElevenLabsAgent = () => {
     // Enhanced search functionality
     performSearch: (parameters: { query: string, location?: string }) => {
       console.log('🔍 Performing search:', parameters);
+      addToTranscript('tool', `Search: ${parameters.query} in ${parameters.location || 'current area'}`);
       try {
         const searchUrl = `/find-care?q=${encodeURIComponent(parameters.query)}&location=${encodeURIComponent(parameters.location || '')}`;
         navigate(searchUrl);
@@ -61,6 +71,7 @@ const ElevenLabsAgent = () => {
     // DOM manipulation with voice service integration
     clickElement: (parameters: { text?: string, selector?: string }) => {
       console.log('👆 Clicking element:', parameters);
+      addToTranscript('tool', `Click: ${parameters.text || parameters.selector}`);
       
       if (parameters.text) {
         const success = voiceCommandService.clickElementByText(parameters.text);
@@ -91,6 +102,7 @@ const ElevenLabsAgent = () => {
     // Form completion assistance
     fillFormField: (parameters: { label: string, value: string }) => {
       console.log('📝 Filling form field:', parameters);
+      addToTranscript('tool', `Fill field "${parameters.label}" with "${parameters.value}"`);
       const success = voiceCommandService.fillFormByLabel(parameters.label, parameters.value);
       if (success) {
         voiceCommandService.showSuccess(`Filled "${parameters.label}" with "${parameters.value}"`);
@@ -104,6 +116,7 @@ const ElevenLabsAgent = () => {
     // Enhanced scroll functionality
     scrollToSection: (parameters: { sectionId?: string, text?: string }) => {
       console.log('📜 Scrolling to section:', parameters);
+      addToTranscript('tool', `Scroll to: ${parameters.text || parameters.sectionId}`);
       
       if (parameters.text) {
         const success = voiceCommandService.scrollToElementByText(parameters.text);
@@ -139,6 +152,7 @@ const ElevenLabsAgent = () => {
         currentSearch: location.search
       };
       console.log('📄 Page context:', contextInfo);
+      addToTranscript('tool', `Page info requested: ${location.pathname}`);
       return `Current page info: ${JSON.stringify(contextInfo)}`;
     },
 
@@ -146,6 +160,7 @@ const ElevenLabsAgent = () => {
     showNotification: (parameters: { message: string, type?: 'success' | 'error' | 'info' }) => {
       const { message, type = 'info' } = parameters;
       console.log('🔔 Showing notification:', { message, type });
+      addToTranscript('tool', `Notification: ${message} (${type})`);
       
       if (type === 'success') voiceCommandService.showSuccess(message);
       else if (type === 'error') voiceCommandService.showError(message);
@@ -157,6 +172,7 @@ const ElevenLabsAgent = () => {
     // Perform search on current page
     searchOnPage: (parameters: { query: string }) => {
       console.log('🔍 Searching on page:', parameters);
+      addToTranscript('tool', `Page search: ${parameters.query}`);
       const results = voiceCommandService.performSearchOnPage(parameters.query);
       if (results.length > 0) {
         voiceCommandService.showSuccess(`Found ${results.length} search results for "${parameters.query}"`);
@@ -176,6 +192,7 @@ const ElevenLabsAgent = () => {
         forms: context.forms.length,
         currentUrl: context.url
       };
+      addToTranscript('tool', 'Page elements requested');
       return `Page elements: ${JSON.stringify(summary)}`;
     }
   };
@@ -183,17 +200,30 @@ const ElevenLabsAgent = () => {
   const conversation = useConversation({
     onConnect: () => {
       console.log("AVA Agent connected");
+      addToTranscript('system', 'AVA Assistant connected');
       voiceCommandService.showSuccess("AVA Assistant connected and ready to help!");
     },
     onMessage: (message) => {
       console.log("Message received:", message);
+      if (message.message) {
+        // Add different message types to transcript
+        if (message.source === 'user') {
+          addToTranscript('user', message.message);
+        } else if (message.source === 'agent' || message.source === 'ai') {
+          addToTranscript('agent', message.message);
+        } else {
+          addToTranscript('system', message.message);
+        }
+      }
     },
     onError: (error) => {
       console.error("Conversation error:", error);
+      addToTranscript('error', `Connection error: ${error.message || 'Unknown error'}`);
       voiceCommandService.showError("Connection error occurred");
     },
     onDisconnect: () => {
       console.log("AVA Agent disconnected");
+      addToTranscript('system', 'AVA Assistant disconnected');
       toast("AVA Assistant disconnected");
     },
     clientTools,
@@ -273,6 +303,10 @@ Always use your tools to actually perform actions, don't just describe what you 
     voiceCommandService.showInfo(`Voice changed to ${selectedVoiceName}`);
   };
 
+  const clearTranscript = () => {
+    setTranscript([]);
+  };
+
   return (
     <>
       {/* Floating AVA Button */}
@@ -309,6 +343,14 @@ Always use your tools to actually perform actions, don't just describe what you 
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setShowTranscript(!showTranscript)}
+                className="text-white hover:bg-white/20 h-8 w-8 p-0"
+              >
+                <MessageCircle className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowSettings(!showSettings)}
                 className="text-white hover:bg-white/20 h-8 w-8 p-0"
               >
@@ -335,8 +377,42 @@ Always use your tools to actually perform actions, don't just describe what you 
 
           {/* Content Area */}
           <div className="flex-1 p-4 flex flex-col items-center justify-center space-y-4">
+            {/* Transcript Panel */}
+            {showTranscript && (
+              <div className="w-full bg-gray-50 p-3 rounded-lg space-y-3 max-h-60 overflow-y-auto">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-sm font-medium text-gray-700">Conversation Transcript</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearTranscript}
+                    className="text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    Clear
+                  </Button>
+                </div>
+                <div className="space-y-2 text-xs">
+                  {transcript.map((entry, index) => (
+                    <div key={index} className={`p-2 rounded text-left ${
+                      entry.type === 'user' ? 'bg-blue-100 text-blue-800' :
+                      entry.type === 'agent' ? 'bg-green-100 text-green-800' :
+                      entry.type === 'tool' ? 'bg-purple-100 text-purple-800' :
+                      entry.type === 'error' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      <div className="font-medium capitalize">{entry.type}:</div>
+                      <div>{entry.text}</div>
+                      <div className="text-xs opacity-60 mt-1">
+                        {entry.timestamp.toLocaleTimeString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Settings Panel */}
-            {showSettings && (
+            {showSettings && !showTranscript && (
               <div className="w-full bg-gray-50 p-3 rounded-lg space-y-3">
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 block">Voice Selection</label>
@@ -359,52 +435,56 @@ Always use your tools to actually perform actions, don't just describe what you 
               </div>
             )}
 
-            <div className="text-center">
-              <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                Intelligent Voice AI Assistant
-              </h4>
-              <p className="text-sm text-gray-600 mb-4">
-                I can navigate pages, search for care, fill forms, and interact with page elements using voice commands
-              </p>
-            </div>
-
-            {/* Large animated avatar */}
-            <AvatarDisplay 
-              status={status} 
-              isSpeaking={isSpeaking} 
-              size="large"
-            />
-
-            {/* Status Text */}
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-700">
-                {status === 'connected' ? 
-                  (isSpeaking ? 'AVA is speaking...' : 'Listening for commands...') : 
-                  'Ready to connect'
-                }
-              </p>
-              {status === 'connected' && (
-                <div className="text-xs text-gray-500 mt-2 space-y-1">
-                  <p>Try: "Navigate to find care" or "Search for memory care"</p>
-                  <p>"Click the login button" or "Fill my name as John"</p>
+            {!showSettings && !showTranscript && (
+              <>
+                <div className="text-center">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                    Intelligent Voice AI Assistant
+                  </h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    I can navigate pages, search for care, fill forms, and interact with page elements using voice commands
+                  </p>
                 </div>
-              )}
-            </div>
 
-            {/* Volume Control */}
-            {status === 'connected' && !showSettings && (
-              <div className="w-full">
-                <label className="text-xs text-gray-600 mb-2 block">Volume</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={volume}
-                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                {/* Large animated avatar */}
+                <AvatarDisplay 
+                  status={status} 
+                  isSpeaking={isSpeaking} 
+                  size="large"
                 />
-              </div>
+
+                {/* Status Text */}
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-700">
+                    {status === 'connected' ? 
+                      (isSpeaking ? 'AVA is speaking...' : 'Listening for commands...') : 
+                      'Ready to connect'
+                    }
+                  </p>
+                  {status === 'connected' && (
+                    <div className="text-xs text-gray-500 mt-2 space-y-1">
+                      <p>Try: "Navigate to find care" or "Search for memory care"</p>
+                      <p>"Click the login button" or "Fill my name as John"</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Volume Control */}
+                {status === 'connected' && (
+                  <div className="w-full">
+                    <label className="text-xs text-gray-600 mb-2 block">Volume</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={volume}
+                      onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
 
