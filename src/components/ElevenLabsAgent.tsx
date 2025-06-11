@@ -23,9 +23,9 @@ const ElevenLabsAgent = () => {
 
   // Voice options with ElevenLabs voice IDs
   const voiceOptions = [
-    { id: '9BWtsMINqrJLrRacOk9x', name: 'Aria', description: 'Friendly and professional' },
-    { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam', description: 'Clear and confident' },
-    { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte', description: 'Warm and helpful' },
+    { id: 'tnSpp4vdxKPjI9w0GnoV', name: 'Hope', description: 'Friendly and professional' },
+    { id: 'tnSpp4vdxKPjI9w0GnoV', name: 'Liam', description: 'Clear and confident' },
+    { id: 'cgSgspJ2msm6clMCkdW9', name: 'Charlotte', description: 'Warm and helpful' },
     { id: 'SAz9YHcvj6GT2YYXdXww', name: 'River', description: 'Calm and reassuring' },
     { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger', description: 'Authoritative and clear' }
   ];
