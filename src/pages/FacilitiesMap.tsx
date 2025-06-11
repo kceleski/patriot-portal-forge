@@ -216,7 +216,7 @@ const FacilitiesMap = () => {
               <p class="text-sm text-gray-600">${facility.address}</p>
               ${facility.phoneNumber ? `<p class="text-sm">${facility.phoneNumber}</p>` : ''}
               ${facility.rating ? `<p class="text-sm">Rating: ${facility.rating}/5 ${facility.reviews ? `(${facility.reviews} reviews)` : ''}</p>` : ''}
-              ${facility.website ? `<a href="${facility.website}" target="_blank" class="text-sm text-blue-600 hover:underline">Visit Website</a>` : ''}
+              ${facility.website ? `<a href="${facility.website}" target="" class="text-sm text-blue-600 hover:underline">Visit Website</a>` : ''}
             </div>
           `
         });
