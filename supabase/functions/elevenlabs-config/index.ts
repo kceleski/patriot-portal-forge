@@ -55,28 +55,35 @@ serve(async (req) => {
 
     console.log('User authenticated:', user.id);
 
-    // Get ElevenLabs configuration from environment variables (Supabase secrets)
+    // Get ElevenLabs configuration from environment variables
     const agentId = Deno.env.get('REACT_APP_ELEVENLABS_AGENT_ID');
     const apiKey = Deno.env.get('ELEVENLABS_API_KEY');
 
     console.log('Agent ID available:', !!agentId);
     console.log('API Key available:', !!apiKey);
 
-    if (!agentId) {
-      console.error('ElevenLabs Agent ID not configured');
+    if (!agentId || !apiKey) {
+      const missing = [];
+      if (!agentId) missing.push('Agent ID');
+      if (!apiKey) missing.push('API Key');
+      
+      console.error('ElevenLabs configuration incomplete:', missing.join(', '));
       return new Response(
-        JSON.stringify({ error: 'ElevenLabs Agent ID not configured' }),
+        JSON.stringify({ 
+          error: `ElevenLabs configuration incomplete: Missing ${missing.join(', ')}` 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Return the configuration (don't expose the API key to frontend)
+    // Return the complete configuration including API key for authenticated users
     const config = {
       agentId,
-      hasApiKey: !!apiKey
+      apiKey, // Include API key for frontend use
+      hasApiKey: true
     };
 
-    console.log('Returning config:', config);
+    console.log('Returning config with agent ID:', agentId);
 
     return new Response(
       JSON.stringify(config),

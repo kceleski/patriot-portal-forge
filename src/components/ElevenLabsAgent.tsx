@@ -18,6 +18,7 @@ interface TranscriptEntry {
 
 interface ElevenLabsConfig {
   agentId: string;
+  apiKey: string;
   hasApiKey: boolean;
 }
 
@@ -62,14 +63,24 @@ const ElevenLabsAgent = () => {
         console.error('Failed to load ElevenLabs config:', error);
         toast({
           title: 'Configuration Error',
-          description: 'Failed to load ElevenLabs configuration',
+          description: error.message || 'Failed to load ElevenLabs configuration',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      if (data?.error) {
+        console.error('ElevenLabs config error:', data.error);
+        toast({
+          title: 'Configuration Error',
+          description: data.error,
           variant: 'destructive'
         });
         return;
       }
 
       setConfig(data);
-      console.log('ElevenLabs config loaded:', data);
+      console.log('ElevenLabs config loaded successfully');
     } catch (error) {
       console.error('Error loading config:', error);
       toast({
@@ -277,19 +288,10 @@ const ElevenLabsAgent = () => {
 
   const handleStartConversation = async () => {
     try {
-      if (!config?.agentId) {
+      if (!config?.agentId || !config?.apiKey) {
         toast({
           title: 'Configuration Error',
-          description: 'ElevenLabs Agent ID not configured',
-          variant: 'destructive'
-        });
-        return;
-      }
-
-      if (!config.hasApiKey) {
-        toast({
-          title: 'Configuration Error',
-          description: 'ElevenLabs API key not configured',
+          description: 'ElevenLabs configuration is incomplete',
           variant: 'destructive'
         });
         return;
@@ -297,8 +299,25 @@ const ElevenLabsAgent = () => {
 
       console.log('Starting ElevenLabs conversation with agent:', config.agentId);
       
+      // Generate signed URL for the conversation
+      const response = await fetch(
+        `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${config.agentId}`,
+        {
+          method: 'GET',
+          headers: {
+            'xi-api-key': config.apiKey,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to get signed URL from ElevenLabs');
+      }
+
+      const { signed_url } = await response.json();
+      
       await conversation.startSession({
-        agentId: config.agentId
+        url: signed_url
       });
       
       addToTranscript('system', 'Starting conversation...');

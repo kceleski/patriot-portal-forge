@@ -1,11 +1,19 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { voiceCommandService } from '@/services/voiceCommandService';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ElevenLabsWidgetProps {
   variant: 'fullscreen' | 'floating';
+}
+
+interface ElevenLabsConfig {
+  agentId: string;
+  apiKey: string;
+  hasApiKey: boolean;
 }
 
 declare global {
@@ -23,10 +31,52 @@ declare global {
 const ElevenLabsWidget: React.FC<ElevenLabsWidgetProps> = ({ variant }) => {
   const location = useLocation();
   const { user } = useAuth();
+  const { toast } = useToast();
   const scriptLoadedRef = useRef(false);
   const widgetInitializedRef = useRef(false);
+  const [config, setConfig] = useState<ElevenLabsConfig | null>(null);
+
+  // Load ElevenLabs configuration
+  const loadConfig = async () => {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session) {
+        console.warn('No session found for ElevenLabs widget');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('elevenlabs-config', {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`
+        }
+      });
+      
+      if (error) {
+        console.error('Failed to load ElevenLabs config for widget:', error);
+        return;
+      }
+
+      if (data?.error) {
+        console.error('ElevenLabs config error:', data.error);
+        return;
+      }
+
+      setConfig(data);
+      console.log('ElevenLabs widget config loaded successfully');
+    } catch (error) {
+      console.error('Error loading config for widget:', error);
+    }
+  };
 
   useEffect(() => {
+    loadConfig();
+  }, [user]);
+
+  useEffect(() => {
+    // Don't load script if no config
+    if (!config) return;
+
     // Prevent multiple script loads
     if (scriptLoadedRef.current) return;
 
@@ -58,7 +108,7 @@ const ElevenLabsWidget: React.FC<ElevenLabsWidgetProps> = ({ variant }) => {
     return () => {
       // Don't remove script on unmount to prevent re-loading
     };
-  }, []);
+  }, [config]);
 
   const initializeWidgetFunctions = () => {
     if (widgetInitializedRef.current) return;
@@ -82,6 +132,11 @@ const ElevenLabsWidget: React.FC<ElevenLabsWidgetProps> = ({ variant }) => {
     widgetInitializedRef.current = true;
   };
 
+  // Don't render if no config is loaded
+  if (!config) {
+    return null;
+  }
+
   // Create context data for the widget
   const contextData = JSON.stringify({
     currentPage: location.pathname,
@@ -93,7 +148,7 @@ const ElevenLabsWidget: React.FC<ElevenLabsWidgetProps> = ({ variant }) => {
   if (variant === 'fullscreen') {
     return (
       <elevenlabs-convai 
-        agent-id="R9M1zBEUj8fTGAij61wb" 
+        agent-id={config.agentId}
         variant="expanded"
         data-context={contextData}
       />
@@ -102,7 +157,7 @@ const ElevenLabsWidget: React.FC<ElevenLabsWidgetProps> = ({ variant }) => {
 
   return (
     <elevenlabs-convai 
-      agent-id="R9M1zBEUj8fTGAij61wb"
+      agent-id={config.agentId}
       data-context={contextData}
     />
   );
