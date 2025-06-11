@@ -1,354 +1,427 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building, Edit, Eye, Plus, Save, Image, MapPin, DollarSign } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Edit, Trash2, Save, X, MapPin, Star, Users, Bed } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface Listing {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  careType: string;
+  capacity: number;
+  occupancy: number;
+  amenities: string[];
+  pricing: {
+    base: number;
+    memory_care: number;
+    assisted_living: number;
+  };
+  rating: number;
+  status: 'active' | 'inactive' | 'pending';
+  images: string[];
+}
 
 const ListingManagement = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const { toast } = useToast();
+  const [listings, setListings] = useState<Listing[]>([
+    {
+      id: '1',
+      name: 'Sunrise Senior Living',
+      description: 'A warm, welcoming community providing comprehensive care services.',
+      address: '123 Memory Lane, Phoenix, AZ 85001',
+      careType: 'Memory Care',
+      capacity: 80,
+      occupancy: 72,
+      amenities: ['24/7 Nursing', 'Physical Therapy', 'Garden Patio', 'Pet Friendly'],
+      pricing: { base: 3500, memory_care: 4200, assisted_living: 3800 },
+      rating: 4.8,
+      status: 'active',
+      images: []
+    }
+  ]);
 
-  const facilityInfo = {
-    name: 'Sunrise Senior Living - Beverly Hills',
-    type: 'Assisted Living',
-    address: '123 Sunset Blvd, Beverly Hills, CA 90210',
-    phone: '(555) 123-4567',
-    website: 'www.sunriseseniorliving.com',
-    capacity: 150,
-    occupied: 132,
-    priceRange: '$4,500 - $6,200/mo',
-    description: 'Luxury assisted living community offering personalized care plans, resort-style amenities, and 24/7 professional staff support in the heart of Beverly Hills.',
-    amenities: [
-      '24/7 Nursing Care', 'Memory Care Unit', 'Fine Dining Restaurant', 
-      'Fitness Center', 'Library', 'Garden Courtyard', 'Transportation Service',
-      'Beauty Salon', 'Activity Programs', 'Pet-Friendly'
-    ],
-    services: [
-      'Medication Management', 'Personal Care Assistance', 'Housekeeping',
-      'Laundry Service', 'Meal Preparation', 'Health Monitoring',
-      'Social Activities', 'Physical Therapy'
-    ]
+  const [editingListing, setEditingListing] = useState<string | null>(null);
+  const [formData, setFormData] = useState<Partial<Listing>>({
+    name: '',
+    description: '',
+    address: '',
+    careType: '',
+    capacity: 0,
+    occupancy: 0,
+    amenities: [],
+    pricing: { base: 0, memory_care: 0, assisted_living: 0 },
+    rating: 0,
+    status: 'active',
+    images: []
+  });
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newAmenity, setNewAmenity] = useState('');
+
+  const handleInputChange = (field: keyof Listing, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const careTypes = [
-    { name: 'Independent Living', available: true, beds: 45, price: '$3,500-$4,200' },
-    { name: 'Assisted Living', available: true, beds: 85, price: '$4,500-$6,200' },
-    { name: 'Memory Care', available: true, beds: 20, price: '$6,800-$8,500' },
-    { name: 'Skilled Nursing', available: false, beds: 0, price: 'N/A' }
-  ];
+  const handlePricingChange = (field: keyof Listing['pricing'], value: number) => {
+    setFormData(prev => ({
+      ...prev,
+      pricing: { ...prev.pricing, [field]: value }
+    }));
+  };
 
-  const photos = [
-    { id: 1, title: 'Main Lobby', category: 'Interior', src: 'photo-1649972904349-6e44c42644a7' },
-    { id: 2, title: 'Dining Room', category: 'Interior', src: 'photo-1488590528505-98d2b5aba04b' },
-    { id: 3, title: 'Garden Courtyard', category: 'Exterior', src: 'photo-1518770660439-4636190af475' },
-    { id: 4, title: 'Resident Room', category: 'Interior', src: 'photo-1461749280684-dccba630e2f6' }
-  ];
-
-  const listings = [
-    {
-      platform: 'CareConnect Network',
-      status: 'Active',
-      views: 1245,
-      inquiries: 28,
-      lastUpdated: '2024-12-10'
-    },
-    {
-      platform: 'Senior Living Directory',
-      status: 'Active',
-      views: 892,
-      inquiries: 15,
-      lastUpdated: '2024-12-08'
-    },
-    {
-      platform: 'A Place for Mom',
-      status: 'Pending Review',
-      views: 0,
-      inquiries: 0,
-      lastUpdated: '2024-12-12'
+  const addAmenity = () => {
+    if (newAmenity.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        amenities: [...(prev.amenities || []), newAmenity.trim()]
+      }));
+      setNewAmenity('');
     }
-  ];
+  };
+
+  const removeAmenity = (amenity: string) => {
+    setFormData(prev => ({
+      ...prev,
+      amenities: prev.amenities?.filter(a => a !== amenity) || []
+    }));
+  };
+
+  const startEdit = (listing: Listing) => {
+    setEditingListing(listing.id);
+    setFormData(listing);
+  };
+
+  const cancelEdit = () => {
+    setEditingListing(null);
+    setFormData({
+      name: '',
+      description: '',
+      address: '',
+      careType: '',
+      capacity: 0,
+      occupancy: 0,
+      amenities: [],
+      pricing: { base: 0, memory_care: 0, assisted_living: 0 },
+      rating: 0,
+      status: 'active',
+      images: []
+    });
+    setShowAddForm(false);
+  };
+
+  const saveListing = () => {
+    if (editingListing) {
+      setListings(prev => prev.map(listing => 
+        listing.id === editingListing 
+          ? { ...listing, ...formData } as Listing
+          : listing
+      ));
+      toast({
+        title: 'Success',
+        description: 'Listing updated successfully'
+      });
+    } else {
+      const newListing: Listing = {
+        ...formData,
+        id: Date.now().toString(),
+        amenities: formData.amenities || [],
+        pricing: formData.pricing || { base: 0, memory_care: 0, assisted_living: 0 }
+      } as Listing;
+      
+      setListings(prev => [...prev, newListing]);
+      toast({
+        title: 'Success',
+        description: 'New listing created successfully'
+      });
+    }
+    cancelEdit();
+  };
+
+  const deleteListing = (id: string) => {
+    setListings(prev => prev.filter(listing => listing.id !== id));
+    toast({
+      title: 'Success',
+      description: 'Listing deleted successfully'
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'inactive': return 'bg-red-100 text-red-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-text-dark-gray">Listing Management</h1>
-          <p className="text-gray-600 mt-2">Manage your facility listings across multiple platforms and directories.</p>
+          <h1 className="text-3xl font-bold text-brand-navy">Listing Management</h1>
+          <p className="text-gray-600 mt-2">Manage your facility listings and availability</p>
         </div>
-        <div className="flex space-x-3">
-          <Button variant="outline">
-            Preview Listing
-          </Button>
-          <Button className="bg-primary-red hover:bg-red-600">
-            <Save className="h-4 w-4 mr-2" />
-            Save Changes
-          </Button>
-        </div>
+        <Button 
+          onClick={() => setShowAddForm(true)}
+          className="btn-primary"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add New Listing
+        </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="amenities">Amenities</TabsTrigger>
-          <TabsTrigger value="photos">Photos</TabsTrigger>
-          <TabsTrigger value="platforms">Platforms</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Building className="h-5 w-5 mr-2" />
-                Facility Overview
-              </CardTitle>
-              <CardDescription>Basic information and current status</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                      Facility Name
-                    </label>
-                    <Input value={facilityInfo.name} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                      Care Type
-                    </label>
-                    <Input value={facilityInfo.type} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                      Address
-                    </label>
-                    <Input value={facilityInfo.address} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                      Phone Number
-                    </label>
-                    <Input value={facilityInfo.phone} />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                      Website
-                    </label>
-                    <Input value={facilityInfo.website} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                      Total Capacity
-                    </label>
-                    <Input value={facilityInfo.capacity} type="number" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                      Current Occupancy
-                    </label>
-                    <Input value={facilityInfo.occupied} type="number" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                      Price Range (Monthly)
-                    </label>
-                    <Input value={facilityInfo.priceRange} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <label className="block text-sm font-medium text-text-dark-gray mb-2">
-                  Facility Description
-                </label>
-                <textarea 
-                  className="w-full p-3 border border-gray-300 rounded-md"
-                  rows={4}
-                  value={facilityInfo.description}
+      {/* Add/Edit Form */}
+      {(showAddForm || editingListing) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{editingListing ? 'Edit Listing' : 'Add New Listing'}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Listing Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name || ''}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder="Enter listing name"
                 />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <Label htmlFor="careType">Care Type</Label>
+                <Select value={formData.careType || ''} onValueChange={(value) => handleInputChange('careType', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select care type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Memory Care">Memory Care</SelectItem>
+                    <SelectItem value="Assisted Living">Assisted Living</SelectItem>
+                    <SelectItem value="Independent Living">Independent Living</SelectItem>
+                    <SelectItem value="Skilled Nursing">Skilled Nursing</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
-          {/* Care Types Available */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Available Care Types</CardTitle>
-              <CardDescription>Configure the types of care your facility provides</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {careTypes.map((care, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-semibold text-text-dark-gray">{care.name}</h4>
-                      <Badge className={care.available ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                        {care.available ? 'Available' : 'Not Available'}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-gray-600">Beds:</span>
-                        <span className="font-medium ml-2">{care.beds}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Price:</span>
-                        <span className="font-medium ml-2">{care.price}</span>
-                      </div>
-                    </div>
-                  </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description || ''}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder="Enter listing description"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                value={formData.address || ''}
+                onChange={(e) => handleInputChange('address', e.target.value)}
+                placeholder="Enter full address"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="capacity">Total Capacity</Label>
+                <Input
+                  id="capacity"
+                  type="number"
+                  value={formData.capacity || 0}
+                  onChange={(e) => handleInputChange('capacity', parseInt(e.target.value) || 0)}
+                  placeholder="Enter total capacity"
+                />
+              </div>
+              <div>
+                <Label htmlFor="occupancy">Current Occupancy</Label>
+                <Input
+                  id="occupancy"
+                  type="number"
+                  value={formData.occupancy || 0}
+                  onChange={(e) => handleInputChange('occupancy', parseInt(e.target.value) || 0)}
+                  placeholder="Enter current occupancy"
+                />
+              </div>
+            </div>
+
+            {/* Pricing Section */}
+            <div className="space-y-2">
+              <Label>Monthly Pricing</Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="basePrice">Base Price</Label>
+                  <Input
+                    id="basePrice"
+                    type="number"
+                    value={formData.pricing?.base || 0}
+                    onChange={(e) => handlePricingChange('base', parseInt(e.target.value) || 0)}
+                    placeholder="Base price"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="memoryPrice">Memory Care</Label>
+                  <Input
+                    id="memoryPrice"
+                    type="number"
+                    value={formData.pricing?.memory_care || 0}
+                    onChange={(e) => handlePricingChange('memory_care', parseInt(e.target.value) || 0)}
+                    placeholder="Memory care price"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="assistedPrice">Assisted Living</Label>
+                  <Input
+                    id="assistedPrice"
+                    type="number"
+                    value={formData.pricing?.assisted_living || 0}
+                    onChange={(e) => handlePricingChange('assisted_living', parseInt(e.target.value) || 0)}
+                    placeholder="Assisted living price"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Amenities Section */}
+            <div className="space-y-2">
+              <Label>Amenities</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newAmenity}
+                  onChange={(e) => setNewAmenity(e.target.value)}
+                  placeholder="Add amenity"
+                  onKeyPress={(e) => e.key === 'Enter' && addAmenity()}
+                />
+                <Button type="button" onClick={addAmenity} variant="outline">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.amenities?.map((amenity, index) => (
+                  <Badge key={index} variant="secondary" className="cursor-pointer" onClick={() => removeAmenity(amenity)}>
+                    {amenity}
+                    <X className="h-3 w-3 ml-1" />
+                  </Badge>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
 
-        <TabsContent value="amenities" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Amenities & Services</CardTitle>
-              <CardDescription>Highlight your facility's amenities and services</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h4 className="font-semibold text-text-dark-gray mb-4">Amenities</h4>
-                  <div className="space-y-2">
-                    {facilityInfo.amenities.map((amenity, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <input type="checkbox" defaultChecked className="rounded" />
-                        <span className="text-sm">{amenity}</span>
-                      </div>
-                    ))}
+            <div className="flex gap-2">
+              <Button onClick={saveListing} className="btn-primary">
+                <Save className="h-4 w-4 mr-2" />
+                Save Listing
+              </Button>
+              <Button onClick={cancelEdit} variant="outline">
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Listings Grid */}
+      <div className="grid gap-6">
+        {listings.map((listing) => (
+          <Card key={listing.id}>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-xl font-semibold text-brand-navy">{listing.name}</h3>
+                    <Badge className={getStatusColor(listing.status)}>
+                      {listing.status}
+                    </Badge>
                   </div>
-                  <Button variant="outline" size="sm" className="mt-4">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Amenity
+                  <p className="text-gray-600 mb-2">{listing.description}</p>
+                  <div className="flex items-center text-gray-500 mb-3">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span className="text-sm">{listing.address}</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => startEdit(listing)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={() => deleteListing(listing.id)}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+              </div>
 
-                <div>
-                  <h4 className="font-semibold text-text-dark-gray mb-4">Services</h4>
-                  <div className="space-y-2">
-                    {facilityInfo.services.map((service, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <input type="checkbox" defaultChecked className="rounded" />
-                        <span className="text-sm">{service}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <Button variant="outline" size="sm" className="mt-4">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Service
-                  </Button>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <Bed className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm">
+                    <span className="font-medium">{listing.occupancy}</span>
+                    <span className="text-gray-500">/{listing.capacity}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  <span className="text-sm font-medium">{listing.rating}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm">{listing.careType}</span>
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">${listing.pricing.base.toLocaleString()}</span>
+                  <span className="text-gray-500">/month</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="photos" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Image className="h-5 w-5 mr-2" />
-                Photo Gallery
-              </CardTitle>
-              <CardDescription>Manage your facility photos and virtual tour content</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                {photos.map((photo) => (
-                  <div key={photo.id} className="border rounded-lg overflow-hidden">
-                    <div className="aspect-video bg-gray-200 flex items-center justify-center">
-                      <Image className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <div className="p-3">
-                      <h4 className="font-medium text-sm">{photo.title}</h4>
-                      <p className="text-xs text-gray-600">{photo.category}</p>
-                      <div className="flex space-x-2 mt-2">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex flex-wrap gap-2">
+                {listing.amenities.slice(0, 4).map((amenity, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {amenity}
+                  </Badge>
                 ))}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button className="bg-primary-sky hover:bg-blue-600">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Upload Photos
-                </Button>
-                <Button variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Virtual Tour
-                </Button>
+                {listing.amenities.length > 4 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{listing.amenities.length - 4} more
+                  </Badge>
+                )}
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        ))}
+      </div>
 
-        <TabsContent value="platforms" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Listing Platforms</CardTitle>
-              <CardDescription>Manage your listings across different platforms and directories</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {listings.map((listing, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-semibold text-text-dark-gray">{listing.platform}</h4>
-                      <p className="text-sm text-gray-600">Last updated: {listing.lastUpdated}</p>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-primary-sky">{listing.views}</div>
-                        <div className="text-xs text-gray-600">Views</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-accent-gold">{listing.inquiries}</div>
-                        <div className="text-xs text-gray-600">Inquiries</div>
-                      </div>
-                      <Badge className={
-                        listing.status === 'Active' ? 'bg-green-100 text-green-800' :
-                        listing.status === 'Pending Review' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }>
-                        {listing.status}
-                      </Badge>
-                      <Button variant="outline" size="sm">
-                        Manage
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 p-4 bg-secondary-off-white rounded-lg">
-                <h4 className="font-semibold text-text-dark-gray mb-2">Add New Platform</h4>
-                <p className="text-sm text-gray-600 mb-4">
-                  Expand your reach by adding your facility to additional listing platforms.
-                </p>
-                <Button className="bg-primary-red hover:bg-red-600">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Platform
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {listings.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <div className="text-gray-500">
+              <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-medium mb-2">No listings yet</h3>
+              <p className="text-sm mb-4">Create your first facility listing to get started</p>
+              <Button onClick={() => setShowAddForm(true)} className="btn-primary">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Your First Listing
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
