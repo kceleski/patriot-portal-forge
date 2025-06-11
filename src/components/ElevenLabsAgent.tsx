@@ -69,6 +69,7 @@ const ElevenLabsAgent = () => {
       }
 
       setConfig(data);
+      console.log('ElevenLabs config loaded:', data);
     } catch (error) {
       console.error('Error loading config:', error);
       toast({
@@ -242,17 +243,21 @@ const ElevenLabsAgent = () => {
   const conversation = useConversation({
     clientTools,
     onConnect: () => {
-      console.log('Conversation connected');
+      console.log('ElevenLabs conversation connected');
       setIsConnected(true);
-      addToTranscript('system', 'Conversation started');
+      addToTranscript('system', 'AI Assistant connected');
+      toast({
+        title: 'Connected',
+        description: 'AI Assistant is ready to help'
+      });
     },
     onDisconnect: () => {
-      console.log('Conversation disconnected');
+      console.log('ElevenLabs conversation disconnected');
       setIsConnected(false);
-      addToTranscript('system', 'Conversation ended');
+      addToTranscript('system', 'AI Assistant disconnected');
     },
     onMessage: (event: any) => {
-      console.log('Message received:', event);
+      console.log('ElevenLabs message received:', event);
       if (event.source === 'user') {
         addToTranscript('user', event.message);
       } else if (event.source === 'agent') {
@@ -260,8 +265,13 @@ const ElevenLabsAgent = () => {
       }
     },
     onError: (error: any) => {
-      console.error('Conversation error:', error);
-      addToTranscript('system', `Error: ${error.message || 'Unknown error'}`);
+      console.error('ElevenLabs conversation error:', error);
+      addToTranscript('system', `Error: ${error.message || 'Connection error'}`);
+      toast({
+        title: 'Connection Error',
+        description: error.message || 'Failed to connect to AI assistant',
+        variant: 'destructive'
+      });
     }
   });
 
@@ -285,14 +295,18 @@ const ElevenLabsAgent = () => {
         return;
       }
 
+      console.log('Starting ElevenLabs conversation with agent:', config.agentId);
+      
       await conversation.startSession({
         agentId: config.agentId
       });
+      
+      addToTranscript('system', 'Starting conversation...');
     } catch (error) {
       console.error('Failed to start conversation:', error);
       toast({
         title: 'Connection Error',
-        description: 'Failed to start conversation',
+        description: 'Failed to start conversation with AI assistant',
         variant: 'destructive'
       });
     }
@@ -301,13 +315,23 @@ const ElevenLabsAgent = () => {
   const handleEndConversation = async () => {
     try {
       await conversation.endSession();
+      addToTranscript('system', 'Conversation ended');
     } catch (error) {
       console.error('Failed to end conversation:', error);
     }
   };
 
   if (configLoading) {
-    return null; // Don't show anything while loading config
+    return (
+      <div className="fixed bottom-6 right-6 z-50">
+        <Card className="p-4 bg-white shadow-lg border-blue-600 border-2">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
+            <span className="text-sm font-medium">Loading AI Assistant...</span>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   if (!isVisible) {
@@ -329,7 +353,7 @@ const ElevenLabsAgent = () => {
         <Card className="p-4 bg-white shadow-lg border-red-600 border-2">
           <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-            <span className="text-sm font-medium">{isConnected ? 'Agent Ready' : 'Agent Offline'}</span>
+            <span className="text-sm font-medium">{isConnected ? 'AI Assistant Ready' : 'AI Assistant Offline'}</span>
             {lastToolUsed && (
               <Badge variant="outline" className="text-xs">
                 Last: {lastToolUsed}
@@ -405,24 +429,47 @@ const ElevenLabsAgent = () => {
         )}
 
         {/* Conversation Controls */}
-        <div className="p-4 flex flex-col items-center gap-4">
+        <div className="p-6 flex flex-col items-center gap-4">
           {!config ? (
             <div className="text-center">
               <p className="text-red-600 font-medium">Configuration Error</p>
               <p className="text-sm text-gray-600">Failed to load ElevenLabs configuration</p>
+              <Button 
+                onClick={loadConfig} 
+                variant="outline" 
+                className="mt-2"
+              >
+                Retry Configuration
+              </Button>
             </div>
           ) : !isConnected ? (
-            <Button onClick={handleStartConversation} className="w-full">
-              Start Conversation
-            </Button>
+            <div className="text-center space-y-4">
+              <Button 
+                onClick={handleStartConversation} 
+                className="w-full bg-red-600 hover:bg-red-700"
+                size="lg"
+              >
+                Start AI Conversation
+              </Button>
+              <p className="text-sm text-gray-600">
+                Click to connect and start talking with your AI assistant
+              </p>
+            </div>
           ) : (
-            <Button onClick={handleEndConversation} variant="outline" className="w-full">
-              End Conversation
-            </Button>
+            <div className="text-center space-y-4">
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <p className="text-green-800 font-medium">🎤 AI Assistant is listening...</p>
+                <p className="text-sm text-green-600 mt-1">Speak naturally or ask for help</p>
+              </div>
+              <Button 
+                onClick={handleEndConversation} 
+                variant="outline" 
+                className="w-full"
+              >
+                End Conversation
+              </Button>
+            </div>
           )}
-          <p className="text-sm text-gray-600 text-center">
-            {isConnected ? 'Click the microphone to start talking' : 'Click to connect to the AI assistant'}
-          </p>
         </div>
       </div>
     </div>
