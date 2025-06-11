@@ -18,7 +18,7 @@ const PublicLayout = () => {
                 <img 
                   src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
                   alt="HealthProAssist Logo" 
-                  className="h-12 w-12 sm:h-14 sm:w-14 object-contain"
+                  className="h-25 w-40 sm:h-25 sm:w-40 object-contain"
                 />
               </div>
             </Link>
