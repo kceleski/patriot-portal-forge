@@ -22,6 +22,7 @@ import FacilitiesMap from '@/pages/FacilitiesMap';
 import FacilityDetail from '@/pages/FacilityDetail';
 import ResourcesPage from '@/pages/public/ResourcesPage';
 import SubscribedProvidersDirectory from '@/pages/SubscribedProvidersDirectory';
+import FacilitiesDirectory from '@/pages/healthcare/FacilitiesDirectory';
 
 // Dashboards
 import FamilyDashboard from '@/pages/family/FamilyDashboard';
@@ -196,3 +197,5 @@ function App() {
 }
 
 export default App;
+
+</initial_code>

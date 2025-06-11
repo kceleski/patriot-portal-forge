@@ -2139,75 +2139,7 @@ export type Database = {
           },
         ]
       }
-      subscription_features: {
-        Row: {
-          created_at: string | null
-          feature_id: string | null
-          id: string
-          tier: string
-        }
-        Insert: {
-          created_at?: string | null
-          feature_id?: string | null
-          id?: string
-          tier: string
-        }
-        Update: {
-          created_at?: string | null
-          feature_id?: string | null
-          id?: string
-          tier?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subscription_features_feature_id_fkey"
-            columns: ["feature_id"]
-            isOneToOne: false
-            referencedRelation: "feature_flags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      subscription_plans: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          features: Json | null
-          id: string
-          is_active: boolean | null
-          name: string
-          price: number
-          tier: string | null
-          updated_at: string | null
-          user_type: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          features?: Json | null
-          id?: string
-          is_active?: boolean | null
-          name: string
-          price: number
-          tier?: string | null
-          updated_at?: string | null
-          user_type?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          features?: Json | null
-          id?: string
-          is_active?: boolean | null
-          name?: string
-          price?: number
-          tier?: string | null
-          updated_at?: string | null
-          user_type?: string | null
-        }
-        Relationships: []
-      }
-      subsribed: {
+      subscribed: {
         Row: {
           "Call to Action Text": string | null
           City: string | null
@@ -2276,6 +2208,74 @@ export type Database = {
           uuid?: string
           Website?: string | null
           "ZIP Code"?: number | null
+        }
+        Relationships: []
+      }
+      subscription_features: {
+        Row: {
+          created_at: string | null
+          feature_id: string | null
+          id: string
+          tier: string
+        }
+        Insert: {
+          created_at?: string | null
+          feature_id?: string | null
+          id?: string
+          tier: string
+        }
+        Update: {
+          created_at?: string | null
+          feature_id?: string | null
+          id?: string
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_features_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "feature_flags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number
+          tier: string | null
+          updated_at: string | null
+          user_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price: number
+          tier?: string | null
+          updated_at?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          tier?: string | null
+          updated_at?: string | null
+          user_type?: string | null
         }
         Relationships: []
       }
