@@ -19,6 +19,7 @@ const ElevenLabsAgent = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [transcript, setTranscript] = useState<Array<{ type: string; text: string; timestamp: Date }>>([]);
+  const [lastToolUsed, setLastToolUsed] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -37,12 +38,28 @@ const ElevenLabsAgent = () => {
     setTranscript(prev => [...prev, { type, text, timestamp: new Date() }]);
   };
 
+  // Auto-minimize logic - minimize after DOM manipulation tools
+  const handleToolUsage = (toolName: string) => {
+    setLastToolUsed(toolName);
+    
+    // DOM manipulation tools that should trigger minimization
+    const domTools = ['navigateToPage', 'clickElement', 'fillFormField', 'scrollToSection', 'performSearch'];
+    
+    if (domTools.includes(toolName)) {
+      // Minimize after a short delay to let user see the action
+      setTimeout(() => {
+        setIsOpen(false);
+      }, 2000);
+    }
+  };
+
   // Enhanced client tools that can manipulate the DOM and app state
   const clientTools = {
     // Navigation tools - updated to match ElevenLabs parameter name
     navigateToPage: (parameters: { page_name: string }) => {
       console.log('🚀 Navigating to:', parameters.page_name);
       addToTranscript('tool', `Navigation: ${parameters.page_name}`);
+      handleToolUsage('navigateToPage');
       try {
         navigate(parameters.page_name);
         voiceCommandService.showSuccess(`Navigated to ${parameters.page_name}`);
@@ -57,6 +74,7 @@ const ElevenLabsAgent = () => {
     performSearch: (parameters: { query: string, location?: string }) => {
       console.log('🔍 Performing search:', parameters);
       addToTranscript('tool', `Search: ${parameters.query} in ${parameters.location || 'current area'}`);
+      handleToolUsage('performSearch');
       try {
         const searchUrl = `/find-care?q=${encodeURIComponent(parameters.query)}&location=${encodeURIComponent(parameters.location || '')}`;
         navigate(searchUrl);
@@ -72,6 +90,7 @@ const ElevenLabsAgent = () => {
     clickElement: (parameters: { text?: string, selector?: string }) => {
       console.log('👆 Clicking element:', parameters);
       addToTranscript('tool', `Click: ${parameters.text || parameters.selector}`);
+      handleToolUsage('clickElement');
       
       if (parameters.text) {
         const success = voiceCommandService.clickElementByText(parameters.text);
@@ -103,6 +122,7 @@ const ElevenLabsAgent = () => {
     fillFormField: (parameters: { label: string, value: string }) => {
       console.log('📝 Filling form field:', parameters);
       addToTranscript('tool', `Fill field "${parameters.label}" with "${parameters.value}"`);
+      handleToolUsage('fillFormField');
       const success = voiceCommandService.fillFormByLabel(parameters.label, parameters.value);
       if (success) {
         voiceCommandService.showSuccess(`Filled "${parameters.label}" with "${parameters.value}"`);
@@ -117,6 +137,7 @@ const ElevenLabsAgent = () => {
     scrollToSection: (parameters: { sectionId?: string, text?: string }) => {
       console.log('📜 Scrolling to section:', parameters);
       addToTranscript('tool', `Scroll to: ${parameters.text || parameters.sectionId}`);
+      handleToolUsage('scrollToSection');
       
       if (parameters.text) {
         const success = voiceCommandService.scrollToElementByText(parameters.text);
@@ -205,15 +226,23 @@ const ElevenLabsAgent = () => {
     },
     onMessage: (message) => {
       console.log("Message received:", message);
-      if (message.message) {
-        // Add different message types to transcript
-        if (message.source === 'user') {
-          addToTranscript('user', message.message);
-        } else if (message.source === 'agent' || message.source === 'ai') {
-          addToTranscript('agent', message.message);
-        } else {
-          addToTranscript('system', message.message);
+      // Handle different message types and add to transcript
+      if (typeof message === 'object' && message !== null) {
+        if ('message' in message && message.message) {
+          if ('source' in message) {
+            if (message.source === 'user') {
+              addToTranscript('user', message.message);
+            } else if (message.source === 'agent') {
+              addToTranscript('agent', message.message);
+            } else {
+              addToTranscript('system', message.message);
+            }
+          } else {
+            addToTranscript('system', message.message);
+          }
         }
+      } else if (typeof message === 'string') {
+        addToTranscript('system', message);
       }
     },
     onError: (error) => {
@@ -252,7 +281,9 @@ WORKFLOW EXAMPLES:
 - "Fill my name as John Smith" → fillFormField({label: "name", value: "John Smith"})
 - "Go to my dashboard" → navigateToPage({page_name: "/dashboard"})
 
-Always use your tools to actually perform actions, don't just describe what you would do. Be helpful, conversational, and proactive in using your capabilities to assist users with their healthcare journey.`
+Always use your tools to actually perform actions, don't just describe what you would do. Be helpful, conversational, and proactive in using your capabilities to assist users with their healthcare journey.
+
+IMPORTANT: After performing DOM manipulation actions (navigation, clicking, form filling, searching), you will automatically minimize to let users see the full screen and results of your actions.`
         },
         firstMessage: "Hi! I'm AVA, your intelligent healthcare assistant. I can help you navigate the site, search for care facilities, fill out forms, and interact with page elements using voice commands. What would you like me to help you with today?",
         language: "en"
@@ -444,6 +475,11 @@ Always use your tools to actually perform actions, don't just describe what you 
                   <p className="text-sm text-gray-600 mb-4">
                     I can navigate pages, search for care, fill forms, and interact with page elements using voice commands
                   </p>
+                  {lastToolUsed && (
+                    <p className="text-xs text-purple-600 bg-purple-50 rounded px-2 py-1">
+                      Last action: {lastToolUsed} • Auto-minimizing soon
+                    </p>
+                  )}
                 </div>
 
                 {/* Large animated avatar */}
