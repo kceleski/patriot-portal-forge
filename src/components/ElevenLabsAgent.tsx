@@ -1,554 +1,442 @@
 
-import React, { useState } from 'react';
-import { useConversation } from '@elevenlabs/react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Conversation } from '@elevenlabs/react';
+import { MessageCircle, Minimize2, Maximize2, Volume2, VolumeX, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { X, Volume2, VolumeX, Phone, Settings, MessageCircle } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'react-hot-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import AvatarDisplay from './AvatarDisplay';
-import FloatingAvatarButton from './FloatingAvatarButton';
-import { voiceCommandService } from '@/services/voiceCommandService';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+
+interface TranscriptEntry {
+  timestamp: string;
+  type: 'user' | 'agent' | 'tool' | 'system';
+  content: string;
+  toolName?: string;
+}
 
 const ElevenLabsAgent = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [volume, setVolume] = useState(0.5);
-  const [isVolumeEnabled, setIsVolumeEnabled] = useState(true);
-  const [selectedVoice, setSelectedVoice] = useState('9BWtsMINqrJLrRacOk9x'); // Default to Aria
-  const [showSettings, setShowSettings] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const [showTranscript, setShowTranscript] = useState(false);
-  const [transcript, setTranscript] = useState<Array<{ type: string; text: string; timestamp: Date }>>([]);
-  const [lastToolUsed, setLastToolUsed] = useState<string | null>(null);
+  const [lastToolUsed, setLastToolUsed] = useState<string>('');
+  const agentIdRef = useRef<string | null>(null);
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuth();
 
-  // Voice options with ElevenLabs voice IDs
-  const voiceOptions = [
-    { id: 'tnSpp4vdxKPjI9w0GnoV', name: 'Hope', description: 'Friendly and professional' },
-    { id: 'tnSpp4vdxKPjI9w0GnoV', name: 'Liam', description: 'Clear and confident' },
-    { id: 'cgSgspJ2msm6clMCkdW9', name: 'Charlotte', description: 'Warm and helpful' },
-    { id: 'SAz9YHcvj6GT2YYXdXww', name: 'River', description: 'Calm and reassuring' },
-    { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger', description: 'Authoritative and clear' }
-  ];
+  // Auto-minimize after DOM manipulation tools
+  const domManipulationTools = ['navigateToPage', 'clickElement', 'fillFormField', 'performSearch', 'scrollToSection'];
 
-  // Function to add message to transcript
-  const addToTranscript = (type: string, text: string) => {
-    setTranscript(prev => [...prev, { type, text, timestamp: new Date() }]);
-  };
-
-  // Auto-minimize logic - minimize after DOM manipulation tools
-  const handleToolUsage = (toolName: string) => {
-    setLastToolUsed(toolName);
-    
-    // DOM manipulation tools that should trigger minimization
-    const domTools = ['navigateToPage', 'clickElement', 'fillFormField', 'scrollToSection', 'performSearch'];
-    
-    if (domTools.includes(toolName)) {
-      // Minimize after a short delay to let user see the action
-      setTimeout(() => {
-        setIsOpen(false);
+  useEffect(() => {
+    if (lastToolUsed && domManipulationTools.includes(lastToolUsed)) {
+      const timer = setTimeout(() => {
+        setIsMinimized(true);
       }, 2000);
+      return () => clearTimeout(timer);
     }
+  }, [lastToolUsed]);
+
+  const addToTranscript = (type: TranscriptEntry['type'], content: string, toolName?: string) => {
+    const entry: TranscriptEntry = {
+      timestamp: new Date().toLocaleTimeString(),
+      type,
+      content,
+      toolName
+    };
+    setTranscript(prev => [...prev, entry]);
   };
 
-  // Enhanced client tools that can manipulate the DOM and app state
   const clientTools = {
-    // Navigation tools - updated to match ElevenLabs parameter name
-    navigateToPage: (parameters: { page_name: string }) => {
-      console.log('🚀 Navigating to:', parameters.page_name);
-      addToTranscript('tool', `Navigation: ${parameters.page_name}`);
-      handleToolUsage('navigateToPage');
-      try {
-        navigate(parameters.page_name);
-        voiceCommandService.showSuccess(`Navigated to ${parameters.page_name}`);
-        return `Successfully navigated to ${parameters.page_name}`;
-      } catch (error) {
-        voiceCommandService.showError(`Failed to navigate to ${parameters.page_name}`);
-        return `Failed to navigate to ${parameters.page_name}`;
+    // Navigation
+    navigateToPage: {
+      description: 'Navigate to a specific page in the application',
+      parameters: {
+        type: 'object',
+        properties: {
+          page_name: {
+            type: 'string',
+            description: 'The page to navigate to'
+          }
+        },
+        required: ['page_name']
+      },
+      handler: ({ page_name }: { page_name: string }) => {
+        console.log('Navigation requested to:', page_name);
+        addToTranscript('tool', `Navigating to: ${page_name}`, 'navigateToPage');
+        setLastToolUsed('navigateToPage');
+        
+        const pageRoutes: Record<string, string> = {
+          'home': '/',
+          'facilities': '/facilities-gallery',
+          'find-care': '/find-care',
+          'pricing': '/pricing',
+          'login': '/login',
+          'register': '/register',
+          'dashboard': '/dashboard',
+          'gallery': '/facilities-gallery',
+          'facilities-gallery': '/facilities-gallery',
+          'facilities-directory': '/facilities-directory',
+          'resources': '/resources'
+        };
+
+        const route = pageRoutes[page_name.toLowerCase()] || `/${page_name}`;
+        navigate(route);
+        
+        toast({
+          title: 'Navigation',
+          description: `Navigating to ${page_name}...`
+        });
+
+        return `Successfully navigating to ${page_name}`;
       }
     },
 
-    // Enhanced search functionality
-    performSearch: (parameters: { query: string, location?: string }) => {
-      console.log('🔍 Performing search:', parameters);
-      addToTranscript('tool', `Search: ${parameters.query} in ${parameters.location || 'current area'}`);
-      handleToolUsage('performSearch');
-      try {
-        const searchUrl = `/find-care?q=${encodeURIComponent(parameters.query)}&location=${encodeURIComponent(parameters.location || '')}`;
-        navigate(searchUrl);
-        voiceCommandService.showSuccess(`Searching for ${parameters.query}`);
-        return `Search initiated for ${parameters.query} in ${parameters.location || 'current area'}`;
-      } catch (error) {
-        voiceCommandService.showError('Failed to perform search');
-        return `Failed to search for ${parameters.query}`;
+    // Search functionality
+    performSearch: {
+      description: 'Perform a search operation',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'The search query'
+          },
+          filters: {
+            type: 'object',
+            description: 'Optional search filters'
+          }
+        },
+        required: ['query']
+      },
+      handler: ({ query, filters }: { query: string; filters?: any }) => {
+        console.log('Search requested:', query, filters);
+        addToTranscript('tool', `Searching for: ${query}`, 'performSearch');
+        setLastToolUsed('performSearch');
+        
+        toast({
+          title: 'Search',
+          description: `Searching for "${query}"...`
+        });
+
+        return `Search initiated for: ${query}`;
       }
     },
 
-    // DOM manipulation with voice service integration
-    clickElement: (parameters: { text?: string, selector?: string }) => {
-      console.log('👆 Clicking element:', parameters);
-      addToTranscript('tool', `Click: ${parameters.text || parameters.selector}`);
-      handleToolUsage('clickElement');
-      
-      if (parameters.text) {
-        const success = voiceCommandService.clickElementByText(parameters.text);
-        if (success) {
-          voiceCommandService.showSuccess(`Clicked on "${parameters.text}"`);
-          return `Successfully clicked on element containing "${parameters.text}"`;
-        } else {
-          voiceCommandService.showError(`Could not find clickable element with text "${parameters.text}"`);
-          return `Element with text "${parameters.text}" not found`;
-        }
-      }
-      
-      if (parameters.selector) {
-        const element = document.querySelector(parameters.selector) as HTMLElement;
+    // DOM interaction
+    clickElement: {
+      description: 'Click on a specific element',
+      parameters: {
+        type: 'object',
+        properties: {
+          selector: {
+            type: 'string',
+            description: 'CSS selector for the element to click'
+          },
+          elementText: {
+            type: 'string',
+            description: 'Text content of the element (optional)'
+          }
+        },
+        required: ['selector']
+      },
+      handler: ({ selector, elementText }: { selector: string; elementText?: string }) => {
+        console.log('Click requested on:', selector, elementText);
+        addToTranscript('tool', `Clicking element: ${elementText || selector}`, 'clickElement');
+        setLastToolUsed('clickElement');
+        
+        const element = document.querySelector(selector) as HTMLElement;
         if (element) {
           element.click();
-          voiceCommandService.showSuccess(`Clicked element with selector "${parameters.selector}"`);
-          return `Successfully clicked element with selector "${parameters.selector}"`;
-        } else {
-          voiceCommandService.showError(`Element with selector "${parameters.selector}" not found`);
-          return `Element with selector "${parameters.selector}" not found`;
+          toast({
+            title: 'Element Clicked',
+            description: `Clicked on ${elementText || selector}`
+          });
+          return `Successfully clicked on ${elementText || selector}`;
         }
-      }
-      
-      return 'No valid selector or text provided';
-    },
-
-    // Form completion assistance
-    fillFormField: (parameters: { label: string, value: string }) => {
-      console.log('📝 Filling form field:', parameters);
-      addToTranscript('tool', `Fill field "${parameters.label}" with "${parameters.value}"`);
-      handleToolUsage('fillFormField');
-      const success = voiceCommandService.fillFormByLabel(parameters.label, parameters.value);
-      if (success) {
-        voiceCommandService.showSuccess(`Filled "${parameters.label}" with "${parameters.value}"`);
-        return `Successfully filled field "${parameters.label}" with "${parameters.value}"`;
-      } else {
-        voiceCommandService.showError(`Could not find form field labeled "${parameters.label}"`);
-        return `Form field "${parameters.label}" not found`;
+        return `Element not found: ${selector}`;
       }
     },
 
-    // Enhanced scroll functionality
-    scrollToSection: (parameters: { sectionId?: string, text?: string }) => {
-      console.log('📜 Scrolling to section:', parameters);
-      addToTranscript('tool', `Scroll to: ${parameters.text || parameters.sectionId}`);
-      handleToolUsage('scrollToSection');
-      
-      if (parameters.text) {
-        const success = voiceCommandService.scrollToElementByText(parameters.text);
-        if (success) {
-          return `Scrolled to section containing "${parameters.text}"`;
-        } else {
-          return `Section with text "${parameters.text}" not found`;
-        }
-      }
-      
-      if (parameters.sectionId) {
-        const element = document.getElementById(parameters.sectionId);
+    fillFormField: {
+      description: 'Fill a form field with a value',
+      parameters: {
+        type: 'object',
+        properties: {
+          selector: {
+            type: 'string',
+            description: 'CSS selector for the form field'
+          },
+          value: {
+            type: 'string',
+            description: 'Value to fill in the field'
+          }
+        },
+        required: ['selector', 'value']
+      },
+      handler: ({ selector, value }: { selector: string; value: string }) => {
+        console.log('Fill field requested:', selector, value);
+        addToTranscript('tool', `Filling field ${selector} with: ${value}`, 'fillFormField');
+        setLastToolUsed('fillFormField');
+        
+        const element = document.querySelector(selector) as HTMLInputElement;
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          voiceCommandService.highlightElement(`#${parameters.sectionId}`, 2000);
-          return `Scrolled to section "${parameters.sectionId}"`;
-        } else {
-          return `Section "${parameters.sectionId}" not found`;
+          element.value = value;
+          element.dispatchEvent(new Event('input', { bubbles: true }));
+          element.dispatchEvent(new Event('change', { bubbles: true }));
+          toast({
+            title: 'Field Filled',
+            description: `Filled ${selector} with "${value}"`
+          });
+          return `Successfully filled field with ${value}`;
         }
-      }
-      
-      return 'No valid section identifier provided';
-    },
-
-    // Get comprehensive page info
-    getCurrentPageInfo: (parameters: any) => {
-      const pageInfo = voiceCommandService.getPageContext();
-      const contextInfo = {
-        ...pageInfo,
-        userLoggedIn: !!user,
-        userType: user?.user_metadata?.user_type || 'guest',
-        currentPath: location.pathname,
-        currentSearch: location.search
-      };
-      console.log('📄 Page context:', contextInfo);
-      addToTranscript('tool', `Page info requested: ${location.pathname}`);
-      return `Current page info: ${JSON.stringify(contextInfo)}`;
-    },
-
-    // Show notifications
-    showNotification: (parameters: { message: string, type?: 'success' | 'error' | 'info' }) => {
-      const { message, type = 'info' } = parameters;
-      console.log('🔔 Showing notification:', { message, type });
-      addToTranscript('tool', `Notification: ${message} (${type})`);
-      
-      if (type === 'success') voiceCommandService.showSuccess(message);
-      else if (type === 'error') voiceCommandService.showError(message);
-      else voiceCommandService.showInfo(message);
-      
-      return `Notification displayed: ${message}`;
-    },
-
-    // Perform search on current page
-    searchOnPage: (parameters: { query: string }) => {
-      console.log('🔍 Searching on page:', parameters);
-      addToTranscript('tool', `Page search: ${parameters.query}`);
-      const results = voiceCommandService.performSearchOnPage(parameters.query);
-      if (results.length > 0) {
-        voiceCommandService.showSuccess(`Found ${results.length} search results for "${parameters.query}"`);
-        return `Found ${results.length} search results on page for "${parameters.query}"`;
-      } else {
-        voiceCommandService.showInfo(`No search inputs found on this page for "${parameters.query}"`);
-        return `No search functionality found on current page`;
+        return `Field not found: ${selector}`;
       }
     },
 
-    // Get available interactive elements
-    getPageElements: (parameters: any) => {
-      const context = voiceCommandService.getPageContext();
-      const summary = {
-        buttons: context.buttons.slice(0, 10), // Limit to first 10
-        links: context.links.slice(0, 10).map((link: any) => link.text),
-        forms: context.forms.length,
-        currentUrl: context.url
-      };
-      addToTranscript('tool', 'Page elements requested');
-      return `Page elements: ${JSON.stringify(summary)}`;
-    }
-  };
-
-  const conversation = useConversation({
-    onConnect: () => {
-      console.log("AVA Agent connected");
-      addToTranscript('system', 'AVA Assistant connected');
-      voiceCommandService.showSuccess("AVA Assistant connected and ready to help!");
+    scrollToSection: {
+      description: 'Scroll to a specific section of the page',
+      parameters: {
+        type: 'object',
+        properties: {
+          sectionId: {
+            type: 'string',
+            description: 'ID of the section to scroll to'
+          }
+        },
+        required: ['sectionId']
+      },
+      handler: ({ sectionId }: { sectionId: string }) => {
+        console.log('Scroll requested to:', sectionId);
+        addToTranscript('tool', `Scrolling to section: ${sectionId}`, 'scrollToSection');
+        setLastToolUsed('scrollToSection');
+        
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+          return `Scrolled to section: ${sectionId}`;
+        }
+        return `Section not found: ${sectionId}`;
+      }
     },
-    onMessage: (message) => {
-      console.log("Message received:", message);
-      // Handle different message types and add to transcript
-      if (typeof message === 'object' && message !== null) {
-        if ('message' in message && message.message) {
-          if ('source' in message) {
-            if (message.source === 'user') {
-              addToTranscript('user', message.message);
-            } else if (message.source === 'agent') {
-              addToTranscript('agent', message.message);
-            } else {
-              addToTranscript('system', message.message);
-            }
-          } else {
-            addToTranscript('system', message.message);
+
+    // Information tools
+    getCurrentPageInfo: {
+      description: 'Get information about the current page',
+      parameters: {
+        type: 'object',
+        properties: {}
+      },
+      handler: () => {
+        const pageInfo = {
+          url: window.location.href,
+          title: document.title,
+          path: window.location.pathname
+        };
+        addToTranscript('tool', `Getting page info: ${pageInfo.title}`, 'getCurrentPageInfo');
+        return `Current page: ${pageInfo.title} at ${pageInfo.path}`;
+      }
+    },
+
+    getPageElements: {
+      description: 'Get list of interactive elements on the page',
+      parameters: {
+        type: 'object',
+        properties: {
+          elementType: {
+            type: 'string',
+            description: 'Type of elements to find (buttons, links, inputs, etc.)'
           }
         }
-      } else if (typeof message === 'string') {
-        addToTranscript('system', message);
-      }
-    },
-    onError: (error) => {
-      console.error("Conversation error:", error);
-      addToTranscript('error', `Connection error: ${error.message || 'Unknown error'}`);
-      voiceCommandService.showError("Connection error occurred");
-    },
-    onDisconnect: () => {
-      console.log("AVA Agent disconnected");
-      addToTranscript('system', 'AVA Assistant disconnected');
-      toast("AVA Assistant disconnected");
-    },
-    clientTools,
-    overrides: {
-      agent: {
-        prompt: {
-          prompt: `You are AVA, an intelligent healthcare assistant for HealthProAssist. You have powerful capabilities to help users navigate the website, search for care facilities, fill out forms, and interact with page elements.
-
-CURRENT CONTEXT:
-- Page: ${location.pathname}
-- User: ${!!user ? 'Logged in' : 'Not logged in'}
-- User Type: ${user?.user_metadata?.user_type || 'guest'}
-
-YOUR CAPABILITIES:
-1. NAVIGATION: Use navigateToPage() to move between pages like "/find-care", "/dashboard", "/calendar"
-2. SEARCH: Use performSearch() to search for facilities with query and location
-3. DOM INTERACTION: Use clickElement() to click buttons/links by text or selector
-4. FORM FILLING: Use fillFormField() to complete forms by field label
-5. PAGE ANALYSIS: Use getCurrentPageInfo() and getPageElements() to understand the page
-6. SCROLLING: Use scrollToSection() to navigate to page sections
-7. NOTIFICATIONS: Use showNotification() to give user feedback
-
-WORKFLOW EXAMPLES:
-- "Find memory care in Phoenix" → performSearch({query: "memory care", location: "Phoenix"})
-- "Click the login button" → clickElement({text: "login"})
-- "Fill my name as John Smith" → fillFormField({label: "name", value: "John Smith"})
-- "Go to my dashboard" → navigateToPage({page_name: "/dashboard"})
-
-Always use your tools to actually perform actions, don't just describe what you would do. Be helpful, conversational, and proactive in using your capabilities to assist users with their healthcare journey.
-
-IMPORTANT: After performing DOM manipulation actions (navigation, clicking, form filling, searching), you will automatically minimize to let users see the full screen and results of your actions.`
-        },
-        firstMessage: "Hi! I'm AVA, your intelligent healthcare assistant. I can help you navigate the site, search for care facilities, fill out forms, and interact with page elements using voice commands. What would you like me to help you with today?",
-        language: "en"
       },
-      tts: {
-        voiceId: selectedVoice
+      handler: ({ elementType }: { elementType?: string }) => {
+        const selector = elementType ? elementType : 'button, a, input, select, textarea';
+        const elements = document.querySelectorAll(selector);
+        const elementList = Array.from(elements).slice(0, 10).map((el, idx) => 
+          `${idx + 1}. ${el.tagName.toLowerCase()}${el.textContent ? ': ' + el.textContent.trim().substring(0, 50) : ''}`
+        );
+        addToTranscript('tool', `Found ${elements.length} elements of type: ${elementType || 'interactive'}`, 'getPageElements');
+        return `Found ${elements.length} elements:\n${elementList.join('\n')}`;
+      }
+    },
+
+    showNotification: {
+      description: 'Show a notification to the user',
+      parameters: {
+        type: 'object',
+        properties: {
+          message: {
+            type: 'string',
+            description: 'Message to show'
+          },
+          type: {
+            type: 'string',
+            enum: ['success', 'error', 'info', 'warning'],
+            description: 'Type of notification'
+          }
+        },
+        required: ['message']
+      },
+      handler: ({ message, type = 'info' }: { message: string; type?: string }) => {
+        addToTranscript('tool', `Showing notification: ${message}`, 'showNotification');
+        toast({
+          title: type.charAt(0).toUpperCase() + type.slice(1),
+          description: message,
+          variant: type === 'error' ? 'destructive' : 'default'
+        });
+        return `Notification shown: ${message}`;
+      }
+    },
+
+    searchOnPage: {
+      description: 'Search for text on the current page',
+      parameters: {
+        type: 'object',
+        properties: {
+          searchTerm: {
+            type: 'string',
+            description: 'Text to search for on the page'
+          }
+        },
+        required: ['searchTerm']
+      },
+      handler: ({ searchTerm }: { searchTerm: string }) => {
+        addToTranscript('tool', `Searching page for: ${searchTerm}`, 'searchOnPage');
+        const bodyText = document.body.innerText.toLowerCase();
+        const found = bodyText.includes(searchTerm.toLowerCase());
+        return found ? `Found "${searchTerm}" on the page` : `"${searchTerm}" not found on the page`;
       }
     }
-  });
+  };
 
-  const { status, isSpeaking } = conversation;
-
-  const startConversation = async () => {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      await conversation.startSession({
-        agentId: "R9M1zBEUj8fTGAij61wb"
-      });
-    } catch (error) {
-      console.error("Failed to start conversation:", error);
-      voiceCommandService.showError("Failed to start conversation. Please check microphone permissions.");
+  const handleConversationEvent = (event: any) => {
+    console.log('Conversation event:', event);
+    
+    switch (event.type) {
+      case 'conversation_started':
+        addToTranscript('system', 'Conversation started');
+        break;
+      case 'conversation_ended':
+        addToTranscript('system', 'Conversation ended');
+        break;
+      case 'message':
+        if (event.source === 'user') {
+          addToTranscript('user', event.message);
+        } else if (event.source === 'agent') {
+          addToTranscript('agent', event.message);
+        }
+        break;
+      case 'tool_call':
+        addToTranscript('tool', `Tool called: ${event.tool_name}`, event.tool_name);
+        break;
     }
   };
 
-  const endConversation = async () => {
-    try {
-      await conversation.endSession();
-    } catch (error) {
-      console.error("Failed to end conversation:", error);
-    }
-  };
+  if (!isVisible) {
+    return (
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => setIsVisible(true)}
+          className="rounded-full w-16 h-16 bg-brand-red hover:bg-brand-red/90 shadow-lg"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+      </div>
+    );
+  }
 
-  const handleVolumeChange = (newVolume: number) => {
-    setVolume(newVolume);
-    if (conversation.setVolume) {
-      conversation.setVolume({ volume: newVolume });
-    }
-  };
-
-  const toggleVolume = () => {
-    setIsVolumeEnabled(!isVolumeEnabled);
-    handleVolumeChange(isVolumeEnabled ? 0 : 0.5);
-  };
-
-  const handleVoiceChange = (voiceId: string) => {
-    setSelectedVoice(voiceId);
-    const selectedVoiceName = voiceOptions.find(v => v.id === voiceId)?.name || 'Selected voice';
-    voiceCommandService.showInfo(`Voice changed to ${selectedVoiceName}`);
-  };
-
-  const clearTranscript = () => {
-    setTranscript([]);
-  };
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-6 right-6 z-50">
+        <Card className="p-4 bg-white shadow-lg border-brand-red border-2">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium">Agent Ready</span>
+            {lastToolUsed && (
+              <Badge variant="outline" className="text-xs">
+                Last: {lastToolUsed}
+              </Badge>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsMinimized(false)}
+            >
+              <Maximize2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Floating AVA Button */}
-      {!isOpen && (
-        <FloatingAvatarButton 
-          onClick={() => setIsOpen(true)}
-          status={status}
-          isSpeaking={isSpeaking}
-        />
-      )}
-
-      {/* Chat Window */}
-      {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 flex flex-col backdrop-blur-sm">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-brand-navy to-blue-700 text-white p-4 rounded-t-2xl flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <AvatarDisplay 
-                status={status} 
-                isSpeaking={isSpeaking} 
-                size="small"
-              />
-              <div>
-                <h3 className="font-semibold">AVA Assistant</h3>
-                <p className="text-xs opacity-75">
-                  {status === 'connected' 
-                    ? (isSpeaking ? 'Speaking...' : 'Listening...') 
-                    : 'Ready to connect'
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowTranscript(!showTranscript)}
-                className="text-white hover:bg-white/20 h-8 w-8 p-0"
-              >
-                <MessageCircle className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowSettings(!showSettings)}
-                className="text-white hover:bg-white/20 h-8 w-8 p-0"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleVolume}
-                className="text-white hover:bg-white/20 h-8 w-8 p-0"
-              >
-                {isVolumeEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-                className="text-white hover:bg-white/20 h-8 w-8 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl bg-white rounded-lg shadow-xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-brand-red text-white p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <MessageCircle className="h-6 w-6" />
+            <span className="font-semibold">AI Assistant</span>
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           </div>
-
-          {/* Content Area */}
-          <div className="flex-1 p-4 flex flex-col items-center justify-center space-y-4">
-            {/* Transcript Panel */}
-            {showTranscript && (
-              <div className="w-full bg-gray-50 p-3 rounded-lg space-y-3 max-h-60 overflow-y-auto">
-                <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-medium text-gray-700">Conversation Transcript</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearTranscript}
-                    className="text-xs text-gray-500 hover:text-gray-700"
-                  >
-                    Clear
-                  </Button>
-                </div>
-                <div className="space-y-2 text-xs">
-                  {transcript.map((entry, index) => (
-                    <div key={index} className={`p-2 rounded text-left ${
-                      entry.type === 'user' ? 'bg-blue-100 text-blue-800' :
-                      entry.type === 'agent' ? 'bg-green-100 text-green-800' :
-                      entry.type === 'tool' ? 'bg-purple-100 text-purple-800' :
-                      entry.type === 'error' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-600'
-                    }`}>
-                      <div className="font-medium capitalize">{entry.type}:</div>
-                      <div>{entry.text}</div>
-                      <div className="text-xs opacity-60 mt-1">
-                        {entry.timestamp.toLocaleTimeString()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Settings Panel */}
-            {showSettings && !showTranscript && (
-              <div className="w-full bg-gray-50 p-3 rounded-lg space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Voice Selection</label>
-                  <Select value={selectedVoice} onValueChange={handleVoiceChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {voiceOptions.map((voice) => (
-                        <SelectItem key={voice.id} value={voice.id}>
-                          <div>
-                            <div className="font-medium">{voice.name}</div>
-                            <div className="text-xs text-gray-500">{voice.description}</div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            )}
-
-            {!showSettings && !showTranscript && (
-              <>
-                <div className="text-center">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                    Intelligent Voice AI Assistant
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-4">
-                    I can navigate pages, search for care, fill forms, and interact with page elements using voice commands
-                  </p>
-                  {lastToolUsed && (
-                    <p className="text-xs text-purple-600 bg-purple-50 rounded px-2 py-1">
-                      Last action: {lastToolUsed} • Auto-minimizing soon
-                    </p>
-                  )}
-                </div>
-
-                {/* Large animated avatar */}
-                <AvatarDisplay 
-                  status={status} 
-                  isSpeaking={isSpeaking} 
-                  size="large"
-                />
-
-                {/* Status Text */}
-                <div className="text-center">
-                  <p className="text-sm font-medium text-gray-700">
-                    {status === 'connected' ? 
-                      (isSpeaking ? 'AVA is speaking...' : 'Listening for commands...') : 
-                      'Ready to connect'
-                    }
-                  </p>
-                  {status === 'connected' && (
-                    <div className="text-xs text-gray-500 mt-2 space-y-1">
-                      <p>Try: "Navigate to find care" or "Search for memory care"</p>
-                      <p>"Click the login button" or "Fill my name as John"</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Volume Control */}
-                {status === 'connected' && (
-                  <div className="w-full">
-                    <label className="text-xs text-gray-600 mb-2 block">Volume</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={volume}
-                      onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Control Buttons */}
-          <div className="p-4 border-t border-gray-100">
-            <div className="flex space-x-2">
-              {status !== 'connected' ? (
-                <Button
-                  onClick={startConversation}
-                  className="flex-1 bg-gradient-to-r from-brand-sky to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Start Voice Chat
-                </Button>
-              ) : (
-                <Button
-                  onClick={endConversation}
-                  className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  End Chat
-                </Button>
-              )}
-            </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsMuted(!isMuted)}
+              className="text-white hover:bg-white/20"
+            >
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowTranscript(!showTranscript)}
+              className="text-white hover:bg-white/20"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsMinimized(true)}
+              className="text-white hover:bg-white/20"
+            >
+              <Minimize2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-      )}
-    </>
+
+        {/* Transcript Panel */}
+        {showTranscript && (
+          <div className="bg-gray-50 p-4 max-h-40 overflow-y-auto border-b">
+            <h3 className="font-semibold mb-2">Conversation Log</h3>
+            <div className="space-y-1 text-sm">
+              {transcript.slice(-10).map((entry, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <span className="text-gray-500">{entry.timestamp}</span>
+                  <Badge variant={entry.type === 'tool' ? 'secondary' : 'outline'} className="text-xs">
+                    {entry.type}
+                  </Badge>
+                  <span className="flex-1 truncate">{entry.content}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Conversation Component */}
+        <div className="h-96">
+          <Conversation
+            agentId={process.env.REACT_APP_ELEVENLABS_AGENT_ID || 'your-agent-id'}
+            clientTools={clientTools}
+            onEvent={handleConversationEvent}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 
