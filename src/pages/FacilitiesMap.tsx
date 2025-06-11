@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { SerperService, SerperMapResult } from '@/services/serperService';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import SearchResultsManager from '@/components/search/SearchResultsManager';
-import ElevenLabsWidget from '@/components/ElevenLabsWidget';
+import ElevenLabsAgent from '@/components/ElevenLabsAgent';
 
 declare global {
   interface Window {
@@ -385,8 +384,8 @@ const FacilitiesMap = () => {
         </div>
       </div>
 
-      {/* Floating Voice Assistant */}
-      <ElevenLabsWidget variant="floating" />
+      {/* Enhanced Voice Assistant with DOM manipulation */}
+      <ElevenLabsAgent />
     </div>
   );
 };

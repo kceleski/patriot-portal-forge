@@ -1,109 +1,197 @@
+
 import React, { useState } from 'react';
 import { useConversation } from '@elevenlabs/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { X, Volume2, VolumeX, Phone } from 'lucide-react';
+import { X, Volume2, VolumeX, Phone, Settings } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import AvatarDisplay from './AvatarDisplay';
 import FloatingAvatarButton from './FloatingAvatarButton';
+import { voiceCommandService } from '@/services/voiceCommandService';
 
 const ElevenLabsAgent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [isVolumeEnabled, setIsVolumeEnabled] = useState(true);
+  const [selectedVoice, setSelectedVoice] = useState('9BWtsMINqrJLrRacOk9x'); // Default to Aria
+  const [showSettings, setShowSettings] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
 
-  // Client tools that can manipulate the DOM and app state
+  // Voice options with ElevenLabs voice IDs
+  const voiceOptions = [
+    { id: '9BWtsMINqrJLrRacOk9x', name: 'Aria', description: 'Friendly and professional' },
+    { id: 'TX3LPaxmHKxFdv7VOQHJ', name: 'Liam', description: 'Clear and confident' },
+    { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte', description: 'Warm and helpful' },
+    { id: 'SAz9YHcvj6GT2YYXdXww', name: 'River', description: 'Calm and reassuring' },
+    { id: 'CwhRBWXzGAHq8TQ4Fs17', name: 'Roger', description: 'Authoritative and clear' }
+  ];
+
+  // Enhanced client tools that can manipulate the DOM and app state
   const clientTools = {
     // Navigation tools
     navigateToPage: (parameters: { page: string }) => {
-      console.log('Navigating to:', parameters.page);
-      navigate(parameters.page);
-      toast.success(`Navigated to ${parameters.page}`);
-      return `Successfully navigated to ${parameters.page}`;
+      console.log('🚀 Navigating to:', parameters.page);
+      try {
+        navigate(parameters.page);
+        voiceCommandService.showSuccess(`Navigated to ${parameters.page}`);
+        return `Successfully navigated to ${parameters.page}`;
+      } catch (error) {
+        voiceCommandService.showError(`Failed to navigate to ${parameters.page}`);
+        return `Failed to navigate to ${parameters.page}`;
+      }
     },
 
-    // Search functionality
+    // Enhanced search functionality
     performSearch: (parameters: { query: string, location?: string }) => {
-      console.log('Performing search:', parameters);
-      navigate(`/find-care?q=${encodeURIComponent(parameters.query)}&location=${encodeURIComponent(parameters.location || '')}`);
-      toast.success(`Searching for ${parameters.query}`);
-      return `Search initiated for ${parameters.query}`;
+      console.log('🔍 Performing search:', parameters);
+      try {
+        const searchUrl = `/find-care?q=${encodeURIComponent(parameters.query)}&location=${encodeURIComponent(parameters.location || '')}`;
+        navigate(searchUrl);
+        voiceCommandService.showSuccess(`Searching for ${parameters.query}`);
+        return `Search initiated for ${parameters.query} in ${parameters.location || 'current area'}`;
+      } catch (error) {
+        voiceCommandService.showError('Failed to perform search');
+        return `Failed to search for ${parameters.query}`;
+      }
     },
 
-    // DOM manipulation
-    showToastMessage: (parameters: { message: string, type?: 'success' | 'error' | 'info' }) => {
-      const { message, type = 'info' } = parameters;
-      if (type === 'success') toast.success(message);
-      else if (type === 'error') toast.error(message);
-      else toast(message);
-      return `Toast message displayed: ${message}`;
+    // DOM manipulation with voice service integration
+    clickElement: (parameters: { text?: string, selector?: string }) => {
+      console.log('👆 Clicking element:', parameters);
+      
+      if (parameters.text) {
+        const success = voiceCommandService.clickElementByText(parameters.text);
+        if (success) {
+          voiceCommandService.showSuccess(`Clicked on "${parameters.text}"`);
+          return `Successfully clicked on element containing "${parameters.text}"`;
+        } else {
+          voiceCommandService.showError(`Could not find clickable element with text "${parameters.text}"`);
+          return `Element with text "${parameters.text}" not found`;
+        }
+      }
+      
+      if (parameters.selector) {
+        const element = document.querySelector(parameters.selector) as HTMLElement;
+        if (element) {
+          element.click();
+          voiceCommandService.showSuccess(`Clicked element with selector "${parameters.selector}"`);
+          return `Successfully clicked element with selector "${parameters.selector}"`;
+        } else {
+          voiceCommandService.showError(`Element with selector "${parameters.selector}" not found`);
+          return `Element with selector "${parameters.selector}" not found`;
+        }
+      }
+      
+      return 'No valid selector or text provided';
     },
 
     // Form completion assistance
-    fillFormField: (parameters: { fieldId: string, value: string }) => {
-      const element = document.getElementById(parameters.fieldId) as HTMLInputElement;
-      if (element) {
-        element.value = parameters.value;
-        element.dispatchEvent(new Event('input', { bubbles: true }));
-        return `Filled field ${parameters.fieldId} with ${parameters.value}`;
+    fillFormField: (parameters: { label: string, value: string }) => {
+      console.log('📝 Filling form field:', parameters);
+      const success = voiceCommandService.fillFormByLabel(parameters.label, parameters.value);
+      if (success) {
+        voiceCommandService.showSuccess(`Filled "${parameters.label}" with "${parameters.value}"`);
+        return `Successfully filled field "${parameters.label}" with "${parameters.value}"`;
+      } else {
+        voiceCommandService.showError(`Could not find form field labeled "${parameters.label}"`);
+        return `Form field "${parameters.label}" not found`;
       }
-      return `Field ${parameters.fieldId} not found`;
     },
 
-    // Scroll to section
-    scrollToSection: (parameters: { sectionId: string }) => {
-      const element = document.getElementById(parameters.sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-        return `Scrolled to section ${parameters.sectionId}`;
+    // Enhanced scroll functionality
+    scrollToSection: (parameters: { sectionId?: string, text?: string }) => {
+      console.log('📜 Scrolling to section:', parameters);
+      
+      if (parameters.text) {
+        const success = voiceCommandService.scrollToElementByText(parameters.text);
+        if (success) {
+          return `Scrolled to section containing "${parameters.text}"`;
+        } else {
+          return `Section with text "${parameters.text}" not found`;
+        }
       }
-      return `Section ${parameters.sectionId} not found`;
+      
+      if (parameters.sectionId) {
+        const element = document.getElementById(parameters.sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          voiceCommandService.highlightElement(`#${parameters.sectionId}`, 2000);
+          return `Scrolled to section "${parameters.sectionId}"`;
+        } else {
+          return `Section "${parameters.sectionId}" not found`;
+        }
+      }
+      
+      return 'No valid section identifier provided';
     },
 
-    // Click button or element
-    clickElement: (parameters: { selector: string }) => {
-      const element = document.querySelector(parameters.selector) as HTMLElement;
-      if (element) {
-        element.click();
-        return `Clicked element ${parameters.selector}`;
-      }
-      return `Element ${parameters.selector} not found`;
-    },
-
-    // Get current page info - fixed to return string
+    // Get comprehensive page info
     getCurrentPageInfo: (parameters: any) => {
-      const pageInfo = {
-        currentPath: location.pathname,
-        currentSearch: location.search,
+      const pageInfo = voiceCommandService.getPageContext();
+      const contextInfo = {
+        ...pageInfo,
         userLoggedIn: !!user,
-        userType: user?.user_metadata?.user_type || 'guest'
+        userType: user?.user_metadata?.user_type || 'guest',
+        currentPath: location.pathname,
+        currentSearch: location.search
       };
-      return `Current page info: ${JSON.stringify(pageInfo)}`;
+      console.log('📄 Page context:', contextInfo);
+      return `Current page info: ${JSON.stringify(contextInfo)}`;
     },
 
-    // Open modal or drawer
-    openModal: (parameters: { modalType: string, data?: any }) => {
-      console.log('Opening modal:', parameters);
-      toast.success(`Opening ${parameters.modalType} modal`);
-      return `Opened ${parameters.modalType} modal`;
+    // Show notifications
+    showNotification: (parameters: { message: string, type?: 'success' | 'error' | 'info' }) => {
+      const { message, type = 'info' } = parameters;
+      console.log('🔔 Showing notification:', { message, type });
+      
+      if (type === 'success') voiceCommandService.showSuccess(message);
+      else if (type === 'error') voiceCommandService.showError(message);
+      else voiceCommandService.showInfo(message);
+      
+      return `Notification displayed: ${message}`;
+    },
+
+    // Perform search on current page
+    searchOnPage: (parameters: { query: string }) => {
+      console.log('🔍 Searching on page:', parameters);
+      const results = voiceCommandService.performSearchOnPage(parameters.query);
+      if (results.length > 0) {
+        voiceCommandService.showSuccess(`Found ${results.length} search results for "${parameters.query}"`);
+        return `Found ${results.length} search results on page for "${parameters.query}"`;
+      } else {
+        voiceCommandService.showInfo(`No search inputs found on this page for "${parameters.query}"`);
+        return `No search functionality found on current page`;
+      }
+    },
+
+    // Get available interactive elements
+    getPageElements: (parameters: any) => {
+      const context = voiceCommandService.getPageContext();
+      const summary = {
+        buttons: context.buttons.slice(0, 10), // Limit to first 10
+        links: context.links.slice(0, 10).map((link: any) => link.text),
+        forms: context.forms.length,
+        currentUrl: context.url
+      };
+      return `Page elements: ${JSON.stringify(summary)}`;
     }
   };
 
   const conversation = useConversation({
     onConnect: () => {
       console.log("AVA Agent connected");
-      toast.success("AVA Assistant connected");
+      voiceCommandService.showSuccess("AVA Assistant connected and ready to help!");
     },
     onMessage: (message) => {
       console.log("Message received:", message);
     },
     onError: (error) => {
       console.error("Conversation error:", error);
-      toast.error("Connection error occurred");
+      voiceCommandService.showError("Connection error occurred");
     },
     onDisconnect: () => {
       console.log("AVA Agent disconnected");
@@ -113,26 +201,35 @@ const ElevenLabsAgent = () => {
     overrides: {
       agent: {
         prompt: {
-          prompt: `You are AVA, a helpful healthcare assistant for HealthProAssist. You can help users navigate the website, search for care facilities, fill out forms, and provide information about healthcare services. 
-          
-          Current context:
-          - Current page: ${location.pathname}
-          - User logged in: ${!!user}
-          - User type: ${user?.user_metadata?.user_type || 'guest'}
-          
-          You have access to tools that can:
-          - Navigate to different pages
-          - Perform searches
-          - Fill form fields
-          - Show notifications
-          - Scroll to sections
-          - Click elements
-          - Open modals
-          
-          Be helpful, conversational, and guide users through their healthcare journey.`
+          prompt: `You are AVA, an intelligent healthcare assistant for HealthProAssist. You have powerful capabilities to help users navigate the website, search for care facilities, fill out forms, and interact with page elements.
+
+CURRENT CONTEXT:
+- Page: ${location.pathname}
+- User: ${!!user ? 'Logged in' : 'Not logged in'}
+- User Type: ${user?.user_metadata?.user_type || 'guest'}
+
+YOUR CAPABILITIES:
+1. NAVIGATION: Use navigateToPage() to move between pages like "/find-care", "/dashboard", "/calendar"
+2. SEARCH: Use performSearch() to search for facilities with query and location
+3. DOM INTERACTION: Use clickElement() to click buttons/links by text or selector
+4. FORM FILLING: Use fillFormField() to complete forms by field label
+5. PAGE ANALYSIS: Use getCurrentPageInfo() and getPageElements() to understand the page
+6. SCROLLING: Use scrollToSection() to navigate to page sections
+7. NOTIFICATIONS: Use showNotification() to give user feedback
+
+WORKFLOW EXAMPLES:
+- "Find memory care in Phoenix" → performSearch({query: "memory care", location: "Phoenix"})
+- "Click the login button" → clickElement({text: "login"})
+- "Fill my name as John Smith" → fillFormField({label: "name", value: "John Smith"})
+- "Go to my dashboard" → navigateToPage("/dashboard")
+
+Always use your tools to actually perform actions, don't just describe what you would do. Be helpful, conversational, and proactive in using your capabilities to assist users with their healthcare journey.`
         },
-        firstMessage: "Hi! I'm AVA, your healthcare assistant. I can help you navigate the site, search for care facilities, or answer questions about our services. What can I help you with today?",
+        firstMessage: "Hi! I'm AVA, your intelligent healthcare assistant. I can help you navigate the site, search for care facilities, fill out forms, and interact with page elements using voice commands. What would you like me to help you with today?",
         language: "en"
+      },
+      tts: {
+        voiceId: selectedVoice
       }
     }
   });
@@ -147,7 +244,7 @@ const ElevenLabsAgent = () => {
       });
     } catch (error) {
       console.error("Failed to start conversation:", error);
-      toast.error("Failed to start conversation. Please check microphone permissions.");
+      voiceCommandService.showError("Failed to start conversation. Please check microphone permissions.");
     }
   };
 
@@ -171,6 +268,12 @@ const ElevenLabsAgent = () => {
     handleVolumeChange(isVolumeEnabled ? 0 : 0.5);
   };
 
+  const handleVoiceChange = (voiceId: string) => {
+    setSelectedVoice(voiceId);
+    const selectedVoiceName = voiceOptions.find(v => v.id === voiceId)?.name || 'Selected voice';
+    voiceCommandService.showInfo(`Voice changed to ${selectedVoiceName}`);
+  };
+
   return (
     <>
       {/* Floating AVA Button */}
@@ -184,7 +287,7 @@ const ElevenLabsAgent = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 flex flex-col backdrop-blur-sm">
+        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 flex flex-col backdrop-blur-sm">
           {/* Header */}
           <div className="bg-gradient-to-r from-brand-navy to-blue-700 text-white p-4 rounded-t-2xl flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -207,6 +310,14 @@ const ElevenLabsAgent = () => {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setShowSettings(!showSettings)}
+                className="text-white hover:bg-white/20 h-8 w-8 p-0"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={toggleVolume}
                 className="text-white hover:bg-white/20 h-8 w-8 p-0"
               >
@@ -225,12 +336,36 @@ const ElevenLabsAgent = () => {
 
           {/* Content Area */}
           <div className="flex-1 p-4 flex flex-col items-center justify-center space-y-4">
+            {/* Settings Panel */}
+            {showSettings && (
+              <div className="w-full bg-gray-50 p-3 rounded-lg space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Voice Selection</label>
+                  <Select value={selectedVoice} onValueChange={handleVoiceChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {voiceOptions.map((voice) => (
+                        <SelectItem key={voice.id} value={voice.id}>
+                          <div>
+                            <div className="font-medium">{voice.name}</div>
+                            <div className="text-xs text-gray-500">{voice.description}</div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
             <div className="text-center">
               <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                Voice AI Assistant
+                Intelligent Voice AI Assistant
               </h4>
               <p className="text-sm text-gray-600 mb-4">
-                I can help you navigate, search for care, and complete forms using voice commands
+                I can navigate pages, search for care, fill forms, and interact with page elements using voice commands
               </p>
             </div>
 
@@ -250,14 +385,15 @@ const ElevenLabsAgent = () => {
                 }
               </p>
               {status === 'connected' && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Try: "Navigate to find care" or "Search for memory care"
-                </p>
+                <div className="text-xs text-gray-500 mt-2 space-y-1">
+                  <p>Try: "Navigate to find care" or "Search for memory care"</p>
+                  <p>"Click the login button" or "Fill my name as John"</p>
+                </div>
               )}
             </div>
 
             {/* Volume Control */}
-            {status === 'connected' && (
+            {status === 'connected' && !showSettings && (
               <div className="w-full">
                 <label className="text-xs text-gray-600 mb-2 block">Volume</label>
                 <input
