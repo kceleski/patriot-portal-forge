@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Conversation } from '@elevenlabs/react';
+import { useConversation } from '@elevenlabs/react';
 import { MessageCircle, Minimize2, Maximize2, Volume2, VolumeX, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -22,7 +22,7 @@ const ElevenLabsAgent = () => {
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
   const [showTranscript, setShowTranscript] = useState(false);
   const [lastToolUsed, setLastToolUsed] = useState<string>('');
-  const agentIdRef = useRef<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -310,26 +310,61 @@ const ElevenLabsAgent = () => {
     }
   };
 
-  const handleConversationEvent = (event: any) => {
-    console.log('Conversation event:', event);
-    
-    switch (event.type) {
-      case 'conversation_started':
-        addToTranscript('system', 'Conversation started');
-        break;
-      case 'conversation_ended':
-        addToTranscript('system', 'Conversation ended');
-        break;
-      case 'message':
-        if (event.source === 'user') {
-          addToTranscript('user', event.message);
-        } else if (event.source === 'agent') {
-          addToTranscript('agent', event.message);
-        }
-        break;
-      case 'tool_call':
-        addToTranscript('tool', `Tool called: ${event.tool_name}`, event.tool_name);
-        break;
+  const conversation = useConversation({
+    clientTools,
+    onConnect: () => {
+      console.log('Conversation connected');
+      setIsConnected(true);
+      addToTranscript('system', 'Conversation started');
+    },
+    onDisconnect: () => {
+      console.log('Conversation disconnected');
+      setIsConnected(false);
+      addToTranscript('system', 'Conversation ended');
+    },
+    onMessage: (event: any) => {
+      console.log('Message received:', event);
+      if (event.source === 'user') {
+        addToTranscript('user', event.message);
+      } else if (event.source === 'agent') {
+        addToTranscript('agent', event.message);
+      }
+    },
+    onError: (error: any) => {
+      console.error('Conversation error:', error);
+      addToTranscript('system', `Error: ${error.message || 'Unknown error'}`);
+    }
+  });
+
+  const handleStartConversation = async () => {
+    try {
+      if (!process.env.REACT_APP_ELEVENLABS_AGENT_ID) {
+        toast({
+          title: 'Configuration Error',
+          description: 'ElevenLabs Agent ID not configured',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      await conversation.startSession({
+        agentId: process.env.REACT_APP_ELEVENLABS_AGENT_ID
+      });
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+      toast({
+        title: 'Connection Error',
+        description: 'Failed to start conversation',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleEndConversation = async () => {
+    try {
+      await conversation.endSession();
+    } catch (error) {
+      console.error('Failed to end conversation:', error);
     }
   };
 
@@ -351,8 +386,8 @@ const ElevenLabsAgent = () => {
       <div className="fixed bottom-6 right-6 z-50">
         <Card className="p-4 bg-white shadow-lg border-brand-red border-2">
           <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium">Agent Ready</span>
+            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+            <span className="text-sm font-medium">{isConnected ? 'Agent Ready' : 'Agent Offline'}</span>
             {lastToolUsed && (
               <Badge variant="outline" className="text-xs">
                 Last: {lastToolUsed}
@@ -379,7 +414,7 @@ const ElevenLabsAgent = () => {
           <div className="flex items-center gap-3">
             <MessageCircle className="h-6 w-6" />
             <span className="font-semibold">AI Assistant</span>
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -427,13 +462,20 @@ const ElevenLabsAgent = () => {
           </div>
         )}
 
-        {/* Conversation Component */}
-        <div className="h-96">
-          <Conversation
-            agentId={process.env.REACT_APP_ELEVENLABS_AGENT_ID || 'your-agent-id'}
-            clientTools={clientTools}
-            onEvent={handleConversationEvent}
-          />
+        {/* Conversation Controls */}
+        <div className="p-4 flex flex-col items-center gap-4">
+          {!isConnected ? (
+            <Button onClick={handleStartConversation} className="w-full">
+              Start Conversation
+            </Button>
+          ) : (
+            <Button onClick={handleEndConversation} variant="outline" className="w-full">
+              End Conversation
+            </Button>
+          )}
+          <p className="text-sm text-gray-600 text-center">
+            {isConnected ? 'Click the microphone to start talking' : 'Click to connect to the AI assistant'}
+          </p>
         </div>
       </div>
     </div>
