@@ -62,7 +62,7 @@ const FacilitiesMap = () => {
     }
 
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDql71j0ytZxXhSvKseW8RNiNjPupZQuWo&loading=async`;
+    script.src = `<div id="storepoint-container" data-tags="subscribed" data-map-id="1645a775a8a422"></div><script>(function(){var a=document.createElement("script");a.type="text/javascript";a.async=!0;a.src="https://cdn.storepoint.co/api/v1/js/1645a775a8a422.js";var b=document.getElementsByTagName("script")[0];b.parentNode.insertBefore(a,b);}());</script><style>#storepoint-tag-dropdown{display:none!important;}</style>`;
     script.async = true;
     script.defer = true;
 
