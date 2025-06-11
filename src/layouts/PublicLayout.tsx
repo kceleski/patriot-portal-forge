@@ -13,7 +13,7 @@ const PublicLayout = () => {
       <nav className="sticky top-0 z-50 bg-white border-b border-ui-border">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
+            <Link to="/" className="flex items-center">
               <div className="p-2 rounded-lg">
                 <img 
                   src="/lovable-uploads/c1dfb5b9-8798-4928-b11d-d7251a320545.png" 
@@ -21,9 +21,6 @@ const PublicLayout = () => {
                   className="h-12 w-12 sm:h-14 sm:w-14 object-contain"
                 />
               </div>
-              <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-brand-navy font-heading">
-                HealthProAssist
-              </span>
             </Link>
 
             {/* Desktop Navigation */}
