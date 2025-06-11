@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { Filter, Search, MapPin, MessageSquare } from 'lucide-react';
+import { Filter, MessageSquare, MapPin, Navigation } from 'lucide-react';
 import { SerperService, SerperMapResult } from '@/services/serperService';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,18 +22,21 @@ const FacilitiesMap = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const infoWindowRef = useRef<any>(null);
   const [facilities, setFacilities] = useState<SerperMapResult[]>([]);
   const [filteredFacilities, setFilteredFacilities] = useState<SerperMapResult[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [location, setLocation] = useState('');
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedCareTypes, setSelectedCareTypes] = useState<string[]>([]);
   const [ratingFilter, setRatingFilter] = useState<number>(0);
   const [showAssistant, setShowAssistant] = useState(false);
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     loadGoogleMaps();
+    getUserLocation();
   }, []);
 
   useEffect(() => {
@@ -49,25 +51,94 @@ const FacilitiesMap = () => {
 
   const loadGoogleMaps = () => {
     if (window.google && window.google.maps) {
+      setGoogleMapsLoaded(true);
       initializeMap();
       return;
     }
 
+    // Remove any existing script tags
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBKj9W5QjzJhwj9hUj9X3K2L1M4n5P6R7Q&callback=initMap`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDql71j0ytZxXhSvKseW8RNiNjPupZQuWo&loading=async`;
     script.async = true;
     script.defer = true;
 
-    window.initMap = initializeMap;
+    script.onload = () => {
+      setGoogleMapsLoaded(true);
+      initializeMap();
+    };
+
+    script.onerror = () => {
+      console.error('Failed to load Google Maps');
+      toast({
+        title: "Maps Error",
+        description: "Failed to load Google Maps. Please refresh the page.",
+        variant: "destructive",
+      });
+    };
+
     document.head.appendChild(script);
   };
 
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setUserLocation(pos);
+          
+          // Center map on user location if map is already initialized
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.setCenter(pos);
+            mapInstanceRef.current.setZoom(10);
+            
+            // Show user location info
+            if (infoWindowRef.current) {
+              infoWindowRef.current.setPosition(pos);
+              infoWindowRef.current.setContent("Your current location");
+              infoWindowRef.current.open(mapInstanceRef.current);
+            }
+          }
+          
+          toast({
+            title: "Location Found",
+            description: "Map centered on your current location",
+          });
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          toast({
+            title: "Location Error",
+            description: "Unable to get your location. Using default location.",
+            variant: "destructive",
+          });
+        }
+      );
+    } else {
+      toast({
+        title: "Geolocation Not Supported",
+        description: "Your browser doesn't support geolocation.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const initializeMap = () => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !window.google || !window.google.maps) return;
+
+    const initialCenter = userLocation || { lat: 39.8283, lng: -98.5795 };
+    const initialZoom = userLocation ? 10 : 4;
 
     const map = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 39.8283, lng: -98.5795 },
-      zoom: 4,
+      center: initialCenter,
+      zoom: initialZoom,
       styles: [
         {
           featureType: 'poi',
@@ -77,53 +148,25 @@ const FacilitiesMap = () => {
       ]
     });
 
+    const infoWindow = new window.google.maps.InfoWindow();
+    
+    // Add location button
+    const locationButton = document.createElement('button');
+    locationButton.textContent = '📍 My Location';
+    locationButton.className = 'bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium shadow-sm hover:bg-gray-50';
+    locationButton.style.margin = '10px';
+    
+    map.controls[window.google.maps.ControlPosition.TOP_CENTER].push(locationButton);
+    
+    locationButton.addEventListener('click', getUserLocation);
+
     mapInstanceRef.current = map;
-  };
+    infoWindowRef.current = infoWindow;
 
-  const handleSearch = async () => {
-    if (!location.trim()) {
-      toast({
-        title: "Location Required",
-        description: "Please enter a location to search for facilities.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const careTypeQuery = selectedCareTypes.length > 0 
-        ? selectedCareTypes.join(' OR ') 
-        : 'assisted living OR memory care OR skilled nursing';
-      
-      const query = `${careTypeQuery} facility ${location}`;
-      console.log('Searching maps for:', query);
-      
-      const results = await SerperService.searchMaps(query);
-      console.log('Map search results:', results);
-      
-      setFacilities(results);
-      
-      if (results.length === 0) {
-        toast({
-          title: "No Results",
-          description: "No facilities found for your search criteria. Try adjusting your location.",
-        });
-      } else {
-        toast({
-          title: "Search Complete",
-          description: `Found ${results.length} facilities`,
-        });
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      toast({
-        title: "Search Error",
-        description: "There was an error searching for facilities. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    // If user location is available, center on it
+    if (userLocation) {
+      map.setCenter(userLocation);
+      map.setZoom(10);
     }
   };
 
@@ -134,7 +177,14 @@ const FacilitiesMap = () => {
         ? selectedCareTypes.join(' OR ') 
         : 'assisted living OR memory care OR skilled nursing';
       
-      const searchQuery = `${careTypeQuery} facility ${location}`;
+      // Use user location if available and no specific location provided
+      let searchLocation = location;
+      if (!location && userLocation) {
+        // Convert coordinates to a searchable location string
+        searchLocation = `${userLocation.lat},${userLocation.lng}`;
+      }
+      
+      const searchQuery = `${careTypeQuery} facility ${searchLocation}`;
       console.log('Voice search for:', searchQuery);
       
       const results = await SerperService.searchMaps(searchQuery, user?.id);
@@ -216,7 +266,7 @@ const FacilitiesMap = () => {
               <p class="text-sm text-gray-600">${facility.address}</p>
               ${facility.phoneNumber ? `<p class="text-sm">${facility.phoneNumber}</p>` : ''}
               ${facility.rating ? `<p class="text-sm">Rating: ${facility.rating}/5 ${facility.reviews ? `(${facility.reviews} reviews)` : ''}</p>` : ''}
-              ${facility.website ? `<a href="${facility.website}" target="" class="text-sm text-blue-600 hover:underline">Visit Website</a>` : ''}
+              ${facility.website ? `<a href="${facility.website}" target="_blank" class="text-sm text-blue-600 hover:underline">Visit Website</a>` : ''}
             </div>
           `
         });
@@ -274,6 +324,7 @@ const FacilitiesMap = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-brand-navy">Facilities Map</h1>
           <p className="text-gray-600 mt-2">
             Use voice search to explore {filteredFacilities.length} care facilities on the map
+            {userLocation && " (centered on your location)"}
           </p>
         </div>
       </div>
@@ -287,15 +338,28 @@ const FacilitiesMap = () => {
               <h3 className="text-lg font-semibold text-brand-navy">Voice Search Assistant</h3>
             </div>
             <p className="text-gray-600">
-              Use our AI assistant to search for facilities. Try saying: "Show me memory care facilities in Phoenix" or "Find assisted living near me"
+              Use our AI assistant to search for facilities. Try saying: "Show me memory care facilities near me" or "Find assisted living in my area"
+              {userLocation && " (Your location has been detected automatically)"}
             </p>
-            <Button 
-              onClick={() => setShowAssistant(true)}
-              className="bg-brand-red hover:bg-brand-red/90 text-white"
-            >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Start Voice Search
-            </Button>
+            <div className="flex justify-center gap-4">
+              <Button 
+                onClick={() => setShowAssistant(true)}
+                className="bg-brand-red hover:bg-brand-red/90 text-white"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Start Voice Search
+              </Button>
+              {!userLocation && (
+                <Button 
+                  onClick={getUserLocation}
+                  variant="outline"
+                  className="border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white"
+                >
+                  <Navigation className="h-4 w-4 mr-2" />
+                  Get My Location
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -373,6 +437,9 @@ const FacilitiesMap = () => {
               <div className="text-center p-3 bg-brand-off-white rounded-lg border">
                 <MapPin className="h-5 w-5 mx-auto mb-1 text-brand-red" />
                 <p className="text-sm font-medium text-brand-navy">{filteredFacilities.length} facilities shown</p>
+                {userLocation && (
+                  <p className="text-xs text-gray-600 mt-1">Location detected</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -398,6 +465,14 @@ const FacilitiesMap = () => {
                   </div>
                 </div>
               )}
+              {!googleMapsLoaded && (
+                <div className="absolute inset-0 bg-gray-100 flex items-center justify-center rounded-lg">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-red mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading Google Maps...</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -411,7 +486,10 @@ const FacilitiesMap = () => {
               <h3 className="text-xl font-semibold text-brand-navy">Voice Search Assistant</h3>
               <Button variant="ghost" onClick={() => setShowAssistant(false)}>×</Button>
             </div>
-            <ElevenLabsWidget variant="fullscreen" />
+            <ElevenLabsWidget 
+              variant="fullscreen"
+              onSearch={handleVoiceSearch}
+            />
           </div>
         </div>
       )}
