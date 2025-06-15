@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Edit, Trash2, Save, X, MapPin, Star, Users, Bed } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, MapPin, Star, Users, Bed, Building2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Listing {

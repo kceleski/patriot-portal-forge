@@ -438,6 +438,45 @@ export type Database = {
           },
         ]
       }
+      contacts: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          source: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           agent_id: string | null
@@ -1254,6 +1293,63 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interactions: {
+        Row: {
+          contact_id: string | null
+          content: string | null
+          created_at: string
+          facility_id: string | null
+          follow_up_date: string | null
+          id: string
+          interaction_date: string | null
+          status: string | null
+          subject: string | null
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          contact_id?: string | null
+          content?: string | null
+          created_at?: string
+          facility_id?: string | null
+          follow_up_date?: string | null
+          id?: string
+          interaction_date?: string | null
+          status?: string | null
+          subject?: string | null
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          contact_id?: string | null
+          content?: string | null
+          created_at?: string
+          facility_id?: string | null
+          follow_up_date?: string | null
+          id?: string
+          interaction_date?: string | null
+          status?: string | null
+          subject?: string | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "interactions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interactions_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facility"
             referencedColumns: ["id"]
           },
         ]
@@ -2231,6 +2327,63 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          facility_id: string | null
+          id: string
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          facility_id?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          facility_id?: string | null
+          id?: string
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facility"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tours: {
         Row: {
           created_at: string
@@ -2899,6 +3052,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_user_profile: {
+        Args: {
+          user_id: string
+          date_of_birth: string
+          address_line_1: string
+          address_line_2: string
+          city: string
+          state: string
+          zip_code: string
+          care_recepient_relationship: Database["public"]["Enums"]["care_recepient_relationship"]
+          care_urgency: Database["public"]["Enums"]["care_urgency"]
+          budget_range: Database["public"]["Enums"]["budget_range"]
+          care_needs: Json
+          medical_conditions: Json
+          preferred_amenities: Json
+        }
+        Returns: undefined
+      }
       insert_serperapi_raw_result: {
         Args: {
           user_search_request_id: string
