@@ -65,6 +65,7 @@ import OrganizationAdmin from '@/components/shared/OrganizationAdmin';
 // Add the import at the top
 import PresentationMockData from '@/components/presentation/PresentationMockData';
 import SuperUserDashboard from '@/pages/admin/SuperAdminDashboard';
+import PlaceholderPage from '@/pages/shared/PlaceholderPage';
 
 const queryClient = new QueryClient();
 
@@ -108,19 +109,19 @@ function AppRoutes() {
         <Route element={<DashboardLayout />}>
           {/* Super User Routes */}
           <Route path="superuser" element={<SuperUserDashboard />} />
-          <Route path="superuser/users" element={<div>Super User - Users Management</div>} />
-          <Route path="superuser/facilities" element={<div>Super User - Facilities Management</div>} />
-          <Route path="superuser/organizations" element={<div>Super User - Organizations Management</div>} />
-          <Route path="superuser/analytics" element={<div>Super User - Analytics</div>} />
-          <Route path="superuser/payments" element={<div>Super User - Payments</div>} />
+          <Route path="superuser/users" element={<PlaceholderPage title="User Management" description="Manage all users across the platform" backPath="/dashboard/superuser" />} />
+          <Route path="superuser/facilities" element={<PlaceholderPage title="Facility Management" description="Manage all facilities on the platform" backPath="/dashboard/superuser" />} />
+          <Route path="superuser/organizations" element={<PlaceholderPage title="Organization Management" description="Manage all organizations" backPath="/dashboard/superuser" />} />
+          <Route path="superuser/analytics" element={<PlaceholderPage title="System Analytics" description="View platform-wide analytics and reports" backPath="/dashboard/superuser" />} />
+          <Route path="superuser/payments" element={<PlaceholderPage title="Payment Management" description="Monitor all payments and transactions" backPath="/dashboard/superuser" />} />
 
           {/* Super Admin Routes */}
           <Route path="super-admin" element={<SuperAdminDashboard />} />
-          <Route path="super-admin/users" element={<div>Super Admin Users Management</div>} />
-          <Route path="super-admin/facilities" element={<div>Super Admin Facilities Management</div>} />
-          <Route path="super-admin/organizations" element={<div>Super Admin Organizations Management</div>} />
-          <Route path="super-admin/analytics" element={<div>Super Admin Analytics</div>} />
-          <Route path="super-admin/payments" element={<div>Super Admin Payments</div>} />
+          <Route path="super-admin/users" element={<PlaceholderPage title="Admin User Management" description="Advanced user administration tools" backPath="/dashboard/super-admin" />} />
+          <Route path="super-admin/facilities" element={<PlaceholderPage title="Admin Facility Management" description="Advanced facility administration" backPath="/dashboard/super-admin" />} />
+          <Route path="super-admin/organizations" element={<PlaceholderPage title="Admin Organization Management" description="Advanced organization administration" backPath="/dashboard/super-admin" />} />
+          <Route path="super-admin/analytics" element={<PlaceholderPage title="Admin Analytics" description="Advanced analytics and reporting tools" backPath="/dashboard/super-admin" />} />
+          <Route path="super-admin/payments" element={<PlaceholderPage title="Admin Payment Management" description="Advanced payment administration" backPath="/dashboard/super-admin" />} />
 
           {/* Family Routes */}
           <Route path="family" element={<FamilyDashboard />} />
@@ -132,13 +133,13 @@ function AppRoutes() {
           <Route path="agent/clients" element={<AllClients />} />
           <Route path="agent/new-client" element={<NewClient />} />
           <Route path="agent/intake-form" element={<ClientIntakeForm />} />
-          <Route path="agent/referrals" element={<div>Agent Referrals</div>} />
+          <Route path="agent/referrals" element={<PlaceholderPage title="Agent Referrals" description="Manage client referrals and track their progress" backPath="/dashboard/agent" />} />
           <Route path="agent/reports" element={<PerformanceDashboard />} />
           <Route path="agent/facilities" element={<FacilityMapView />} />
           <Route path="agent/contacts" element={<FacilityContactBook />} />
           <Route path="agent/inbox" element={<InboxMessaging />} />
           <Route path="agent/payments" element={<UniversalInvoicing userType="agent" title="Payments & Commissions" />} />
-          <Route path="agent/contracts" element={<div>Agent Contracts</div>} />
+          <Route path="agent/contracts" element={<PlaceholderPage title="Agent Contracts" description="View and manage your service contracts" backPath="/dashboard/agent" />} />
           <Route path="agent/org-admin" element={<OrganizationAdmin userType="agent" organizationName="Sample Agency" />} />
 
           {/* Healthcare Routes (Professional Portal) */}
@@ -146,7 +147,7 @@ function AppRoutes() {
           <Route path="healthcare/clients" element={<AllClients />} />
           <Route path="healthcare/new-client" element={<NewClient />} />
           <Route path="healthcare/intake-form" element={<ClientIntakeForm />} />
-          <Route path="healthcare/referrals" element={<div>Healthcare Referrals</div>} />
+          <Route path="healthcare/referrals" element={<PlaceholderPage title="Healthcare Referrals" description="Manage patient referrals and care coordination" backPath="/dashboard/healthcare" />} />
           <Route path="healthcare/reports" element={<PerformanceDashboard />} />
           <Route path="healthcare/facilities" element={<FacilityMapView />} />
           <Route path="healthcare/contacts" element={<FacilityContactBook />} />
@@ -157,12 +158,12 @@ function AppRoutes() {
           <Route path="facility" element={<FacilityDashboard />} />
           <Route path="facility/listings" element={<ListingManagement />} />
           <Route path="facility/employees" element={<EmployeeManagement />} />
-          <Route path="facility/residents" element={<div>Resident Management</div>} />
+          <Route path="facility/residents" element={<PlaceholderPage title="Resident Management" description="Manage current and prospective residents" backPath="/dashboard/facility" />} />
           <Route path="facility/payments" element={<FacilityPayments />} />
-          <Route path="facility/contracts" element={<div>Facility Contracts</div>} />
-          <Route path="facility/intake-documents" element={<div>Intake Documents</div>} />
-          <Route path="facility/webinars" element={<div>Webinar Management</div>} />
-          <Route path="facility/analytics" element={<div>Facility Analytics</div>} />
+          <Route path="facility/contracts" element={<PlaceholderPage title="Facility Contracts" description="Manage service agreements and contracts" backPath="/dashboard/facility" />} />
+          <Route path="facility/intake-documents" element={<PlaceholderPage title="Intake Documents" description="Manage resident intake documentation" backPath="/dashboard/facility" />} />
+          <Route path="facility/webinars" element={<PlaceholderPage title="Webinar Management" description="Schedule and manage educational webinars" backPath="/dashboard/facility" />} />
+          <Route path="facility/analytics" element={<PlaceholderPage title="Facility Analytics" description="View facility performance metrics and reports" backPath="/dashboard/facility" />} />
           <Route path="facility/inbox" element={<InboxMessaging />} />
           <Route path="facility/org-admin" element={<OrganizationAdmin userType="facility" organizationName="Sample Facility Group" />} />
 
@@ -170,7 +171,7 @@ function AppRoutes() {
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="profile" element={<UserProfile />} />
           <Route path="find-care" element={<FindCarePage />} />
-          <Route path="messaging" element={<div>Universal Messaging</div>} />
+          <Route path="messaging" element={<PlaceholderPage title="Universal Messaging" description="Secure messaging platform for all stakeholders" backPath="/dashboard" />} />
         </Route>
       </Route>
 

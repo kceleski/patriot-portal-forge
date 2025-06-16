@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -58,8 +59,8 @@ const PublicLayout = () => {
               
               <div className="flex items-center space-x-3">
                 <Link to="/super-login">
-                  <Button variant="outline" size="sm" className="btn-outline focus-enhanced hidden lg:inline-flex">
-                    Super User Login
+                  <Button variant="outline" size="sm" className="btn-outline focus-enhanced">
+                    Super User
                   </Button>
                 </Link>
                 <Link to="/login">
@@ -117,10 +118,10 @@ const PublicLayout = () => {
               <div>
                 <h4 className="font-semibold mb-4 text-brand-gold font-heading text-base sm:text-lg">Portals</h4>
                 <ul className="space-y-2 text-blue-200 text-sm sm:text-base">
-                  <li><Link to="/dashboard/family" className="hover:text-white transition-colors">Family Portal</Link></li>
-                  <li><Link to="/dashboard/healthcare" className="hover:text-white transition-colors">Healthcare Portal</Link></li>
-                  <li><Link to="/dashboard/agent" className="hover:text-white transition-colors">Agent Portal</Link></li>
-                  <li><Link to="/dashboard/facility" className="hover:text-white transition-colors">Facility Portal</Link></li>
+                  <li><Link to="/login?portal=family" className="hover:text-white transition-colors">Family Portal</Link></li>
+                  <li><Link to="/login?portal=healthcare" className="hover:text-white transition-colors">Healthcare Portal</Link></li>
+                  <li><Link to="/login?portal=agent" className="hover:text-white transition-colors">Agent Portal</Link></li>
+                  <li><Link to="/login?portal=facility" className="hover:text-white transition-colors">Facility Portal</Link></li>
                 </ul>
               </div>
               
@@ -129,11 +130,11 @@ const PublicLayout = () => {
                 <div className="space-y-3 text-blue-200 text-sm sm:text-base">
                   <div className="flex items-center space-x-2">
                     <Phone className="h-4 w-4 flex-shrink-0" />
-                    <span>(623) 300-2065</span>
+                    <a href="tel:(623)300-2065" className="hover:text-white transition-colors">(623) 300-2065</a>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Mail className="h-4 w-4 flex-shrink-0" />
-                    <span className="break-all">contact@healthproassist.com</span>
+                    <a href="mailto:contact@healthproassist.com" className="hover:text-white transition-colors break-all">contact@healthproassist.com</a>
                   </div>
                 </div>
               </div>

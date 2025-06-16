@@ -1716,6 +1716,129 @@ export type Database = {
           },
         ]
       }
+      nationwide_facilities: {
+        Row: {
+          "Abuse Icon": string | null
+          "Affiliated Entity ID": string | null
+          "Affiliated Entity Name": string | null
+          "Average Number of Residents per Day": number | null
+          "City/Town": string | null
+          "CMS Certification Number (CCN)": string | null
+          "Continuing Care Retirement Community": string | null
+          "County/Parish": string | null
+          "Date First Approved to Provide Medicare and Medicaid Services":
+            | string
+            | null
+          "Health Inspection Rating": string | null
+          Latitude: number | null
+          "Legal Business Name": string | null
+          Location: string | null
+          Longitude: number | null
+          "Number of Certified Beds": string | null
+          "Number of Citations from Infection Control Inspections":
+            | string
+            | null
+          "Number of Facility Reported Incidents": string | null
+          "Number of Fines": string | null
+          "Number of Substantiated Complaints": string | null
+          "Overall Rating": string | null
+          "Provider Address": string | null
+          "Provider Name": string | null
+          "Provider SSA County Code": string | null
+          "Provider Type": string | null
+          "QM Rating": string | null
+          "QM Rating Footnote": string | null
+          "Special Focus Status": string | null
+          "Staffing Rating": number | null
+          State: string | null
+          "Telephone Number": number | null
+          "Total Amount of Fines in Dollars": string | null
+          "Total Number of Penalties": string | null
+          UUID: string
+          "ZIP Code": number | null
+        }
+        Insert: {
+          "Abuse Icon"?: string | null
+          "Affiliated Entity ID"?: string | null
+          "Affiliated Entity Name"?: string | null
+          "Average Number of Residents per Day"?: number | null
+          "City/Town"?: string | null
+          "CMS Certification Number (CCN)"?: string | null
+          "Continuing Care Retirement Community"?: string | null
+          "County/Parish"?: string | null
+          "Date First Approved to Provide Medicare and Medicaid Services"?:
+            | string
+            | null
+          "Health Inspection Rating"?: string | null
+          Latitude?: number | null
+          "Legal Business Name"?: string | null
+          Location?: string | null
+          Longitude?: number | null
+          "Number of Certified Beds"?: string | null
+          "Number of Citations from Infection Control Inspections"?:
+            | string
+            | null
+          "Number of Facility Reported Incidents"?: string | null
+          "Number of Fines"?: string | null
+          "Number of Substantiated Complaints"?: string | null
+          "Overall Rating"?: string | null
+          "Provider Address"?: string | null
+          "Provider Name"?: string | null
+          "Provider SSA County Code"?: string | null
+          "Provider Type"?: string | null
+          "QM Rating"?: string | null
+          "QM Rating Footnote"?: string | null
+          "Special Focus Status"?: string | null
+          "Staffing Rating"?: number | null
+          State?: string | null
+          "Telephone Number"?: number | null
+          "Total Amount of Fines in Dollars"?: string | null
+          "Total Number of Penalties"?: string | null
+          UUID?: string
+          "ZIP Code"?: number | null
+        }
+        Update: {
+          "Abuse Icon"?: string | null
+          "Affiliated Entity ID"?: string | null
+          "Affiliated Entity Name"?: string | null
+          "Average Number of Residents per Day"?: number | null
+          "City/Town"?: string | null
+          "CMS Certification Number (CCN)"?: string | null
+          "Continuing Care Retirement Community"?: string | null
+          "County/Parish"?: string | null
+          "Date First Approved to Provide Medicare and Medicaid Services"?:
+            | string
+            | null
+          "Health Inspection Rating"?: string | null
+          Latitude?: number | null
+          "Legal Business Name"?: string | null
+          Location?: string | null
+          Longitude?: number | null
+          "Number of Certified Beds"?: string | null
+          "Number of Citations from Infection Control Inspections"?:
+            | string
+            | null
+          "Number of Facility Reported Incidents"?: string | null
+          "Number of Fines"?: string | null
+          "Number of Substantiated Complaints"?: string | null
+          "Overall Rating"?: string | null
+          "Provider Address"?: string | null
+          "Provider Name"?: string | null
+          "Provider SSA County Code"?: string | null
+          "Provider Type"?: string | null
+          "QM Rating"?: string | null
+          "QM Rating Footnote"?: string | null
+          "Special Focus Status"?: string | null
+          "Staffing Rating"?: number | null
+          State?: string | null
+          "Telephone Number"?: number | null
+          "Total Amount of Fines in Dollars"?: string | null
+          "Total Number of Penalties"?: string | null
+          UUID?: string
+          "ZIP Code"?: number | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
