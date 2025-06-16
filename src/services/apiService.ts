@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export class ApiService {
@@ -88,46 +89,42 @@ export class ApiService {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error('Not authenticated');
 
-    // Try to get from profiles table first, fallback to user metadata
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError && profileError.code !== 'PGRST116') {
-      throw profileError;
-    }
-
-    // If no profile exists, return user data with defaults
-    if (!profile) {
-      return {
-        id: user.id,
-        first_name: user.user_metadata?.first_name || '',
-        last_name: user.user_metadata?.last_name || '',
-        email: user.email || '',
-        phone: user.user_metadata?.phone || '',
-        user_type: user.user_metadata?.user_type || 'family',
-        subscription_tier: user.user_metadata?.subscription_tier || 'essentials',
-        organization: user.user_metadata?.organization || ''
-      };
-    }
-
-    return profile;
+    // Get user metadata directly from auth user
+    return {
+      id: user.id,
+      first_name: user.user_metadata?.first_name || '',
+      last_name: user.user_metadata?.last_name || '',
+      email: user.email || '',
+      phone: user.user_metadata?.phone || '',
+      user_type: user.user_metadata?.user_type || 'family',
+      subscription_tier: user.user_metadata?.subscription_tier || 'essentials',
+      organization: user.user_metadata?.organization || ''
+    };
   }
 
   static async updateUserProfile(updates: any) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .upsert({ id: user.id, ...updates })
-      .select()
-      .single();
+    // Update user metadata in auth
+    const { data, error } = await supabase.auth.updateUser({
+      data: {
+        ...user.user_metadata,
+        ...updates
+      }
+    });
 
     if (error) throw error;
-    return data;
+    return {
+      id: data.user?.id,
+      first_name: data.user?.user_metadata?.first_name || '',
+      last_name: data.user?.user_metadata?.last_name || '',
+      email: data.user?.email || '',
+      phone: data.user?.user_metadata?.phone || '',
+      user_type: data.user?.user_metadata?.user_type || 'family',
+      subscription_tier: data.user?.user_metadata?.subscription_tier || 'essentials',
+      organization: data.user?.user_metadata?.organization || ''
+    };
   }
 
   // Direct database methods for better performance

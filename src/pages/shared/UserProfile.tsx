@@ -11,6 +11,7 @@ import { ApiService } from '@/services/apiService';
 import { Loader2 } from 'lucide-react';
 
 interface UserProfileData {
+  id: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -39,6 +40,7 @@ const UserProfile = () => {
       try {
         const data = await ApiService.getUserProfile();
         const typedData: UserProfileData = {
+          id: data.id,
           first_name: data.first_name || '',
           last_name: data.last_name || '',
           email: data.email || '',
@@ -78,6 +80,7 @@ const UserProfile = () => {
     try {
       const updatedData = await ApiService.updateUserProfile(formValues);
       const typedData: UserProfileData = {
+        id: updatedData.id,
         first_name: updatedData.first_name || '',
         last_name: updatedData.last_name || '',
         email: updatedData.email || '',
