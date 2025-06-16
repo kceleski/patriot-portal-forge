@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export class ApiService {
@@ -84,19 +83,37 @@ export class ApiService {
     });
   }
 
-  // User profile methods - now using direct Supabase calls instead of edge functions
+  // User profile methods - using auth.users for profile data
   static async getUserProfile() {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
+    // Try to get from profiles table first, fallback to user metadata
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
 
-    if (error) throw error;
-    return data;
+    if (profileError && profileError.code !== 'PGRST116') {
+      throw profileError;
+    }
+
+    // If no profile exists, return user data with defaults
+    if (!profile) {
+      return {
+        id: user.id,
+        first_name: user.user_metadata?.first_name || '',
+        last_name: user.user_metadata?.last_name || '',
+        email: user.email || '',
+        phone: user.user_metadata?.phone || '',
+        user_type: user.user_metadata?.user_type || 'family',
+        subscription_tier: user.user_metadata?.subscription_tier || 'essentials',
+        organization: user.user_metadata?.organization || ''
+      };
+    }
+
+    return profile;
   }
 
   static async updateUserProfile(updates: any) {
@@ -105,8 +122,7 @@ export class ApiService {
 
     const { data, error } = await supabase
       .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
+      .upsert({ id: user.id, ...updates })
       .select()
       .single();
 

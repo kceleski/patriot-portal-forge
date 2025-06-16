@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerClose } from '@/components/ui/drawer';
-import { Menu, X, Home, Search, MapPin, Users, DollarSign } from 'lucide-react';
+import { Menu, X, Home, Search, MapPin, Users, DollarSign, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MobileNavigationProps {
   isAuthenticated?: boolean;
@@ -12,7 +13,51 @@ interface MobileNavigationProps {
 const MobileNavigation: React.FC<MobileNavigationProps> = ({ isAuthenticated = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  // Check if we're in dashboard
+  const isDashboard = location.pathname.startsWith('/dashboard');
+  const userType = profile?.user_type || 'family';
+
+  // Dashboard navigation items
+  const dashboardLinks = [
+    { to: `/dashboard/${userType}`, label: 'Dashboard', icon: Home },
+    { to: '/dashboard/calendar', label: 'Calendar', icon: Search },
+    { to: '/dashboard/messaging', label: 'Messages', icon: Users },
+  ];
+
+  // Add user-specific dashboard items
+  if (userType === 'family') {
+    dashboardLinks.push(
+      { to: '/dashboard/family/favorites', label: 'Favorites', icon: MapPin },
+      { to: '/find-care', label: 'Find Care', icon: Search }
+    );
+  } else if (userType === 'agent' || userType === 'healthcare') {
+    dashboardLinks.push(
+      { to: `/dashboard/${userType}/clients`, label: 'Clients', icon: Users },
+      { to: `/dashboard/${userType}/facilities`, label: 'Facilities', icon: MapPin },
+      { to: `/dashboard/${userType}/reports`, label: 'Reports', icon: DollarSign }
+    );
+  } else if (userType === 'facility') {
+    dashboardLinks.push(
+      { to: '/dashboard/facility/listings', label: 'Listings', icon: MapPin },
+      { to: '/dashboard/facility/employees', label: 'Employees', icon: Users },
+      { to: '/dashboard/facility/payments', label: 'Payments', icon: DollarSign }
+    );
+  }
+
+  // Public navigation items
   const publicLinks = [
     { to: '/', label: 'Home', icon: Home },
     { to: '/find-care', label: 'Find Care', icon: Search },
@@ -25,6 +70,8 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isAuthenticated = f
     { to: '/login', label: 'Sign In' },
     { to: '/register', label: 'Get Started' },
   ];
+
+  const links = isDashboard ? dashboardLinks : publicLinks;
 
   return (
     <div className="md:hidden">
@@ -47,7 +94,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isAuthenticated = f
                   />
                 </div>
                 <DrawerTitle className="text-lg font-bold text-brand-navy font-heading">
-                  HealthProAssist
+                  {isDashboard ? 'HealthPro AVA' : 'HealthProAssist'}
                 </DrawerTitle>
               </div>
               <DrawerClose asChild>
@@ -61,7 +108,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isAuthenticated = f
           
           <div className="px-4 pb-6">
             <nav className="space-y-2">
-              {publicLinks.map((link) => {
+              {links.map((link) => {
                 const IconComponent = link.icon;
                 return (
                   <Link
@@ -81,25 +128,47 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({ isAuthenticated = f
               })}
             </nav>
             
-            {!isAuthenticated && (
-              <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
-                {authLinks.map((link) => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setIsOpen(false)}
-                    className="block"
+            {/* Authentication Section */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              {isAuthenticated ? (
+                <div className="space-y-3">
+                  <div className="px-4 py-2">
+                    <p className="text-sm text-gray-600">
+                      {profile?.first_name} {profile?.last_name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {profile?.user_type?.charAt(0).toUpperCase()}{profile?.user_type?.slice(1)}
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    className="w-full flex items-center justify-start"
+                    onClick={handleLogout}
                   >
-                    <Button 
-                      variant={link.to === '/register' ? 'default' : 'outline'}
-                      className={`w-full ${link.to === '/register' ? 'btn-primary' : 'btn-outline'}`}
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {authLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setIsOpen(false)}
+                      className="block"
                     >
-                      {link.label}
-                    </Button>
-                  </Link>
-                ))}
-              </div>
-            )}
+                      <Button 
+                        variant={link.to === '/register' ? 'default' : 'outline'}
+                        className={`w-full ${link.to === '/register' ? 'btn-primary' : 'btn-outline'}`}
+                      >
+                        {link.label}
+                      </Button>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </DrawerContent>
       </Drawer>

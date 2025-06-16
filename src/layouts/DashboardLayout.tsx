@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import MobileNavigation from '@/components/mobile/MobileNavigation';
 import {
   Home,
   Users,
@@ -220,8 +221,8 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg flex flex-col">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 bg-white shadow-lg flex-col">
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-brand-navy">HealthPro AVA</h1>
@@ -337,11 +338,27 @@ const DashboardLayout = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <header className="bg-white shadow-sm border-b border-gray-200 px-4 md:px-6 py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-800">
-              {navigationItems.find(item => isActive(item.href))?.label || 'Dashboard'}
-            </h2>
+            {/* Mobile Navigation */}
+            <div className="md:hidden">
+              <MobileNavigation isAuthenticated={!!profile} />
+            </div>
+            
+            {/* Desktop Header Content */}
+            <div className="hidden md:block">
+              <h2 className="text-xl font-semibold text-gray-800">
+                {navigationItems.find(item => isActive(item.href))?.label || 'Dashboard'}
+              </h2>
+            </div>
+            
+            {/* Mobile Header Title */}
+            <div className="md:hidden flex-1 text-center">
+              <h2 className="text-lg font-semibold text-gray-800">
+                {navigationItems.find(item => isActive(item.href))?.label || 'Dashboard'}
+              </h2>
+            </div>
+            
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm">
                 Help
@@ -351,7 +368,7 @@ const DashboardLayout = () => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />
         </main>
       </div>

@@ -38,8 +38,17 @@ const UserProfile = () => {
       setLoading(true);
       try {
         const data = await ApiService.getUserProfile();
-        setProfileData(data as UserProfileData);
-        setFormValues(data);
+        const typedData: UserProfileData = {
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          user_type: data.user_type || 'family',
+          subscription_tier: data.subscription_tier || 'essentials',
+          organization: data.organization || ''
+        };
+        setProfileData(typedData);
+        setFormValues(typedData);
       } catch (error: any) {
         console.error('Profile fetch error:', error);
         toast({
@@ -68,7 +77,16 @@ const UserProfile = () => {
     setLoading(true);
     try {
       const updatedData = await ApiService.updateUserProfile(formValues);
-      setProfileData(updatedData as UserProfileData);
+      const typedData: UserProfileData = {
+        first_name: updatedData.first_name || '',
+        last_name: updatedData.last_name || '',
+        email: updatedData.email || '',
+        phone: updatedData.phone || '',
+        user_type: updatedData.user_type || 'family',
+        subscription_tier: updatedData.subscription_tier || 'essentials',
+        organization: updatedData.organization || ''
+      };
+      setProfileData(typedData);
       toast({
         title: 'Success',
         description: 'Profile updated successfully'
