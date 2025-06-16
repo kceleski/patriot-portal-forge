@@ -208,7 +208,7 @@ const HomePage = () => {
               </Button>
             </Link>
             <Link to="/find-care">
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-brand-navy text-lg px-8 py-4 focus-enhanced">
+              <Button variant="outline" size="lg" className="border-white text-navy hover:bg-white hover:text-brand-navy text-lg px-8 py-4 focus-enhanced">
                 Explore Care Options
               </Button>
             </Link>
