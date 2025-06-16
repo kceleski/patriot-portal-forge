@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -33,23 +33,62 @@ const StorepointFacilities = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [stateFilter, setStateFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchStorepointFacilities();
+    loadStorepointScript();
   }, []);
 
   useEffect(() => {
     filterFacilities();
   }, [facilities, searchTerm, stateFilter, typeFilter]);
 
+  const loadStorepointScript = () => {
+    // Check if script is already loaded
+    if (document.querySelector('script[src*="storepoint.co"]')) {
+      setMapLoaded(true);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = 'https://cdn.storepoint.co/api/v1/js/1645a775a8a422.js';
+    
+    script.onload = () => {
+      setMapLoaded(true);
+      console.log('Storepoint script loaded successfully');
+    };
+    
+    script.onerror = () => {
+      console.error('Failed to load Storepoint script');
+    };
+
+    document.head.appendChild(script);
+  };
+
   const fetchStorepointFacilities = async () => {
     try {
+      console.log('Fetching Storepoint facilities...');
       const { data, error } = await supabase
         .from('Storepoint')
         .select('*')
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Raw data from Supabase:', data);
+
+      if (!data || data.length === 0) {
+        console.log('No data found in Storepoint table');
+        setFacilities([]);
+        return;
+      }
 
       const formattedData = data.map(item => ({
         name: item.name || '',
@@ -69,6 +108,7 @@ const StorepointFacilities = () => {
         lng: item.lng || ''
       }));
 
+      console.log('Formatted data:', formattedData);
       setFacilities(formattedData);
     } catch (error) {
       console.error('Error fetching Storepoint facilities:', error);
@@ -190,6 +230,20 @@ const StorepointFacilities = () => {
               </CardContent>
             </Card>
 
+            {/* Debug Information */}
+            {!loading && (
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="pt-6">
+                  <div className="text-sm text-blue-800">
+                    <p><strong>Debug Info:</strong></p>
+                    <p>Total facilities loaded: {facilities.length}</p>
+                    <p>Filtered facilities: {filteredFacilities.length}</p>
+                    <p>Map script loaded: {mapLoaded ? 'Yes' : 'No'}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Results Count */}
             <div className="text-sm text-gray-600">
               Showing {filteredFacilities.length} of {facilities.length} facilities
@@ -203,8 +257,21 @@ const StorepointFacilities = () => {
               </div>
             )}
 
+            {/* No Data Message */}
+            {!loading && facilities.length === 0 && (
+              <Card className="bg-yellow-50 border-yellow-200">
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <Building className="h-16 w-16 mx-auto mb-4 text-yellow-600" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No data in database</h3>
+                    <p className="text-gray-600">The Storepoint table appears to be empty. Please add facility data to see results.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Facilities Grid */}
-            {!loading && (
+            {!loading && filteredFacilities.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredFacilities.map((facility, index) => (
                   <StorepointFacilityCard key={index} facility={facility} />
@@ -213,7 +280,7 @@ const StorepointFacilities = () => {
             )}
 
             {/* No Results */}
-            {!loading && filteredFacilities.length === 0 && (
+            {!loading && facilities.length > 0 && filteredFacilities.length === 0 && (
               <div className="text-center py-12">
                 <Building className="h-16 w-16 mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No facilities found</h3>
@@ -232,29 +299,27 @@ const StorepointFacilities = () => {
               </CardHeader>
               <CardContent>
                 <div className="w-full">
-                  <div id="storepoint-container" data-map-id="1645a775a8a422" className="w-full min-h-[600px]"></div>
+                  {!mapLoaded && (
+                    <div className="w-full min-h-[600px] bg-gray-100 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-red mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading map...</p>
+                      </div>
+                    </div>
+                  )}
+                  <div 
+                    id="storepoint-container" 
+                    data-map-id="1645a775a8a422" 
+                    className="w-full min-h-[600px]"
+                    ref={mapContainerRef}
+                    style={{ display: mapLoaded ? 'block' : 'none' }}
+                  ></div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Storepoint Script */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function(){
-              var a=document.createElement("script");
-              a.type="text/javascript";
-              a.async=!0;
-              a.src="https://cdn.storepoint.co/api/v1/js/1645a775a8a422.js";
-              var b=document.getElementsByTagName("script")[0];
-              b.parentNode.insertBefore(a,b);
-            }())();
-          `
-        }}
-      />
     </div>
   );
 };
