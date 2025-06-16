@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -21,7 +22,6 @@ import NotFound from '@/pages/NotFound';
 import FacilitiesMap from '@/pages/FacilitiesMap';
 import FacilityDetail from '@/pages/FacilityDetail';
 import ResourcesPage from '@/pages/public/ResourcesPage';
-import SubscribedProvidersDirectory from '@/pages/SubscribedProvidersDirectory';
 import FacilitiesDirectory from '@/pages/healthcare/FacilitiesDirectory';
 
 // Dashboards
