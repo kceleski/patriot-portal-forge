@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export class ApiService {
@@ -83,20 +84,113 @@ export class ApiService {
     });
   }
 
-  // User profile methods with better error handling
+  // User profile methods - now using direct Supabase calls instead of edge functions
   static async getUserProfile() {
-    return this.userService('get_profile');
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
   static async updateUserProfile(updates: any) {
-    return this.userService('update_profile', { updates });
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Direct database methods for better performance
+  static async getFacilities() {
+    const { data, error } = await supabase
+      .from('facility')
+      .select('*')
+      .eq('subscription_status', 'active')
+      .order('is_featured', { ascending: false })
+      .order('rating', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async getFacilityDetails(facilityId: string) {
+    const { data, error } = await supabase
+      .from('facility')
+      .select(`
+        *,
+        facility_images(*),
+        facility_amenities(
+          *,
+          amenities(*)
+        )
+      `)
+      .eq('id', facilityId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async getClients() {
+    const { data, error } = await supabase
+      .from('clients')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async createClient(clientData: any) {
+    const { data, error } = await supabase
+      .from('clients')
+      .insert(clientData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async getAppointments() {
+    const { data, error } = await supabase
+      .from('appointments')
+      .select(`
+        *,
+        appointment_participants(*)
+      `)
+      .order('start_time', { ascending: true });
+
+    if (error) throw error;
+    return data;
+  }
+
+  static async createAppointment(appointmentData: any) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert(appointmentData)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   }
 
   // Facility-specific methods
-  static async getFacilityDetails(facilityId: string) {
-    return this.facilityService('get_facility_details', { facility_id: facilityId });
-  }
-
   static async getFacilityMetrics(facilityId: string) {
     return this.facilityService('get_facility_metrics', { facility_id: facilityId });
   }
@@ -107,5 +201,44 @@ export class ApiService {
       agent_id: agentId,
       commission_amount: commissionAmount
     });
+  }
+
+  // Search methods using existing data
+  static async searchFacilitiesDatabase(searchTerm: string, filters?: any) {
+    let query = supabase
+      .from('facility')
+      .select('*');
+
+    if (searchTerm) {
+      query = query.or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,facility_type.ilike.%${searchTerm}%`);
+    }
+
+    if (filters?.care_type) {
+      query = query.eq('facility_type', filters.care_type);
+    }
+
+    if (filters?.price_min) {
+      query = query.gte('price_range_min', filters.price_min);
+    }
+
+    if (filters?.price_max) {
+      query = query.lte('price_range_max', filters.price_max);
+    }
+
+    const { data, error } = await query.order('rating', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  // Get subscribed providers for featured directory
+  static async getSubscribedProviders() {
+    const { data, error } = await supabase
+      .from('subscribed')
+      .select('*')
+      .order('uuid');
+
+    if (error) throw error;
+    return data;
   }
 }

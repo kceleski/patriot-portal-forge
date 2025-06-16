@@ -1,11 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { ApiService } from '@/services/apiService';
@@ -31,12 +30,18 @@ const UserProfile = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
         const data = await ApiService.getUserProfile();
         setProfileData(data as UserProfileData);
         setFormValues(data);
       } catch (error: any) {
+        console.error('Profile fetch error:', error);
         toast({
           title: 'Error',
           description: error.message || 'Failed to load profile',
@@ -47,27 +52,30 @@ const UserProfile = () => {
       }
     };
 
-    if (user) {
-      fetchProfile();
-    }
+    fetchProfile();
   }, [user, toast]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setFormValues(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
     setFormValues(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      await ApiService.updateUserProfile(formValues);
-      setProfileData(formValues as UserProfileData);
+      const updatedData = await ApiService.updateUserProfile(formValues);
+      setProfileData(updatedData as UserProfileData);
       toast({
         title: 'Success',
         description: 'Profile updated successfully'
       });
       setEditing(false);
     } catch (error: any) {
+      console.error('Profile update error:', error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to update profile',
@@ -78,7 +86,17 @@ const UserProfile = () => {
     }
   };
 
-  const safeProfileData = profileData || {};
+  if (!user) {
+    return (
+      <div className="container mx-auto py-10">
+        <Card className="w-full max-w-2xl mx-auto">
+          <CardContent className="p-6">
+            <p className="text-center text-gray-600">Please log in to view your profile.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-10">
@@ -146,7 +164,7 @@ const UserProfile = () => {
                 <Label htmlFor="userType">User Type</Label>
                 <Select
                   value={formValues.user_type || ''}
-                  onValueChange={(value) => setFormValues(prev => ({ ...prev, user_type: value }))}
+                  onValueChange={(value) => handleSelectChange('user_type', value)}
                   disabled={!editing}
                 >
                   <SelectTrigger>
@@ -165,7 +183,7 @@ const UserProfile = () => {
                 <Label htmlFor="subscriptionTier">Subscription Tier</Label>
                 <Select
                   value={formValues.subscription_tier || ''}
-                  onValueChange={(value) => setFormValues(prev => ({ ...prev, subscription_tier: value }))}
+                  onValueChange={(value) => handleSelectChange('subscription_tier', value)}
                   disabled={!editing}
                 >
                   <SelectTrigger>
@@ -200,7 +218,7 @@ const UserProfile = () => {
                     </Button>
                     <Button variant="outline" onClick={() => {
                       setEditing(false);
-                      setFormValues(profileData || {}); // Revert to original data
+                      setFormValues(profileData || {});
                     }} disabled={loading}>
                       Cancel
                     </Button>
