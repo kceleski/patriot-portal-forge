@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -66,6 +65,7 @@ import OrganizationAdmin from '@/components/shared/OrganizationAdmin';
 import PresentationMockData from '@/components/presentation/PresentationMockData';
 import SuperUserDashboard from '@/pages/admin/SuperAdminDashboard';
 import PlaceholderPage from '@/pages/shared/PlaceholderPage';
+import StorepointFacilities from './pages/StorepointFacilities';
 
 const queryClient = new QueryClient();
 
@@ -94,10 +94,10 @@ function AppRoutes() {
         <Route index element={<HomePage />} />
         <Route path="find-care" element={<FindCarePage />} />
         <Route path="facility/:id" element={<FacilityDetail />} />
-        <Route path="facilities-map" element={<FacilitiesMap />} />     
+        <Route path="facilities-map" element={<FacilitiesGallery />} />     
         <Route path="facilities-gallery" element={<FacilitiesGallery />} />
         <Route path="facilities-directory" element={<FacilitiesDirectory />} />
-        <Route path="subscribed-providers" element={<SubscribedProvidersDirectory />} />
+        <Route path="subscribed-providers" element={<StorepointFacilities />} />
         <Route path="resources" element={<ResourcesPage />} />
         <Route path="pricing" element={<PricingPage />} />
         <Route path="login" element={<LoginPage />} />
