@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useState, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -27,7 +27,6 @@ import FamilyDashboard from '@/pages/family/FamilyDashboard';
 import FamilyMessaging from '@/pages/family/FamilyMessaging';
 import SavedFavorites from '@/pages/family/SavedFavorites';
 import AgentDashboard from '@/pages/agent/AgentDashboard';
-import AllClients from '@/pages/agent/AllClients';
 import PerformanceDashboard from '@/pages/agent/PerformanceDashboard';
 import HealthcareDashboard from '@/pages/healthcare/HealthcareDashboard';
 import FacilityDashboard from '@/pages/facility/FacilityDashboard';
@@ -48,11 +47,17 @@ import FacilityContactBook from '@/pages/agent/FacilityContactBook';
 import DocumentFormBuilder from '@/pages/agent/DocumentFormBuilder';
 import InboxMessaging from '@/pages/agent/InboxMessaging';
 import NewClient from '@/pages/agent/NewClient';
+import AllClients from '@/pages/agent/AllClients';
+import CRM from '@/pages/agent/CRM';
+import PerformanceDashboard from '@/pages/agent/PerformanceDashboard';
 
 // Import facility pages
 import ListingManagement from '@/pages/facility/ListingManagement';
 import EmployeeManagement from '@/pages/facility/EmployeeManagement';
 import FacilityPayments from '@/pages/facility/FacilityPayments';
+import WebinarManagement from '@/pages/facility/WebinarManagement';
+import PlacementSpecialists from '@/pages/facility/PlacementSpecialists';
+import FacilityAnalytics from '@/pages/facility/FacilityAnalytics';
 
 // Import shared components
 import UniversalCRM from '@/components/shared/UniversalCRM';
@@ -69,8 +74,8 @@ const queryClient = new QueryClient();
 
 const FloatingAgentWrapper = () => {
   const location = useLocation();
-  const isHomePage = location.pathname === '/';
-  const isLoginPage = location.pathname === '/super-login';
+  const isHomePage = location.pathname === '/pages/HomePage';
+  const isLoginPage = location.pathname === '/pages/public/LoginPage';
   return (isHomePage || isLoginPage) ? null : <ElevenLabsAgent />;
 };
 
@@ -94,10 +99,11 @@ function AppRoutes() {
         <Route path="facility/:id" element={<FacilityDetail />} />
         <Route path="facilities-gallery" element={<FacilitiesGallery />} />
         <Route path="facilities-directory" element={<FacilitiesDirectory />} />
-        <Route path="subscribed-providers" element={<StorepointFacilities />} />
+        <Route path="providers" element={<StorepointFacilities />} />
         <Route path="resources" element={<ResourcesPage />} />
         <Route path="pricing" element={<PricingPage />} />
         <Route path="login" element={<LoginPage />} />
+        <Route path="advertise" element={<PlaceholderPage />} />
         <Route path="register" element={<RegisterPage />} />
       </Route>
 
