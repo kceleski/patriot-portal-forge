@@ -49,7 +49,6 @@ import InboxMessaging from '@/pages/agent/InboxMessaging';
 import NewClient from '@/pages/agent/NewClient';
 import AllClients from '@/pages/agent/AllClients';
 import CRM from '@/pages/agent/CRM';
-import PerformanceDashboard from '@/pages/agent/PerformanceDashboard';
 
 // Import facility pages
 import ListingManagement from '@/pages/facility/ListingManagement';
