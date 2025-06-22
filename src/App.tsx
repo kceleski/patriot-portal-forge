@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
@@ -98,7 +99,7 @@ function AppRoutes() {
         <Route path="resources" element={<ResourcesPage />} />
         <Route path="pricing" element={<PricingPage />} />
         <Route path="login" element={<LoginPage />} />
-        <Route path="advertise" element={<PlaceholderPage />} />
+        <Route path="advertise" element={<PlaceholderPage title="Advertise With Us" description="Learn about our advertising opportunities and packages" />} />
         <Route path="register" element={<RegisterPage />} />
       </Route>
 

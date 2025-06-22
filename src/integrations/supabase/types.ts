@@ -9,6 +9,312 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agencies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      agency_members: {
+        Row: {
+          agency_id: string
+          id: string
+          invited_at: string | null
+          joined_at: string | null
+          role: Database["public"]["Enums"]["agency_role"]
+          status: string
+          user_id: string
+        }
+        Insert: {
+          agency_id: string
+          id?: string
+          invited_at?: string | null
+          joined_at?: string | null
+          role?: Database["public"]["Enums"]["agency_role"]
+          status?: string
+          user_id: string
+        }
+        Update: {
+          agency_id?: string
+          id?: string
+          invited_at?: string | null
+          joined_at?: string | null
+          role?: Database["public"]["Enums"]["agency_role"]
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agency_members_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_agencies: {
+        Row: {
+          address: string | null
+          agency_name: string
+          created_at: string
+          id: string
+          phone: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          agency_name: string
+          created_at?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          agency_name?: string
+          created_at?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      agent_appointment_reminders: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          id: string
+          sent: boolean | null
+          time_before: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          id?: string
+          sent?: boolean | null
+          time_before: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          id?: string
+          sent?: boolean | null
+          time_before?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_appointment_reminders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "agent_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_calendar_connections: {
+        Row: {
+          access_token: string | null
+          connected: boolean | null
+          created_at: string
+          id: string
+          last_synced: string | null
+          provider: string
+          refresh_token: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          connected?: boolean | null
+          created_at?: string
+          id?: string
+          last_synced?: string | null
+          provider: string
+          refresh_token?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          connected?: boolean | null
+          created_at?: string
+          id?: string
+          last_synced?: string | null
+          provider?: string
+          refresh_token?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_calendar_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "agent_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_profiles: {
+        Row: {
+          bio: string | null
+          communication_preferences: Json | null
+          headline: string | null
+          notification_preferences: Json | null
+          profile_image_url: string | null
+          service_locations: string | null
+          specializations: string | null
+          updated_at: string
+          user_id: string
+          years_experience: string | null
+        }
+        Insert: {
+          bio?: string | null
+          communication_preferences?: Json | null
+          headline?: string | null
+          notification_preferences?: Json | null
+          profile_image_url?: string | null
+          service_locations?: string | null
+          specializations?: string | null
+          updated_at?: string
+          user_id: string
+          years_experience?: string | null
+        }
+        Update: {
+          bio?: string | null
+          communication_preferences?: Json | null
+          headline?: string | null
+          notification_preferences?: Json | null
+          profile_image_url?: string | null
+          service_locations?: string | null
+          specializations?: string | null
+          updated_at?: string
+          user_id?: string
+          years_experience?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "agent_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_todo_items: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_todo_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "agent_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_users: {
+        Row: {
+          agency_id: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          subscription_tier: string | null
+          updated_at: string
+          work_type: string | null
+        }
+        Insert: {
+          agency_id?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          work_type?: string | null
+        }
+        Update: {
+          agency_id?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          work_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_agency"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agent_agencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       amenities: {
         Row: {
           category: string | null
@@ -261,6 +567,7 @@ export type Database = {
       }
       clients: {
         Row: {
+          agency_id: string | null
           care_needs: string[] | null
           created_at: string | null
           diagnosis: string | null
@@ -273,6 +580,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          agency_id?: string | null
           care_needs?: string[] | null
           created_at?: string | null
           diagnosis?: string | null
@@ -285,6 +593,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          agency_id?: string | null
           care_needs?: string[] | null
           created_at?: string | null
           diagnosis?: string | null
@@ -296,7 +605,15 @@ export type Database = {
           referral_source?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clients_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "agencies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       "Combined Data": {
         Row: {
@@ -1392,6 +1709,38 @@ export type Database = {
           },
         ]
       }
+      invoice_line_items: {
+        Row: {
+          description: string
+          id: string
+          invoice_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          description: string
+          id?: string
+          invoice_id: string
+          quantity?: number
+          unit_price: number
+        }
+        Update: {
+          description?: string
+          id?: string
+          invoice_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_payments: {
         Row: {
           amount: number
@@ -1974,6 +2323,7 @@ export type Database = {
           id: string
           intake_form_url: string | null
           received_at: string | null
+          referred_by_user_id: string | null
           status: string
           submitted_by: string | null
         }
@@ -1982,6 +2332,7 @@ export type Database = {
           id?: string
           intake_form_url?: string | null
           received_at?: string | null
+          referred_by_user_id?: string | null
           status: string
           submitted_by?: string | null
         }
@@ -1990,6 +2341,7 @@ export type Database = {
           id?: string
           intake_form_url?: string | null
           received_at?: string | null
+          referred_by_user_id?: string | null
           status?: string
           submitted_by?: string | null
         }
@@ -2182,6 +2534,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      squarespace_commerce: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: number
+          inventory_count: number
+          price: number
+          product_description: string | null
+          product_name: string
+          sku: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: never
+          inventory_count: number
+          price: number
+          product_description?: string | null
+          product_name: string
+          sku?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: never
+          inventory_count?: number
+          price?: number
+          product_description?: string | null
+          product_name?: string
+          sku?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       Storepoint: {
         Row: {
@@ -2948,6 +3336,24 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_search_requests: {
         Row: {
           agent_id: string | null
@@ -3086,90 +3492,6 @@ export type Database = {
         }
         Relationships: []
       }
-      working_data: {
-        Row: {
-          address: string | null
-          altcs: string | null
-          capacity: string | null
-          city: string | null
-          contact_us: string | null
-          email: string | null
-          "Funding Type": string | null
-          ID: number
-          image_url: string | null
-          lat: string | null
-          license: string | null
-          lng: string | null
-          name: string | null
-          phone: string | null
-          reviews: string | null
-          schedule_tour: string | null
-          specials: string | null
-          state: string | null
-          street: string | null
-          tags: string | null
-          type: string | null
-          virtual_tour: string | null
-          visit_website: string | null
-          website: string | null
-          zip: number | null
-        }
-        Insert: {
-          address?: string | null
-          altcs?: string | null
-          capacity?: string | null
-          city?: string | null
-          contact_us?: string | null
-          email?: string | null
-          "Funding Type"?: string | null
-          ID: number
-          image_url?: string | null
-          lat?: string | null
-          license?: string | null
-          lng?: string | null
-          name?: string | null
-          phone?: string | null
-          reviews?: string | null
-          schedule_tour?: string | null
-          specials?: string | null
-          state?: string | null
-          street?: string | null
-          tags?: string | null
-          type?: string | null
-          virtual_tour?: string | null
-          visit_website?: string | null
-          website?: string | null
-          zip?: number | null
-        }
-        Update: {
-          address?: string | null
-          altcs?: string | null
-          capacity?: string | null
-          city?: string | null
-          contact_us?: string | null
-          email?: string | null
-          "Funding Type"?: string | null
-          ID?: number
-          image_url?: string | null
-          lat?: string | null
-          license?: string | null
-          lng?: string | null
-          name?: string | null
-          phone?: string | null
-          reviews?: string | null
-          schedule_tour?: string | null
-          specials?: string | null
-          state?: string | null
-          street?: string | null
-          tags?: string | null
-          type?: string | null
-          virtual_tour?: string | null
-          visit_website?: string | null
-          website?: string | null
-          zip?: number | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -3192,6 +3514,21 @@ export type Database = {
           preferred_amenities: Json
         }
         Returns: undefined
+      }
+      has_agency_role: {
+        Args: {
+          _user_id: string
+          _agency_id: string
+          _role: Database["public"]["Enums"]["agency_role"]
+        }
+        Returns: boolean
+      }
+      has_app_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
       }
       insert_serperapi_raw_result: {
         Args: {
@@ -3217,8 +3554,17 @@ export type Database = {
         Args: { raw_results: Json }
         Returns: undefined
       }
+      split_name: {
+        Args: { full_name: string }
+        Returns: {
+          first_name: string
+          last_name: string
+        }[]
+      }
     }
     Enums: {
+      agency_role: "owner" | "admin" | "agent" | "viewer"
+      app_role: "admin" | "moderator" | "user"
       appointment_type: "consultation" | "tour" | "follow_up"
       budget_range:
         | "$2,000 - $4,000"
@@ -3376,6 +3722,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      agency_role: ["owner", "admin", "agent", "viewer"],
+      app_role: ["admin", "moderator", "user"],
       appointment_type: ["consultation", "tour", "follow_up"],
       budget_range: [
         "$2,000 - $4,000",
