@@ -46,7 +46,6 @@ const StorepointFacilities = () => {
   }, [facilities, searchTerm, stateFilter, typeFilter]);
 
   const loadStorepointScript = () => {
-    // Check if script is already loaded
     if (document.querySelector('script[src*="storepoint.co"]')) {
       setMapLoaded(true);
       return;
@@ -72,17 +71,42 @@ const StorepointFacilities = () => {
   const fetchStorepointFacilities = async () => {
     try {
       console.log('Fetching Storepoint facilities...');
+      
+      // First check if we can access the table
+      const { count, error: countError } = await supabase
+        .from('Storepoint')
+        .select('*', { count: 'exact', head: true });
+
+      console.log('Table count check:', count, countError);
+
+      // Try the actual query
       const { data, error } = await supabase
         .from('Storepoint')
         .select('*')
-        .order('name');
+        .order('name', { ascending: true });
+
+      console.log('Query result:', { data, error, count: data?.length });
 
       if (error) {
         console.error('Supabase error:', error);
-        throw error;
+        // If there's an error, try alternative table names
+        console.log('Trying alternative approaches...');
+        
+        // Try with public schema explicitly
+        const { data: altData, error: altError } = await supabase
+          .from('public.Storepoint')
+          .select('*')
+          .limit(10);
+        
+        console.log('Alternative query result:', { altData, altError });
+        
+        if (altError) {
+          throw new Error(`Database access failed: ${error.message}`);
+        }
+        
+        setFacilities(altData || []);
+        return;
       }
-
-      console.log('Raw data from Supabase:', data);
 
       if (!data || data.length === 0) {
         console.log('No data found in Storepoint table');
@@ -91,7 +115,7 @@ const StorepointFacilities = () => {
       }
 
       const formattedData = data.map(item => ({
-        name: item.name || '',
+        name: item.name || 'Unnamed Facility',
         address: item.address || '',
         street: item.street || '',
         city: item.city || '',
@@ -108,7 +132,7 @@ const StorepointFacilities = () => {
         lng: item.lng || ''
       }));
 
-      console.log('Formatted data:', formattedData);
+      console.log('Successfully formatted data:', formattedData.length, 'facilities');
       setFacilities(formattedData);
     } catch (error) {
       console.error('Error fetching Storepoint facilities:', error);
@@ -230,20 +254,6 @@ const StorepointFacilities = () => {
               </CardContent>
             </Card>
 
-            {/* Debug Information */}
-            {!loading && (
-              <Card className="bg-blue-50 border-blue-200">
-                <CardContent className="pt-6">
-                  <div className="text-sm text-blue-800">
-                    <p><strong>Debug Info:</strong></p>
-                    <p>Total facilities loaded: {facilities.length}</p>
-                    <p>Filtered facilities: {filteredFacilities.length}</p>
-                    <p>Map script loaded: {mapLoaded ? 'Yes' : 'No'}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Results Count */}
             <div className="text-sm text-gray-600">
               Showing {filteredFacilities.length} of {facilities.length} facilities
@@ -263,8 +273,8 @@ const StorepointFacilities = () => {
                 <CardContent className="pt-6">
                   <div className="text-center">
                     <Building className="h-16 w-16 mx-auto mb-4 text-yellow-600" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No data in database</h3>
-                    <p className="text-gray-600">The Storepoint table appears to be empty. Please add facility data to see results.</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No data found</h3>
+                    <p className="text-gray-600">Check console for detailed error information.</p>
                   </div>
                 </CardContent>
               </Card>
@@ -274,7 +284,7 @@ const StorepointFacilities = () => {
             {!loading && filteredFacilities.length > 0 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredFacilities.map((facility, index) => (
-                  <StorepointFacilityCard key={index} facility={facility} />
+                  <StorepointFacilityCard key={`${facility.name}-${index}`} facility={facility} />
                 ))}
               </div>
             )}

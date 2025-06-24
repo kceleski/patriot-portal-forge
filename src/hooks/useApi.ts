@@ -6,6 +6,7 @@ interface UseApiOptions {
   showSuccessToast?: boolean;
   showErrorToast?: boolean;
   successMessage?: string;
+  logErrors?: boolean;
 }
 
 export const useApi = <T = any>(
@@ -18,7 +19,8 @@ export const useApi = <T = any>(
   const {
     showSuccessToast = false,
     showErrorToast = true,
-    successMessage = 'Operation completed successfully!'
+    successMessage = 'Operation completed successfully!',
+    logErrors = true
   } = options;
 
   const execute = async (...args: any[]): Promise<T | null> => {
@@ -35,10 +37,27 @@ export const useApi = <T = any>(
         });
       }
 
+      if (logErrors) {
+        console.log('API call successful:', { 
+          function: apiFunction.name, 
+          args, 
+          result: typeof result === 'object' ? 'Object' : result 
+        });
+      }
+
       return result;
     } catch (err: any) {
       const errorMessage = err.message || 'An error occurred';
       setError(errorMessage);
+      
+      if (logErrors) {
+        console.error('API call failed:', {
+          function: apiFunction.name,
+          args,
+          error: err,
+          message: errorMessage
+        });
+      }
       
       if (showErrorToast) {
         toast({
@@ -54,5 +73,33 @@ export const useApi = <T = any>(
     }
   };
 
-  return { execute, loading, error };
+  const reset = () => {
+    setError(null);
+    setLoading(false);
+  };
+
+  return { execute, loading, error, reset };
+};
+
+// Additional hook for data verification
+export const useDataVerification = () => {
+  const [verificationResult, setVerificationResult] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+
+  const verify = async () => {
+    setVerifying(true);
+    try {
+      const { DataVerificationService } = await import('@/services/dataVerificationService');
+      const result = await DataVerificationService.generateProductionReadinessReport();
+      setVerificationResult(result);
+      return result;
+    } catch (error) {
+      console.error('Data verification failed:', error);
+      return null;
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  return { verify, verifying, verificationResult };
 };
