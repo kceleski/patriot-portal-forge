@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export class ApiService {
@@ -163,9 +164,10 @@ export class ApiService {
     }
   }
 
-  // Search methods using existing data
+  // Search methods - return consistent structure
   static async searchFacilities(searchTerm: string, filters?: any) {
-    return this.searchFacilitiesDatabase(searchTerm, filters);
+    const facilities = await this.searchFacilitiesDatabase(searchTerm, filters);
+    return { facilities };
   }
 
   static async searchFacilitiesDatabase(searchTerm: string, filters?: any) {
