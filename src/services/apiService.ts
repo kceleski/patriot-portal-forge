@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export class ApiService {
@@ -165,6 +164,10 @@ export class ApiService {
   }
 
   // Search methods using existing data
+  static async searchFacilities(searchTerm: string, filters?: any) {
+    return this.searchFacilitiesDatabase(searchTerm, filters);
+  }
+
   static async searchFacilitiesDatabase(searchTerm: string, filters?: any) {
     let query = supabase
       .from('facility')

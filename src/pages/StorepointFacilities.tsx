@@ -79,7 +79,7 @@ const StorepointFacilities = () => {
 
       console.log('Table count check:', count, countError);
 
-      // Try the actual query
+      // Try the actual query - use literal table name only
       const { data, error } = await supabase
         .from('Storepoint')
         .select('*')
@@ -89,23 +89,7 @@ const StorepointFacilities = () => {
 
       if (error) {
         console.error('Supabase error:', error);
-        // If there's an error, try alternative table names
-        console.log('Trying alternative approaches...');
-        
-        // Try with public schema explicitly
-        const { data: altData, error: altError } = await supabase
-          .from('public.Storepoint')
-          .select('*')
-          .limit(10);
-        
-        console.log('Alternative query result:', { altData, altError });
-        
-        if (altError) {
-          throw new Error(`Database access failed: ${error.message}`);
-        }
-        
-        setFacilities(altData || []);
-        return;
+        throw new Error(`Database access failed: ${error.message}`);
       }
 
       if (!data || data.length === 0) {
@@ -114,7 +98,8 @@ const StorepointFacilities = () => {
         return;
       }
 
-      const formattedData = data.map(item => ({
+      // Transform the data to match our interface
+      const formattedData: StorepointFacility[] = data.map(item => ({
         name: item.name || 'Unnamed Facility',
         address: item.address || '',
         street: item.street || '',

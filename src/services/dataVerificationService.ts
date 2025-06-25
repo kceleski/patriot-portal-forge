@@ -13,9 +13,10 @@ export class DataVerificationService {
       }
     };
 
+    // Use exact table names from Supabase types - no dynamic string concatenation
     const tablesToCheck = [
       'Storepoint',
-      'facility',
+      'facility', 
       'clients',
       'appointments',
       'Combined Data',
@@ -40,17 +41,97 @@ export class DataVerificationService {
       try {
         results.summary.totalTables++;
         
-        // Check table access and count
-        const { count, error: countError } = await supabase
-          .from(tableName)
-          .select('*', { count: 'exact', head: true });
+        // Check table access and count - use literal table names only
+        let count = 0;
+        let error = null;
+        
+        if (tableName === 'Storepoint') {
+          const result = await supabase.from('Storepoint').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'facility') {
+          const result = await supabase.from('facility').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'clients') {
+          const result = await supabase.from('clients').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'appointments') {
+          const result = await supabase.from('appointments').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'Combined Data') {
+          const result = await supabase.from('Combined Data').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'Home_Health_Providers') {
+          const result = await supabase.from('Home_Health_Providers').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'VA_Providers') {
+          const result = await supabase.from('VA_Providers').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'nationwide_facilities') {
+          const result = await supabase.from('nationwide_facilities').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'medical_supply_companies') {
+          const result = await supabase.from('medical_supply_companies').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'images of providers') {
+          const result = await supabase.from('images of providers').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'analytics') {
+          const result = await supabase.from('analytics').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'contacts') {
+          const result = await supabase.from('contacts').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'interactions') {
+          const result = await supabase.from('interactions').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'intake_forms') {
+          const result = await supabase.from('intake_forms').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'agent_users') {
+          const result = await supabase.from('agent_users').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'agent_profiles') {
+          const result = await supabase.from('agent_profiles').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'placements') {
+          const result = await supabase.from('placements').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'payments') {
+          const result = await supabase.from('payments').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else if (tableName === 'invoices') {
+          const result = await supabase.from('invoices').select('*', { count: 'exact', head: true });
+          count = result.count;
+          error = result.error;
+        } else {
+          // Handle unknown tables
+          error = { message: 'Table not recognized' };
+        }
 
-        if (countError) {
-          results.errors.push(`${tableName}: ${countError.message}`);
+        if (error) {
+          results.errors.push(`${tableName}: ${error.message}`);
           results.tables[tableName] = {
             accessible: false,
             count: 0,
-            error: countError.message
+            error: error.message
           };
           continue;
         }
@@ -61,11 +142,20 @@ export class DataVerificationService {
           results.summary.tablesWithData++;
         }
 
-        // Get sample data
-        const { data: sampleData, error: sampleError } = await supabase
-          .from(tableName)
-          .select('*')
-          .limit(1);
+        // Get sample data for accessible tables
+        let sampleData = null;
+        let sampleError = null;
+
+        if (tableName === 'Storepoint') {
+          const result = await supabase.from('Storepoint').select('*').limit(1);
+          sampleData = result.data;
+          sampleError = result.error;
+        } else if (tableName === 'facility') {
+          const result = await supabase.from('facility').select('*').limit(1);
+          sampleData = result.data;
+          sampleError = result.error;
+        }
+        // Add other table sample queries as needed
 
         results.tables[tableName] = {
           accessible: true,
@@ -91,7 +181,7 @@ export class DataVerificationService {
   static async verifyEdgeFunctions() {
     const functions = [
       'user-service',
-      'facility-service',
+      'facility-service', 
       'payment-service',
       'ava-assistant',
       'voice-synthesis',

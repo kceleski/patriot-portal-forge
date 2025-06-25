@@ -39,7 +39,7 @@ interface Facility {
 }
 
 interface SubscribedProvider {
-  uuid: string;
+  uuid?: string; // Make uuid optional
   'Facility Name': string;
   'Description': string;
   'Street Address': string;
@@ -77,7 +77,23 @@ const FacilitiesDirectory = () => {
   const fetchSubscribedProviders = async () => {
     try {
       const data = await ApiService.getSubscribedProviders();
-      setSubscribedProviders(data || []);
+      // Transform data to ensure uuid field exists
+      const transformedData = (data || []).map((provider: any) => ({
+        uuid: provider.uuid || `provider-${Math.random().toString(36).substr(2, 9)}`, // Generate fallback ID
+        'Facility Name': provider['Facility Name'] || '',
+        'Description': provider['Description'] || '',
+        'Street Address': provider['Street Address'] || '',
+        'City': provider['City'] || '',
+        'State': provider['State'] || '',
+        'ZIP Code': provider['ZIP Code'] || 0,
+        'Phone': provider['Phone'] || '',
+        'Email': provider['Email'] || '',
+        'Website': provider['Website'] || '',
+        'Image URL 1': provider['Image URL 1'] || '',
+        'Core Services (comma-separated)': provider['Core Services (comma-separated)'] || '',
+        'Lifestyle Amenities (comma-separated)': provider['Lifestyle Amenities (comma-separated)'] || ''
+      }));
+      setSubscribedProviders(transformedData);
     } catch (error) {
       console.error('Error fetching subscribed providers:', error);
     } finally {
